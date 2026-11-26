@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>交易台监控 · 模拟盘</title>
+<style>
+:root{--bg:#f4f5f7;--card:#fff;--line:#e3e6eb;--tx:#1b1f26;--mut:#667085;--g:#0f7b4c;--r:#c42929;--a:#9a6700;--b:#1a5fb4;--okbg:#e8f6ee;--rbg:#fdecec;--abg:#fff6e0}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 -apple-system,"PingFang SC","Noto Sans SC",sans-serif}
+.wrap{max-width:640px;margin:0 auto;padding:14px 14px 40px}
+h1{font-size:20px;margin:0 0 4px}h2{font-size:13px;color:var(--mut);margin:0 0 8px;font-weight:650;letter-spacing:.04em;text-transform:none}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:0 0 10px}
+.big{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.row{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}
+.g{color:var(--g)}.r{color:var(--r)}.a{color:var(--a)}.m{color:var(--mut)}
+.pill{display:inline-block;padding:2px 8px;border-radius:99px;font-size:12px;border:1px solid var(--line);background:#fff}
+.pill.g{background:var(--okbg);border-color:#b7e0c8;color:var(--g)}
+.pill.r{background:var(--rbg);border-color:#f5c2c2;color:var(--r)}
+.pill.a{background:var(--abg);border-color:#ead7a0;color:var(--a)}
+.al{padding:12px;border-radius:12px;margin:0 0 10px;border:1px solid var(--line)}.al.red{background:var(--rbg);border-color:#f5c2c2}.al.amber{background:var(--abg);border-color:#ead7a0}.al.ok{background:var(--okbg);border-color:#b7e0c8}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:420px){.grid2{grid-template-columns:1fr}}
+.st{display:inline-block;min-width:22px;text-align:center;border-radius:6px;padding:1px 6px;font-size:12px;margin:0 4px 4px 0;background:#eef0f3;color:var(--mut)}
+.st.p{background:var(--okbg);color:var(--g)}.st.x{background:var(--rbg);color:var(--r)}.st.o{background:var(--abg);color:var(--a)}
+.tabs span{display:inline-block;margin:0 10px 8px 0;color:var(--mut);padding-bottom:2px}
+.tabs span.on{color:var(--tx);border-bottom:2px solid var(--tx);font-weight:650}
+.sm{font-size:13px}.xs{font-size:12px}.mono{font-variant-numeric:tabular-nums}
+.wr{overflow-wrap:anywhere;word-break:break-word}
+input,button{font:inherit}input[type=password],input[type=text]{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;margin:8px 0}
+button{background:#1b1f26;color:#fff;border:0;border-radius:10px;padding:12px 16px;width:100%;font-weight:650}
+button.sec{background:#fff;color:var(--tx);border:1px solid var(--line);margin-top:8px}
+.bar{height:10px;border-radius:5px;background:var(--b);display:block}
+.kpi{flex:1 1 140px;min-width:0;padding:8px 0}
+hr{border:0;border-top:1px solid var(--line);margin:10px 0}
+.asof{font-size:18px;font-weight:700;margin:2px 0 8px}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+  <h1>交易台监控 <span class="pill a">模拟盘</span></h1>
+  <div id="gate" class="card" hidden>
+    <h2>打开加密数据</h2>
+    <p class="sm">数据是加密后发布的。输入口令后会留在这台手机上，下次不用再输。</p>
+    <input id="pw" type="password" placeholder="口令" autocomplete="current-password">
+    <div id="pwerr" class="r sm" hidden></div>
+    <button id="pwbtn" type="button">打开</button>
+  </div>
+  <div id="main" hidden>
+    <div id="meta"></div>
+    <div id="alerts"></div>
+    <div class="card" id="acct"></div>
+    <div id="posord"></div>
+    <h2>五个 bot</h2>
+    <div class="grid2" id="bots"></div>
+    <div class="card">
+      <h2>流水线看板</h2>
+      <div class="tabs" id="btabs"></div>
+      <div id="board"></div>
+    </div>
+    <div class="card">
+      <h2>今日被拒最多的规则</h2>
+      <div id="rej"></div>
+    </div>
+    <div class="card">
+      <h2>最近 15 条日志</h2>
+      <div id="log"></div>
+    </div>
+    <details class="card">
+      <summary><h2 style="display:inline">链上小币模拟盘</h2></summary>
+      <div id="meme" style="margin-top:10px"></div>
+    </details>
+    <p class="xs m">全部为模拟盘，实盘不动。页面每 45 秒拉取一次加密数据。口令只存在本机。</p>
+    <button class="sec" id="forget" type="button">忘记口令</button>
+  </div>
+</div>
+<script>
+const LS="desk-monitor-pass";
+const E=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&","<":"<",">":">",'"':"""}[c]));
+const usd=(n,s=1)=>(n<0?"−":(s&&n>0?"+":""))+"$"+Math.abs(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+const gbp=(n,s=1)=>(n<0?"−":(s&&n>0?"+":""))+"£"+Math.abs(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+const cl=n=>n>0.004?"g":n<-0.004?"r":"m";
+const vcls=v=>/通过|平仓/.test(v)?"p":/否决|撤/.test(v)?"x":/待|有条件|盯盘/.test(v)?"o":"";
+let D=null,tab="进行中",lastOk=0;
+
+function b64(s){const bin=atob(s);const u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return u}
+async function derive(pass,salt,iter){
+  const enc=new TextEncoder();
+  const base=await crypto.subtle.importKey("raw",enc.encode(pass),"PBKDF2",false,["deriveKey"]);
+  return crypto.subtle.deriveKey({name:"PBKDF2",salt,iterations:iter,hash:"SHA-256"},base,{name:"AES-GCM",length:256},false,["decrypt"]);
+}
+async function decrypt(env,pass){
+  if(!env||env.v!==1||env.alg!=="AES-GCM") throw new Error("数据格式不对");
+  const key=await derive(pass,b64(env.salt),env.iter||210000);
+  const pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:b64(env.iv)},key,b64(env.ct));
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+
+function render(){
+  const d=D; if(!d) return;
+  document.getElementById("meta").innerHTML=`<div class="asof">数据时间 ${E(d.asof)}（伦敦）</div><div class="sm m">${E(d.market||"")}</div>`;
+  const als=d.alerts||[];
+  document.getElementById("alerts").innerHTML=als.length?als.map(a=>`<div class="al ${a.lvl}"><b>${a.lvl==="red"?"紧急":"注意"} · ${E(a.t)}</b><div class="sm wr">${E(a.m)}</div></div>`).join(""):`<div class="al ok">无告警：没有闲置 bot、止损已确认、账本解析正常</div>`;
+  document.getElementById("acct").innerHTML=`
+    <div class="row">
+      <div class="kpi"><div class="xs m">股票账本</div><div class="big">${gbp(d.stocks_bal,0)}</div><div class="sm ${cl(d.stocks_pnl)}">${gbp(d.stocks_pnl)}</div></div>
+      <div class="kpi"><div class="xs m">加密账本</div><div class="big">${gbp(d.crypto_bal,0)}</div><div class="sm ${cl(d.crypto_pnl)}">${gbp(d.crypto_pnl)}</div></div>
+    </div><hr>
+    <div class="row">
+      <div class="kpi"><div class="xs m">今日盈亏</div><div class="big ${cl(d.today_gbp)}">${gbp(d.today_gbp)}</div></div>
+      <div class="kpi"><div class="xs m">总盈亏</div><div class="big ${cl(d.total_gbp)}">${gbp(d.total_gbp)}</div><div class="xs m">Alpaca ${usd(d.total_usd)}</div></div>
+      <div class="kpi"><div class="xs m">战绩</div><div class="big">${d.w} 胜 / ${d.l} 负</div></div>
+    </div>`;
+  const pos=d.positions||[], ord=d.orders||[];
+  let po="";
+  if(pos.length){po+=`<div class="card"><h2>持仓</h2>`+pos.map(p=>`<div class="card" style="margin:0 0 8px;padding:10px"><b>${E(p.sym)}</b> ${E(p.side)} × ${E(p.qty)}<div class="${cl(p.upl)}">${usd(p.upl)}（${p.uplpc}%）</div><div class="sm m">均价 ${E(p.avg)} · 现价 ${E(p.px)} · 止损 ${p.stop?E(p.stop):(p.opt?"脚本盯盘":"未确认")} · 止盈 ${p.tp?E(p.tp):"—"}</div></div>`).join("")+`</div>`}
+  if(ord.length){po+=`<div class="card"><h2>挂单</h2>`+ord.map(o=>`<div class="sm wr" style="margin:0 0 8px"><b>${E(o.sym)}</b> ${E(o.side)} ${E(o.type)} × ${E(o.qty)} · ${E(o.status)}<div class="m">${[o.limit?"限价 "+o.limit:"",o.stop?"止损价 "+o.stop:"",o.t].filter(Boolean).join(" · ")}</div></div>`).join("")+`</div>`}
+  if(!pos.length&&!ord.length) po=`<div class="card sm m">当前无持仓、无挂单（Alpaca 实时回读）</div>`;
+  document.getElementById("posord").innerHTML=po;
+  document.getElementById("bots").innerHTML=(d.bots||[]).map(b=>{
+    if(b.none) return `<div class="card"><b>${E(b.name)}</b><div class="m sm">无记录</div></div>`;
+    const col=b.stalled?"r":(b.age!=null&&b.age<30?"g":(b.age!=null&&b.age<120?"a":""));
+    return `<div class="card"><div class="row"><b>${E(b.name)}</b><span class="pill ${col}">${E(b.age_label)}${b.stalled?" · 闲置":""}</span></div>
+      <div class="xs m">${E(b.t)} · ${E(b.sym)} · ${E(b.gate)}</div>
+      <div><span class="st ${vcls(b.v)}">${E(b.v)}</span></div>
+      <div class="sm wr">${E(b.txt)}</div>
+      <div class="xs m">今日 ${b.n_today} 条</div></div>`}).join("");
+  const groups={"进行中":[],"已否决":[],"已执行/完成":[]};
+  (d.board||[]).forEach(r=>{(groups[r.status]||groups["进行中"]).push(r)});
+  document.getElementById("btabs").innerHTML=Object.keys(groups).map(k=>`<span data-t="${k}" class="${tab===k?"on":""}">${k} ${groups[k].length}</span>`).join("");
+  const list=groups[tab]||[];
+  document.getElementById("board").innerHTML=list.length?list.map(r=>{
+    const stages=[1,2,3,4,5].map(i=>{const v=r.stages&&r.stages[String(i)];return `<span class="st ${v?vcls(v):""}">${i}${v?" "+E(v):""}</span>`}).join("");
+    const rj=r.reject?`<div class="sm r wr">${E(r.reject.rule)} · 第${r.reject.stage}关 · ${E(r.reject.why)}</div>`:`<div class="sm ${r.status==="进行中"?"a":"g"}">${E(r.status)}</div>`;
+    return `<div style="padding:10px 0;border-bottom:1px solid var(--line)"><div><b class="mono">${E(r.id)}</b> ${E(r.sym)} <span class="xs m">${E(r.last)}</span></div><div>${stages}</div>${rj}</div>`}).join(""):`<div class="sm m">这一栏暂时没有编号</div>`;
+  const rr=d.rej_today||[], mx=Math.max(1,...rr.map(x=>x[1]));
+  document.getElementById("rej").innerHTML=(rr.length?rr.map(x=>`<div style="margin:8px 0"><div class="sm">${E(x[0])} <b>${x[1]}</b></div><span class="bar" style="width:${Math.round(x[1]/mx*100)}%"></span></div>`).join(""):`<div class="sm m">今日暂无否决</div>`)+`<div class="sm m">今日关卡：通过 ${d.pass_n||0} · 否决 ${d.rej_n||0}</div>`;
+  document.getElementById("log").innerHTML=(d.log||[]).map(r=>`<div style="padding:8px 0;border-bottom:1px solid var(--line)"><div class="xs m">${E(r.t)} · ${E(r.who)} · ${E(r.sym)} · ${E(r.gate)} <span class="st ${vcls(r.v)}">${E(r.v)}</span></div><div class="sm wr">${E(r.txt)}</div></div>`).join("");
+  const m=d.meme;
+  document.getElementById("meme").innerHTML=m?`<div class="sm m">第 ${m.cycle} 轮 · ${E(m.gen)} GMT</div>
+    <div class="row"><div class="kpi"><b>A 严格</b><div class="big" style="font-size:22px">${usd(m.A.equity,0)}</div><div class="sm ${cl(m.A.realized)}">${usd(m.A.realized)} · ${m.A.wins}胜/${m.A.losses}负 · 平仓 ${m.A.closed}</div></div>
+    <div class="kpi"><b>B 含骗局币</b><div class="big" style="font-size:22px">${usd(m.B.equity,0)}</div><div class="sm ${cl(m.B.realized)}">${usd(m.B.realized)} · ${m.B.wins}胜/${m.B.losses}负 · 平仓 ${m.B.closed}</div></div></div>`:"<div class='sm m'>暂无</div>";
+}
+
+async function load(pass){
+  const r=await fetch("data.json?t="+Date.now(),{cache:"no-store"});
+  if(!r.ok) throw new Error("拉取数据失败 "+r.status);
+  const env=await r.json();
+  D=await decrypt(env,pass);
+  lastOk=Date.now();
+  document.getElementById("gate").hidden=true;
+  document.getElementById("main").hidden=false;
+  render();
+}
+function showGate(msg){
+  document.getElementById("gate").hidden=false;
+  document.getElementById("main").hidden=true;
+  const e=document.getElementById("pwerr");
+  if(msg){e.hidden=false;e.textContent=msg}else e.hidden=true;
+}
+async function unlock(pass,save){
+  try{await load(pass); if(save) localStorage.setItem(LS,pass)}
+  catch(err){ localStorage.removeItem(LS); showGate("口令不对，或数据还没就绪。"); }
+}
+document.getElementById("pwbtn").onclick=()=>unlock(document.getElementById("pw").value,true);
+document.getElementById("pw").addEventListener("keydown",ev=>{if(ev.key==="Enter")unlock(document.getElementById("pw").value,true)});
+document.getElementById("forget").onclick=()=>{localStorage.removeItem(LS);showGate("")};
+document.addEventListener("click",ev=>{const t=ev.target.dataset&&ev.target.dataset.t;if(t){tab=t;render()}});
+(async()=>{
+  const saved=localStorage.getItem(LS);
+  if(saved) await unlock(saved,false);
+  else showGate("");
+  setInterval(async()=>{
+    const p=localStorage.getItem(LS); if(!p) return;
+    try{await load(p)}catch(e){}
+  },45000);
+})();
+</script>
+</body>
+</html>

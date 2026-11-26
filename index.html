@@ -66,17 +66,21 @@ hr{border:0;border-top:1px solid var(--line);margin:10px 0}
     <p class="xs m">全部为模拟盘，实盘不动。页面每 45 秒刷新一次。数字已去掉密钥和账户号。</p>
   </div>
 </div>
+<script type="application/json" id="snap">{"asof":"2026-11-26 16:32:12","tz":"Europe/London","market":"美股休市 · 下次开盘 2026-11-27 09:30（美东）","alerts":[],"equity_usd":100136.22,"day_usd":0.0,"total_usd":136.22,"stocks_bal":961.11,"stocks_pnl":-38.89,"stocks_today":0,"crypto_bal":1136.48,"crypto_pnl":136.48,"crypto_today":0,"today_gbp":0,"total_gbp":97.59,"w":3,"l":4,"positions":[],"orders":[],"has_positions":false,"has_orders":false,"bots":[{"name":"侦察兵","t":"11-26 16:21","age":11,"age_label":"11 分钟前","stalled":false,"sym":"SOL/USD","gate":"第1关","v":"通过","txt":"通过（只记账到 crypto-paper.csv 模拟盘，不走 IBKR，本行不下单、不发送）。SOL/USD 现货空。Nova 16:13 Europe/L…","n_today":22},{"name":"看图员","t":"11-26 16:22","age":10,"age_label":"10 分钟前","stalled":false,"sym":"SOL/USD","gate":"第2关","v":"否决","txt":"t1 54.64不是图上结构：一年内最低60.18(2026-06-06)，t1在其下9%。可见支撑64.83(11/21低)、65.67(11/25低)、6…","n_today":1},{"name":"军师","t":"11-25 22:35","age":1077,"age_label":"17 小时 57 分前","stalled":false,"sym":"MSLZ6/SOL","gate":"第3关","v":"通过（重审）","txt":"重审，覆盖第543行。依据规则：handoff-spec 第472–486行（风控11/25 20:35/20:45定稿，额度由风控按单裁定，引Ryan 20…","n_today":0},{"name":"风控","t":"11-25 22:35","age":1077,"age_label":"17 小时 57 分前","stalled":false,"sym":"MSLZ6","gate":"第4关","v":"通过","txt":"空1手CME Micro SOL 12月，只做IBKR模拟盘[acct]。按handoff-spec第472–486行，1手不可拆，单笔例外≤£65。入场限价…","n_today":0},{"name":"执行员","t":"11-26 00:27","age":965,"age_label":"16 小时 5 分前","stalled":false,"sym":"METX6（MET Nov27'2…","gate":"第5关","v":"否决","txt":"预览（不是成交）：IBKR Client Portal 模拟盘 [acct]，2026-11-26 约00:27 UK，MET Nov27'26（CME，1点…","n_today":3}],"board":[{"id":"20261126-15","sym":"SOL/USD","last":"11-26 16:22","at":2,"status":"已否决","stages":{"1":"通过","2":"否决"},"reject":{"stage":2,"rule":"盈亏比 rr 不足","why":"t1 54.64不是图上结构：一年内最低60.18(2026-06-06)，t1在其下9%。可见支撑64.83(11/21低)、65.67(11/25低)、60.18。按入场70…"}},{"id":"20261126-02","sym":"ETHA","last":"11-26 04:39","at":1,"status":"进行中","stages":{"1":"通过"},"reject":null},{"id":"20261126-03","sym":"BSOL","last":"11-26 04:39","at":1,"status":"进行中","stages":{"1":"通过"},"reject":null},{"id":"20261126-10","sym":"IBIT","last":"11-26 04:39","at":1,"status":"进行中","stages":{"1":"通过"},"reject":null},{"id":"20261126-11","sym":"FBTC","last":"11-26 04:39","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"同币种/同组限制","why":"否决：同币种（BTC）只选一只，首选 IBKR 20 日均成交额最高的 IBIT（$1,856.94M），本行不交单。FBTC 本身流动性过关：IBKR 2026-11-25 收…"}},{"id":"20261126-12","sym":"BITB","last":"11-26 04:39","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"同币种/同组限制","why":"否决：同币种（BTC）只选一只，首选 IBIT（ADV 更高），本行不交单。BITB 本身流动性过关：IBKR 2026-11-25 收 32.65，20 日均成交额 $45.9…"}},{"id":"20261126-13","sym":"ARKB","last":"11-26 04:39","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"同币种/同组限制","why":"否决：同币种（BTC）只选一只，首选 IBIT（ADV 更高），本行不交单。ARKB 本身流动性过关：IBKR 2026-11-25 收 19.95，20 日均成交额 $50.4…"}},{"id":"20261126-14","sym":"GBTC","last":"11-26 04:39","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"同币种/同组限制","why":"否决：同币种（BTC）只选一只，首选 IBIT（ADV 更高），本行不交单。GBTC 本身流动性过关：IBKR 2026-11-25 收 46.41，20 日均成交额 $80.0…"}},{"id":"20261126-04","sym":"ETHD","last":"11-26 00:43","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"杠杆/反向 ETF","why":"否决 ETHD 多（−2x 反向以太 ETF）。规格第493行：杠杆/反向 ETF 只做多、持有≤2个交易日、止损距离≥1×ETF ATR14。趋势条件满足（ETH 4h 收 1…"}},{"id":"20261126-05","sym":"SETH","last":"11-26 00:43","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"杠杆/反向 ETF","why":"否决 SETH 多（−1x 反向以太 ETF）。规格第493行只做多、持有≤2日、止损≥1×ATR14。趋势条件满足（ETH 4h 低于 EMA200）。Alpaca trada…"}},{"id":"20261126-06","sym":"FSOL","last":"11-26 00:43","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"不可借/ETB","why":"否决 FSOL 空（Fidelity Solana Fund，1 倍）。趋势条件满足（SOL 4h 低于 EMA200）。Alpaca shortable 且 ETB。点差 Al…"}},{"id":"20261126-07","sym":"GSOL","last":"11-26 00:43","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"不可借/ETB","why":"否决 GSOL 空（Grayscale Solana Staking ETF，1 倍）。趋势条件满足。Alpaca 2026-11-26 00:35 Europe/London：…"}},{"id":"20261126-08","sym":"SOEZ","last":"11-26 00:43","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"不可借/ETB","why":"否决 SOEZ 空（Franklin Solana ETF，1 倍）。趋势条件满足。Alpaca shortable 且 ETB。 流动性：IBKR 20日均成交额 $0.18M…"}},{"id":"20261126-09","sym":"SLOP,SLO","last":"11-26 00:43","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"权限/地区限制","why":"否决 SOL 反向/做空 ETF 多路径。Alpaca 查无 SLOP、SLO（404 asset not found）；IBKR search_contracts 无 US 上…"}},{"id":"20261126-01-METZ6","sym":"METZ6","last":"11-26 00:31","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"权限/地区限制","why":"否决信号 20261126-01 的 METZ6 路径。执行员 2026-11-26 00:27 Europe/London 报告：IBKR Client Portal 模拟盘 …"}},{"id":"20261125-29","sym":"MSLZ6","last":"11-26 00:30","at":5,"status":"已否决","stages":{"1":"否决","2":"通过","3":"通过（重审）","4":"通过","5":"否决"},"reject":{"stage":1,"rule":"权限/地区限制","why":"否决。执行员 2026-11-26 00:27 Europe/London 报告：IBKR Client Portal 模拟盘 [acct]，MSLZ6 下单票显示「Restri…"}},{"id":"20261124-ANT-X1","sym":"ANT","last":"11-26 00:26","at":5,"status":"已执行/完成","stages":{"5":"平仓","4":"通过","3":"事后复核：本关会否…","2":"事后复核：本关会否…"},"reject":null},{"id":"20261124-31","sym":"SOL/USD","last":"11-26 00:26","at":5,"status":"已执行/完成","stages":{"1":"通过","2":"通过","3":"通过","5":"平仓","4":"通过"},"reject":null},{"id":"20261125-22","sym":"MRK","last":"11-25 22:35","at":3,"status":"已否决","stages":{"1":"通过","2":"通过","3":"否决"},"reject":{"stage":3,"rule":"SPY 大涨禁空","why":"空，discretionary_short。否决理由：①扣费rr_net 1.51仅擦线，且t1 131.36正是11/24大阳线（+4.5%，量1467万）的反转起点，目标位支…"}},{"id":"20261125-28","sym":"BSOL,FSOL,GSOL,…","last":"11-25 20:32","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"同币种/同组限制","why":"否决现货 SOL ETF 空单路径（BSOL/FSOL/GSOL/SOEZ）。不交看图员。本行是 20261125-27 之后对可交易现货 SOL ETF 通道的第1关复核，不是…"}},{"id":"20261125-27","sym":"SOL/USD","last":"11-25 20:26","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"同币种/同组限制","why":"否决（无可执行纸面路径）。不重复 Nova 已写的 20261125-27 盯盘信号行，本行是第1关复核。信号本身按现行标准加密空规则（不是 crypto_discretiona…"}},{"id":"20261125-23","sym":"ROST","last":"11-25 19:15","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"不可借/ETB","why":"否决 ROST 反弹失败空（trial B 复评）。IBKR SMART 实时（top-status=REALTIME）2026-11-25 19:11:56 Europe/Lo…"}},{"id":"20261125-24","sym":"NBIS,SNDK,BE,CR…","last":"11-25 19:15","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"杠杆/反向 ETF","why":"否决新空名单 NBIS/SNDK/BE/CRWV/ORCL/INTC/IREN/NVDA/MRVL/TSM（trial B discretionary_short）。IBKR S…"}},{"id":"20261125-25","sym":"HPQ","last":"11-25 19:15","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"不可借/ETB","why":"否决 HPQ 多空（普通规则 rr≥2.2、£20；空单数字虽也满足 trial B，但形态不成立）。IBKR SMART 实时 19:12:16 Europe/London：成…"}},{"id":"20261125-26","sym":"AMD,MU,LRCX","last":"11-25 19:15","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"不可借/ETB","why":"复评 LRCX/MU/AMD（trial B）。IBKR SMART 实时 19:12:14–19:12:15 Europe/London。SPY 跌 0.18%，P6 未触发。…"}},{"id":"20261125-11","sym":"RYCEY","last":"11-25 15:05","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"不可借/ETB","why":"否决（trial B discretionary_short）。规格已写入：rr≥1.5、单笔£10、thesis≥20字、券商GTC止损、只限美股正股、须可借且ETB。RYCE…"}},{"id":"20261125-12","sym":"RR.L","last":"11-25 15:05","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"止损不足 1×ATR","why":"否决。RR.L 为伦敦正股。规格英股仍是只观察、不交单（handoff-spec 英股 LSE：uk_enabled=false，review.uk_observe_only；重…"}},{"id":"20261125-14","sym":"GDX","last":"11-25 15:05","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"不可借/ETB","why":"否决 GDX 正股空。15:01 英国时间 Alpaca IEX 68.92（bid/ask 68.90/68.93），较 11/24 收 71.37 跌 3.43%。入场 68…"}},{"id":"20261125-15","sym":"GLD,GDX","last":"11-25 15:05","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"盈亏比 rr 不足","why":"否决 GLD/GDX 看跌借方差。options_scan 15:02 英国时间、美股已开盘：GLD 1752 合约、GDX 358 合约，rr≥2.0（价差仍按 P2 2.0，…"}},{"id":"20261125-13","sym":"GLD","last":"11-25 15:05","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"止损不足 1×ATR","why":"否决黄金正股空。现货/期货已跌破 3500：GC=F yfinance 15:00 英国时间附近 3486（今日低 3481.10），CNBC 报现货 3483.59，为 202…"}},{"id":"20261125-16","sym":"MU,AMD,DELL,MSTR","last":"11-25 15:05","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"同币种/同组限制","why":"否决（复评今早 20261125-02，按 trial B rr≥1.5、£10）。15:04 英国时间 Alpaca IEX：SPY 仍约 −2%，禁新空未触发。MU 成交 5…"}},{"id":"20261125-17","sym":"SOXX","last":"11-25 15:05","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"不可借/ETB","why":"否决 SOXX 破位空。核过 Nova 价：121.81/132.95/102.42，票面 rr 1.74，止损正好 1.0×ATR14（11.14），t1 与 first_st…"}},{"id":"20261125-18","sym":"ROST","last":"11-25 15:05","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"不可借/ETB","why":"否决 ROST 反弹失败空。Nova 入场/止损 223.01/231.86，t1 核为 208.22，票面 rr 1.67。止损 231.86 比 1×ATR14（8.8537…"}},{"id":"20261125-19","sym":"MRK","last":"11-25 15:05","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"权限/地区限制","why":"否决 MRK 反弹失败空。Nova 139.89/144.33，t1 核为 131.36，票面 rr 1.92。止损补到 144.3347（≥1×ATR14=4.4447）。触发…"}},{"id":"20261125-21","sym":"NTNX","last":"11-25 15:05","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"不可借/ETB","why":"否决 NTNX 正股空（不因 chase 本身否决）。11/24 盘后财报：一季营收与调整后 EPS 超预期，但全年营收指引中值低于共识，并宣布 CEO 继任安排（官网 http…"}},{"id":"20261125-20","sym":"AMBA","last":"11-25 15:05","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"不可借/ETB","why":"否决 AMBA 正股空（不因 chase 本身否决）。11/24 16:05 ET 盘后财报：营收与调整后 EPS 低于预期，四季度指引 0.70–0.75 亿美元，远低于约 1…"}},{"id":"20261125-01","sym":"ANT","last":"11-25 07:48","at":1,"status":"进行中","stages":{"1":"盯盘"},"reject":null},{"id":"20261125-02","sym":"MU,AMD,DELL,MSTR","last":"11-25 07:48","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"SPY 大涨禁空","why":"否决（早报第2条：空 MU/AMD/DELL/MSTR，14:45 后跌破昨低）。规格未写入「看空就做空」全面取消 rr≥2.2；书面只有 discretionary_short…"}},{"id":"20261125-03","sym":"DE","last":"11-25 07:48","at":1,"status":"进行中","stages":{"1":"待定"},"reject":null},{"id":"20261125-04","sym":"XLP,XLV,ITB","last":"11-25 07:48","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"止损不足 1×ATR","why":"否决（早报第4条：多 XLP/XLV/ITB，回踩 20 日均线企稳）。价格为 11/24 收盘（Alpaca SIP，07:45 英国时间核，美股未开盘）。XLP 收 91.8…"}}],"rej_today":[["权限/地区限制",5],["同币种/同组限制",4],["不可借/ETB",3],["杠杆/反向 ETF",2],["盈亏比 rr 不足",1]],"pass_n":4,"rej_n":15,"log":[{"t":"11-26 16:22","who":"看图员","sym":"SOL/USD","gate":"第2关","v":"否决","txt":"t1 54.64不是图上结构：一年内最低60.18(2026-06-06)，t1在其下9%。可见支撑64.83(11/21低)、65.67(11/25低)、6…"},{"t":"11-26 16:21","who":"侦察兵","sym":"SOL/USD","gate":"第1关","v":"通过","txt":"通过（只记账到 crypto-paper.csv 模拟盘，不走 IBKR，本行不下单、不发送）。SOL/USD 现货空。Nova 16:13 Europe/L…"},{"t":"11-26 16:12","who":"Nova","sym":"加密扫盘","gate":"盯盘","v":"信号","txt":"SOL纸面做空 RSI2 86.9 EMA200下方 入场70.92 止损76.35 目标54.64 数量3.75 最大亏£20 rr2.3 已交侦察兵"},{"t":"11-26 12:15","who":"Nova","sym":"加密扫盘","gate":"盯盘","v":"无信号","txt":"无持仓; BTC/ETH/SOL RSI2未达85 (75/78/77); 宽扫无合格setup; AAVE量x2.14 S_rally未回测仅观察"},{"t":"11-26 08:12","who":"Nova","sym":"加密扫盘","gate":"盯盘","v":"无信号","txt":"无持仓; BTC/ETH/SOL RSI2未达85; 宽扫无合格setup; SUSHI量x3.48但流动性小仅观察"},{"t":"11-26 04:39","who":"侦察兵","sym":"BSOL","gate":"复盘-第1关","v":"通过","txt":"复盘-第1关（风控 04:24 / 规格第496行周末跳空下限写入后重新定量；不改正午 00:43 通过行，只追加）。BSOL 空，结构价不变：9.79 / …"},{"t":"11-26 04:39","who":"侦察兵","sym":"ETHA","gate":"复盘-第1关","v":"通过","txt":"复盘-第1关（风控 04:24 / 规格第496行周末跳空下限写入后重新定量；不改正午 00:43 通过行，只追加）。ETHA 空，结构价不变：38.17 /…"},{"t":"11-26 04:39","who":"侦察兵","sym":"GBTC","gate":"第1关","v":"否决","txt":"否决：同币种（BTC）只选一只，首选 IBIT（ADV 更高），本行不交单。GBTC 本身流动性过关：IBKR 2026-11-25 收 46.41，20 日…"},{"t":"11-26 04:39","who":"侦察兵","sym":"ARKB","gate":"第1关","v":"否决","txt":"否决：同币种（BTC）只选一只，首选 IBIT（ADV 更高），本行不交单。ARKB 本身流动性过关：IBKR 2026-11-25 收 19.95，20 日…"},{"t":"11-26 04:39","who":"侦察兵","sym":"BITB","gate":"第1关","v":"否决","txt":"否决：同币种（BTC）只选一只，首选 IBIT（ADV 更高），本行不交单。BITB 本身流动性过关：IBKR 2026-11-25 收 32.65，20 日…"},{"t":"11-26 04:39","who":"侦察兵","sym":"FBTC","gate":"第1关","v":"否决","txt":"否决：同币种（BTC）只选一只，首选 IBKR 20 日均成交额最高的 IBIT（$1,856.94M），本行不交单。FBTC 本身流动性过关：IBKR 20…"},{"t":"11-26 04:39","who":"侦察兵","sym":"IBIT","gate":"第1关","v":"通过","txt":"通过（条件：周五 11/27 美股半天常规时段 14:30–18:00 Europe/London 开盘前用实时报价重核点差/可借后再交单；本行不下单、不发送…"},{"t":"11-26 04:25","who":"Nova","sym":"BTC/ETH/SOL","gate":"盯盘","v":"信号","txt":"4h RSI2\u003e93 且低于EMA200 三币纸面空信号 BTC入60884止64131标51142 ETH入1701止1811标1371 SOL入71.09…"},{"t":"11-26 00:43","who":"侦察兵","sym":"SLOP,SLO","gate":"第1关","v":"否决","txt":"否决 SOL 反向/做空 ETF 多路径。Alpaca 查无 SLOP、SLO（404 asset not found）；IBKR search_contra…"},{"t":"11-26 00:43","who":"侦察兵","sym":"SOEZ","gate":"第1关","v":"否决","txt":"否决 SOEZ 空（Franklin Solana ETF，1 倍）。趋势条件满足。Alpaca shortable 且 ETB。 流动性：IBKR 20日均…"}],"meme":{"gen":"2026-11-26 16:31 UTC","cycle":67,"A":{"equity":279.02,"closed":3,"wins":1,"losses":2,"realized":-0.98,"open":0},"B":{"equity":267.35,"closed":12,"wins":2,"losses":10,"realized":-12.47,"open":1}}}</script>
 <script>
 const E=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&","<":"<",">":">",'"':"""}[c]));
-const usd=(n,s=1)=>(n<0?"−":(s&&n>0?"+":""))+"$"+Math.abs(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
-const gbp=(n,s=1)=>(n<0?"−":(s&&n>0?"+":""))+"£"+Math.abs(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+const usd=(n,s=1)=>{n=Number(n);if(!Number.isFinite(n))n=0;return (n<0?"−":(s&&n>0?"+":""))+"$"+Math.abs(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})};
+const gbp=(n,s=1)=>{n=Number(n);if(!Number.isFinite(n))n=0;return (n<0?"−":(s&&n>0?"+":""))+"£"+Math.abs(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})};
 const cl=n=>n>0.004?"g":n<-0.004?"r":"m";
 const vcls=v=>/通过|平仓/.test(v)?"p":/否决|撤/.test(v)?"x":/待|有条件|盯盘/.test(v)?"o":"";
-let D=null,tab="进行中",lastOk=0;
+let D=null,tab="进行中",lastOk=0,live=false;
+
+function okData(j){return j && typeof j==="object" && j.alg!=="AES-GCM" && j.asof && Array.isArray(j.bots);}
 
 function render(){
   const d=D; if(!d) return;
-  document.getElementById("meta").innerHTML=`<div class="asof">数据时间 ${E(d.asof)}（伦敦）</div><div class="sm m">${E(d.market||"")}</div>`;
+  const src=live?"已从网上更新":"内嵌快照，正在尝试更新";
+  document.getElementById("meta").innerHTML=`<div class="asof">数据时间 ${E(d.asof)}（伦敦）</div><div class="sm m">${E(d.market||"")}</div><div class="xs m">${src}</div>`;
   const als=d.alerts||[];
   document.getElementById("alerts").innerHTML=als.length?als.map(a=>`<div class="al ${a.lvl}"><b>${a.lvl==="red"?"紧急":"注意"} · ${E(a.t)}</b><div class="sm wr">${E(a.m)}</div></div>`).join(""):`<div class="al ok">无告警：没有闲置 bot、止损已确认、账本解析正常</div>`;
   document.getElementById("acct").innerHTML=`
@@ -86,8 +90,8 @@ function render(){
     </div><hr>
     <div class="row">
       <div class="kpi"><div class="xs m">今日盈亏</div><div class="big ${cl(d.today_gbp)}">${gbp(d.today_gbp)}</div></div>
-      <div class="kpi"><div class="xs m">总盈亏</div><div class="big ${cl(d.total_gbp)}">${gbp(d.total_gbp)}</div><div class="xs m">Alpaca ${usd(d.total_usd)}</div></div>
-      <div class="kpi"><div class="xs m">战绩</div><div class="big">${d.w} 胜 / ${d.l} 负</div></div>
+      <div class="kpi"><div class="xs m">总盈亏</div><div class="big ${cl(d.total_gbp)}">${gbp(d.total_gbp)}</div><div class="xs m">Alpaca ${usd(d.total_usd,0)}</div></div>
+      <div class="kpi"><div class="xs m">战绩</div><div class="big">${d.w||0} 胜 / ${d.l||0} 负</div></div>
     </div>`;
   const pos=d.positions||[], ord=d.orders||[];
   let po="";
@@ -113,33 +117,67 @@ function render(){
     return `<div style="padding:10px 0;border-bottom:1px solid var(--line)"><div><b class="mono">${E(r.id)}</b> ${E(r.sym)} <span class="xs m">${E(r.last)}</span></div><div>${stages}</div>${rj}</div>`}).join(""):`<div class="sm m">这一栏暂时没有编号</div>`;
   const rr=d.rej_today||[], mx=Math.max(1,...rr.map(x=>x[1]));
   document.getElementById("rej").innerHTML=(rr.length?rr.map(x=>`<div style="margin:8px 0"><div class="sm">${E(x[0])} <b>${x[1]}</b></div><span class="bar" style="width:${Math.round(x[1]/mx*100)}%"></span></div>`).join(""):`<div class="sm m">今日暂无否决</div>`)+`<div class="sm m">今日关卡：通过 ${d.pass_n||0} · 否决 ${d.rej_n||0}</div>`;
-  document.getElementById("log").innerHTML=(d.log||[]).map(r=>`<div style="padding:8px 0;border-bottom:1px solid var(--line)"><div class="xs m">${E(r.t)} · ${E(r.who)} · ${E(r.sym)} · ${E(r.gate)} <span class="st ${vcls(r.v)}">${E(r.v)}</span></div><div class="sm wr">${E(r.txt)}</div></div>`).join("");
+  document.getElementById("log").innerHTML=(d.log||[]).map(r=>`<div style="padding:8px 0;border-bottom:1px solid var(--line)"><div class="xs m">${E(r.t)} · ${E(r.who)} · ${E(r.sym)} · ${E(r.gate)} <span class="st ${vcls(r.v)}">${E(r.v)}</span></div><div class="sm wr">${E(r.txt)}</div></div>`).join("") || `<div class="sm m">暂无日志</div>`;
   const m=d.meme;
   document.getElementById("meme").innerHTML=m?`<div class="sm m">第 ${m.cycle} 轮 · ${E(m.gen)} GMT</div>
     <div class="row"><div class="kpi"><b>A 严格</b><div class="big" style="font-size:22px">${usd(m.A.equity,0)}</div><div class="sm ${cl(m.A.realized)}">${usd(m.A.realized)} · ${m.A.wins}胜/${m.A.losses}负 · 平仓 ${m.A.closed}</div></div>
     <div class="kpi"><b>B 含骗局币</b><div class="big" style="font-size:22px">${usd(m.B.equity,0)}</div><div class="sm ${cl(m.B.realized)}">${usd(m.B.realized)} · ${m.B.wins}胜/${m.B.losses}负 · 平仓 ${m.B.closed}</div></div></div>`:"<div class='sm m'>暂无</div>";
 }
 
-async function load(){
-  const urls=["data.json?t="+Date.now(),"https://raw.githubusercontent.com/R1each/desk-board/main/data.json?t="+Date.now()];
-  let env=null, lastErr="拉取数据失败";
-  for (const u of urls){
-    try{
-      const r=await fetch(u,{cache:"no-store"});
-      if(!r.ok) { lastErr="拉取数据失败 "+r.status; continue; }
-      const j=await r.json();
-      if(!j||j.alg==="AES-GCM"||!j.asof){ lastErr="数据还是旧格式，改走备用地址"; continue; }
-      env=j; break;
-    }catch(e){ lastErr="拉取数据失败"; }
-  }
-  if(!env) throw new Error(lastErr);
-  D=env;
-  lastOk=Date.now();
-  render();
+async function getJson(url, ms){
+  const c=new AbortController();
+  const t=setTimeout(()=>c.abort(), ms);
+  try{
+    const r=await fetch(url,{cache:"no-store",mode:"cors",signal:c.signal});
+    if(!r.ok) throw new Error("status "+r.status);
+    const j=await r.json();
+    if(!okData(j)) throw new Error("bad format");
+    return j;
+  } finally { clearTimeout(t); }
 }
+
+function dataUrls(){
+  const t=Date.now();
+  // Prefer hosts that usually answer quickly. Keep same-origin last: raw.githack
+  // can hang on data.json and used to stall the whole load() with no timeout.
+  return [
+    "https://raw.githubusercontent.com/R1each/desk-board/main/data.json?t="+t,
+    "https://cdn.jsdelivr.net/gh/R1each/desk-board@main/data.json?t="+t,
+    "https://rawcdn.githack.com/R1each/desk-board/main/data.json?t="+t,
+    "data.json?t="+t
+  ];
+}
+
+async function load(){
+  let lastErr="拉取数据失败";
+  for (const u of dataUrls()){
+    try{
+      const j=await getJson(u, 4000);
+      D=j; live=true; lastOk=Date.now();
+      render();
+      return;
+    }catch(e){ lastErr=(e&&e.name==="AbortError")?"超时":(e&&e.message)||"拉取数据失败"; }
+  }
+  throw new Error(lastErr);
+}
+
+function showSnap(){
+  try{
+    const el=document.getElementById("snap");
+    const j=JSON.parse(el.textContent);
+    if(!okData(j)) throw new Error("snap");
+    D=j; live=false; render();
+    return true;
+  }catch(e){ return false; }
+}
+
 document.addEventListener("click",ev=>{const t=ev.target.dataset&&ev.target.dataset.t;if(t){tab=t;render()}});
+showSnap();
 (async()=>{
-  try{await load()}catch(e){document.getElementById("meta").innerHTML='<div class="r">暂时拉不到数据，稍后自动重试。</div>'}
+  try{await load()}catch(e){
+    if(!D) document.getElementById("meta").innerHTML='<div class="r">暂时拉不到数据，稍后自动重试。</div>';
+    else { live=false; render(); }
+  }
   setInterval(async()=>{try{await load()}catch(e){}},45000);
 })();
 </script>

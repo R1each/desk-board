@@ -204,22 +204,53 @@ async function getJson(url, ms){
 function dataUrls(){
   const t=Date.now();
   return [
+    "https://jsonstorage.com/fFQXPk3yYOC9Z9?t="+t,
+    "https://raw.githubusercontent.com/R1each/desk-board/data/data.json?t="+t,
     "https://raw.githubusercontent.com/R1each/desk-board/main/data.json?t="+t,
     "https://cdn.jsdelivr.net/gh/R1each/desk-board@main/data.json?t="+t,
     "https://rawcdn.githack.com/R1each/desk-board/main/data.json?t="+t,
     "data.json?t="+t
   ];
 }
+let lastSha="", lastShaAt=0;
+async function latestSha(){
+  const now=Date.now();
+  if(lastSha && now-lastShaAt<60000) return lastSha;
+  const c=new AbortController();
+  const t=setTimeout(()=>c.abort(), 4000);
+  try{
+    const r=await fetch("https://api.github.com/repos/R1each/desk-board/commits/data?per_page=1",{cache:"no-store",mode:"cors",signal:c.signal,headers:{Accept:"application/vnd.github+json"}});
+    if(!r.ok) throw new Error("sha "+r.status);
+    const j=await r.json();
+    const sha=j && j.sha;
+    if(!sha) throw new Error("no sha");
+    lastSha=sha; lastShaAt=now;
+    return sha;
+  } finally { clearTimeout(t); }
+}
+function applyData(j){
+  if(!okData(j)) return false;
+  if(D){
+    const a=parseAsOf(D.asof), b=parseAsOf(j.asof);
+    if(a && b && b<a) return false;
+    ["spark","ais","queue","handoffs","trades"].forEach(k=>{
+      if(Array.isArray(D[k])&&!Array.isArray(j[k])) j[k]=D[k];
+    });
+  }
+  D=j; live=true; render(); return true;
+}
 async function load(){
+  const t=Date.now();
+  try{
+    if(applyData(await getJson("https://jsonstorage.com/fFQXPk3yYOC9Z9?t="+t, 4000))) return;
+  }catch(e){}
+  try{
+    const sha=await latestSha();
+    if(applyData(await getJson("https://raw.githubusercontent.com/R1each/desk-board/"+sha+"/data.json", 4000))) return;
+  }catch(e){}
   for (const u of dataUrls()){
     try{
-      const j=await getJson(u, 4000);
-      if(D){
-        ["spark","ais","queue","handoffs","trades"].forEach(k=>{
-          if(Array.isArray(D[k])&&!Array.isArray(j[k])) j[k]=D[k];
-        });
-      }
-      D=j; live=true; render(); return;
+      if(applyData(await getJson(u, 4000))) return;
     }catch(e){}
   }
   throw new Error("fetch failed");
@@ -232,7 +263,7 @@ showSnap();
 setInterval(clockTick,1000);
 (async()=>{
   try{await load()}catch(e){ if(!D) document.getElementById("mkt").textContent="NO DATA"; else { live=false; render(); } }
-  setInterval(async()=>{try{await load()}catch(e){}},45000);
+  setInterval(async()=>{try{await load()}catch(e){}},20000);
 })();
 </script>
 </body>

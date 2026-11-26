@@ -4,124 +4,266 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>交易台监控 · 模拟盘</title>
+<meta name="theme-color" content="#050605">
+<title>GROK DESK TERMINAL · PAPER</title>
 <style>
-:root{--bg:#f4f5f7;--card:#fff;--line:#e3e6eb;--tx:#1b1f26;--mut:#667085;--g:#0f7b4c;--r:#c42929;--a:#9a6700;--b:#1a5fb4;--okbg:#e8f6ee;--rbg:#fdecec;--abg:#fff6e0}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 -apple-system,"PingFang SC","Noto Sans SC",sans-serif}
-.wrap{max-width:640px;margin:0 auto;padding:14px 14px 40px}
-h1{font-size:20px;margin:0 0 4px}h2{font-size:13px;color:var(--mut);margin:0 0 8px;font-weight:650;letter-spacing:.04em;text-transform:none}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:0 0 10px}
-.big{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
-.row{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}
-.g{color:var(--g)}.r{color:var(--r)}.a{color:var(--a)}.m{color:var(--mut)}
-.pill{display:inline-block;padding:2px 8px;border-radius:99px;font-size:12px;border:1px solid var(--line);background:#fff}
-.pill.g{background:var(--okbg);border-color:#b7e0c8;color:var(--g)}
-.pill.r{background:var(--rbg);border-color:#f5c2c2;color:var(--r)}
-.pill.a{background:var(--abg);border-color:#ead7a0;color:var(--a)}
-.al{padding:12px;border-radius:12px;margin:0 0 10px;border:1px solid var(--line)}.al.red{background:var(--rbg);border-color:#f5c2c2}.al.amber{background:var(--abg);border-color:#ead7a0}.al.ok{background:var(--okbg);border-color:#b7e0c8}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-@media(max-width:420px){.grid2{grid-template-columns:1fr}}
-.st{display:inline-block;min-width:22px;text-align:center;border-radius:6px;padding:1px 6px;font-size:12px;margin:0 4px 4px 0;background:#eef0f3;color:var(--mut)}
-.st.p{background:var(--okbg);color:var(--g)}.st.x{background:var(--rbg);color:var(--r)}.st.o{background:var(--abg);color:var(--a)}
-.tabs span{display:inline-block;margin:0 10px 8px 0;color:var(--mut);padding-bottom:2px}
-.tabs span.on{color:var(--tx);border-bottom:2px solid var(--tx);font-weight:650}
-.sm{font-size:13px}.xs{font-size:12px}.mono{font-variant-numeric:tabular-nums}
-.wr{overflow-wrap:anywhere;word-break:break-word}
-input,button{font:inherit}input[type=password],input[type=text]{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;margin:8px 0}
-button{background:#1b1f26;color:#fff;border:0;border-radius:10px;padding:12px 16px;width:100%;font-weight:650}
-button.sec{background:#fff;color:var(--tx);border:1px solid var(--line);margin-top:8px}
-.bar{height:10px;border-radius:5px;background:var(--b);display:block}
-.kpi{flex:1 1 140px;min-width:0;padding:8px 0}
-hr{border:0;border-top:1px solid var(--line);margin:10px 0}
-.asof{font-size:18px;font-weight:700;margin:2px 0 8px}
+:root{--bg:#050605;--fg:#9aff9a;--hi:#d8ffd8;--dim:#3f6a3f;--mut:#6e8f6e;--amb:#ffcc33;--red:#ff5a5a;--cyan:#7ee7ff;--line:#123412;--pane:#081108}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--fg);font:12px/1.4 ui-monospace,"SF Mono","Cascadia Mono","JetBrains Mono","Noto Sans Mono CJK SC","Sarasa Mono SC","Noto Sans SC",Menlo,Consolas,monospace}
+body{min-height:100dvh}
+.scan{position:fixed;inset:0;pointer-events:none;z-index:40;background:repeating-linear-gradient(180deg,transparent 0 2px,rgba(0,255,80,.035) 3px);mix-blend-mode:screen;animation:scan 9s linear infinite}
+@keyframes scan{0%{transform:translateY(0)}100%{transform:translateY(3px)}}
+@keyframes blink{50%{opacity:0}}
+.cur{display:inline-block;width:.6ch;background:var(--fg);margin-left:2px;animation:blink 1s step-end infinite;vertical-align:text-bottom;height:1em}
+.wrap{max-width:390px;margin:0 auto;padding:0 0 28px;position:relative;z-index:1}
+.top{position:sticky;top:0;z-index:5;background:linear-gradient(#0a140a,var(--bg) 90%);border-bottom:1px solid var(--line);padding:8px 10px 7px}
+.brand{color:var(--hi);font-weight:700;letter-spacing:.04em;font-size:12px;text-transform:uppercase}
+.brand .dot{color:var(--fg)}
+.brand .live{color:var(--fg)}
+.meta{color:var(--cyan);font-size:10px;margin-top:3px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.meta .age{color:var(--mut)}
+.mkt{color:var(--amb);font-size:10px;margin-top:2px}
+.sec{border-top:1px dashed var(--line);margin:0;padding:8px 10px 6px}
+.lab{color:var(--dim);font-size:10px;letter-spacing:.12em;margin:0 0 6px;text-transform:uppercase}
+.lab:before{content:"// ";color:var(--dim)}
+.grid3{display:grid;grid-template-columns:1fr 1fr;gap:8px 10px}
+.kpi .k{color:var(--mut);font-size:10px}
+.kpi .v{font-size:20px;font-weight:700;letter-spacing:-.03em;color:var(--hi);line-height:1.15}
+.kpi .s{font-size:11px}
+.tot{margin-top:8px;display:flex;justify-content:space-between;align-items:flex-end;gap:8px;border:1px solid var(--line);background:var(--pane);padding:7px 8px}
+.tot .v{font-size:22px;font-weight:700;color:var(--hi)}
+.spark{display:block;width:100%;height:36px;margin-top:7px}
+.proc{width:100%;border-collapse:collapse}
+.proc td{padding:3px 0;vertical-align:top;border-bottom:1px dotted var(--line);font-size:11px}
+.proc .nm{color:var(--hi);white-space:nowrap;padding-right:6px}
+.proc .st{width:1.2em;padding-right:4px}
+.proc .ag{color:var(--mut);white-space:nowrap;padding-left:6px}
+.proc .tx{color:var(--mut);font-size:10px}
+.dot{display:inline-block}
+.dot.on{color:var(--fg)}
+.dot.id{color:var(--amb)}
+.dot.off{color:var(--red)}
+.g{color:var(--fg)}.a{color:var(--amb)}.r{color:var(--red)}.m{color:var(--mut)}.c{color:var(--cyan)}.hi{color:var(--hi)}
+.tabs{display:flex;flex-wrap:wrap;gap:0 10px;margin:0 0 6px;color:var(--dim);font-size:11px}
+.tabs span{cursor:pointer}
+.tabs span.on{color:var(--hi);border-bottom:1px solid var(--fg)}
+.rowp{padding:4px 0;border-bottom:1px dotted var(--line);font-size:11px}
+.stg{margin:2px 0}
+.barline{display:flex;align-items:center;gap:6px;margin:3px 0;font-size:11px}
+.barline .n{flex:0 0 9.5em;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.barline .b{flex:1;color:var(--amb);letter-spacing:-.08em;white-space:nowrap;overflow:hidden}
+.barline .c{color:var(--hi)}
+table.pos{width:100%;border-collapse:collapse;font-size:11px}
+table.pos th{color:var(--dim);font-weight:400;text-align:left;padding:2px 4px 2px 0}
+table.pos td{padding:2px 4px 2px 0;border-top:1px dotted var(--line)}
+.log{max-height:260px;overflow:auto;scrollbar-width:thin}
+.log .e{padding:4px 0;border-bottom:1px dotted var(--line);font-size:11px}
+.log .h{color:var(--mut);font-size:10px}
+.foot{padding:10px 10px 0;color:var(--dim);font-size:10px}
+.al{border:1px solid var(--amb);color:var(--amb);padding:6px 8px;margin:0 10px 6px;font-size:11px}
+.al.red{border-color:var(--red);color:var(--red)}
+.al.ok{border-color:var(--line);color:var(--mut)}
 </style>
 </head>
 <body>
-<div class="wrap" id="app">
-  <h1>交易台监控 <span class="pill a">模拟盘</span></h1>
-  <div id="main">
-    <div id="meta"></div>
-    <div id="alerts"></div>
-    <div class="card" id="acct"></div>
-    <div id="posord"></div>
-    <h2>五个 bot</h2>
-    <div class="grid2" id="bots"></div>
-    <div class="card">
-      <h2>流水线看板</h2>
-      <div class="tabs" id="btabs"></div>
-      <div id="board"></div>
-    </div>
-    <div class="card">
-      <h2>今日被拒最多的规则</h2>
-      <div id="rej"></div>
-    </div>
-    <div class="card">
-      <h2>最近 15 条日志</h2>
-      <div id="log"></div>
-    </div>
-    <details class="card">
-      <summary><h2 style="display:inline">链上小币模拟盘</h2></summary>
-      <div id="meme" style="margin-top:10px"></div>
-    </details>
-    <p class="xs m">全部为模拟盘，实盘不动。页面每 45 秒刷新一次。数字已去掉密钥和账户号。</p>
+<div class="scan"></div>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">GROK DESK TERMINAL <span class="dot">·</span> PAPER <span class="dot">·</span> <span class="live" id="live">LIVE</span><span class="cur"></span></div>
+    <div class="meta"><span id="clock">--:--:-- LONDON</span><span class="age" id="upd">UPD --</span></div>
+    <div class="mkt" id="mkt"></div>
   </div>
+  <div id="alerts"></div>
+  <div class="sec">
+    <div class="lab">EQUITY / P&L</div>
+    <div class="grid3" id="tick"></div>
+    <div class="tot" id="tot"></div>
+    <svg class="spark" id="spark" viewBox="0 0 370 36" preserveAspectRatio="none" aria-hidden="true"></svg>
+  </div>
+  <div class="sec">
+    <div class="lab">PROCESSES</div>
+    <table class="proc" id="proc"></table>
+  </div>
+  <div class="sec">
+    <div class="lab">PIPELINE</div>
+    <div class="tabs" id="btabs"></div>
+    <div id="board"></div>
+  </div>
+  <div class="sec">
+    <div class="lab">REJECT RULES</div>
+    <div id="rej"></div>
+  </div>
+  <div class="sec">
+    <div class="lab">POSITIONS / ORDERS</div>
+    <div id="posord"></div>
+  </div>
+  <div class="sec">
+    <div class="lab">LIVE LOG</div>
+    <div class="log" id="log"></div>
+  </div>
+  <div class="foot">PAPER DESK ONLY. REFRESH 45s. SECRETS STRIPPED.<span class="cur"></span></div>
 </div>
 <script>
-const SNAP={"asof":"2026-11-26 16:36:50","tz":"Europe/London","market":"\u7f8e\u80a1\u4f11\u5e02 \u00b7 \u4e0b\u6b21\u5f00\u76d8 2026-11-27 09:30\uff08\u7f8e\u4e1c\uff09","alerts":[],"equity_usd":100136.22,"day_usd":0.0,"total_usd":136.22,"stocks_bal":961.11,"stocks_pnl":-38.89,"stocks_today":0,"crypto_bal":1136.48,"crypto_pnl":136.48,"crypto_today":0,"today_gbp":0,"total_gbp":97.59,"w":3,"l":4,"positions":[],"orders":[],"has_positions":false,"has_orders":false,"bots":[{"name":"\u4fa6\u5bdf\u5175","t":"11-26 16:21","age":15,"age_label":"15 \u5206\u949f\u524d","stalled":false,"sym":"SOL/USD","gate":"\u7b2c1\u5173","v":"\u901a\u8fc7","txt":"\u901a\u8fc7\uff08\u53ea\u8bb0\u8d26\u5230 crypto-paper.csv \u6a21\u62df\u76d8\uff0c\u4e0d\u8d70 IBKR\uff0c\u672c\u884c\u4e0d\u4e0b\u5355\u3001\u4e0d\u53d1\u9001\uff09\u3002SOL/USD \u73b0\u8d27\u7a7a\u3002Nova 16:13 Europe/L\u2026","n_today":22},{"name":"\u770b\u56fe\u5458","t":"11-26 16:22","age":14,"age_label":"14 \u5206\u949f\u524d","stalled":false,"sym":"SOL/USD","gate":"\u7b2c2\u5173","v":"\u5426\u51b3","txt":"t1 54.64\u4e0d\u662f\u56fe\u4e0a\u7ed3\u6784\uff1a\u4e00\u5e74\u5185\u6700\u4f4e60.18(2026-06-06)\uff0ct1\u5728\u5176\u4e0b9%\u3002\u53ef\u89c1\u652f\u649164.83(11/21\u4f4e)\u300165.67(11/25\u4f4e)\u30016\u2026","n_today":1},{"name":"\u519b\u5e08","t":"11-25 22:35","age":1081,"age_label":"18 \u5c0f\u65f6 1 \u5206\u524d","stalled":false,"sym":"MSLZ6/SOL","gate":"\u7b2c3\u5173","v":"\u901a\u8fc7\uff08\u91cd\u5ba1\uff09","txt":"\u91cd\u5ba1\uff0c\u8986\u76d6\u7b2c543\u884c\u3002\u4f9d\u636e\u89c4\u5219\uff1ahandoff-spec \u7b2c472\u2013486\u884c\uff08\u98ce\u63a711/25 20:35/20:45\u5b9a\u7a3f\uff0c\u989d\u5ea6\u7531\u98ce\u63a7\u6309\u5355\u88c1\u5b9a\uff0c\u5f15Ryan 20\u2026","n_today":0},{"name":"\u98ce\u63a7","t":"11-25 22:35","age":1081,"age_label":"18 \u5c0f\u65f6 1 \u5206\u524d","stalled":false,"sym":"MSLZ6","gate":"\u7b2c4\u5173","v":"\u901a\u8fc7","txt":"\u7a7a1\u624bCME Micro SOL 12\u6708\uff0c\u53ea\u505aIBKR\u6a21\u62df\u76d8[acct]\u3002\u6309handoff-spec\u7b2c472\u2013486\u884c\uff0c1\u624b\u4e0d\u53ef\u62c6\uff0c\u5355\u7b14\u4f8b\u5916\u2264\u00a365\u3002\u5165\u573a\u9650\u4ef7\u2026","n_today":0},{"name":"\u6267\u884c\u5458","t":"11-26 00:27","age":969,"age_label":"16 \u5c0f\u65f6 9 \u5206\u524d","stalled":false,"sym":"METX6\uff08MET Nov27'2\u2026","gate":"\u7b2c5\u5173","v":"\u5426\u51b3","txt":"\u9884\u89c8\uff08\u4e0d\u662f\u6210\u4ea4\uff09\uff1aIBKR Client Portal \u6a21\u62df\u76d8 [acct]\uff0c2026-11-26 \u7ea600:27 UK\uff0cMET Nov27'26\uff08CME\uff0c1\u70b9\u2026","n_today":3}],"board":[{"id":"20261126-15","sym":"SOL/USD","last":"11-26 16:22","at":2,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u901a\u8fc7","2":"\u5426\u51b3"},"reject":{"stage":2,"rule":"\u76c8\u4e8f\u6bd4 rr \u4e0d\u8db3","why":"t1 54.64\u4e0d\u662f\u56fe\u4e0a\u7ed3\u6784\uff1a\u4e00\u5e74\u5185\u6700\u4f4e60.18(2026-06-06)\uff0ct1\u5728\u5176\u4e0b9%\u3002\u53ef\u89c1\u652f\u649164.83(11/21\u4f4e)\u300165.67(11/25\u4f4e)\u300160.18\u3002\u6309\u5165\u573a70\u2026"}},{"id":"20261126-02","sym":"ETHA","last":"11-26 04:39","at":1,"status":"\u8fdb\u884c\u4e2d","stages":{"1":"\u901a\u8fc7"},"reject":null},{"id":"20261126-03","sym":"BSOL","last":"11-26 04:39","at":1,"status":"\u8fdb\u884c\u4e2d","stages":{"1":"\u901a\u8fc7"},"reject":null},{"id":"20261126-10","sym":"IBIT","last":"11-26 04:39","at":1,"status":"\u8fdb\u884c\u4e2d","stages":{"1":"\u901a\u8fc7"},"reject":null},{"id":"20261126-11","sym":"FBTC","last":"11-26 04:39","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u540c\u5e01\u79cd/\u540c\u7ec4\u9650\u5236","why":"\u5426\u51b3\uff1a\u540c\u5e01\u79cd\uff08BTC\uff09\u53ea\u9009\u4e00\u53ea\uff0c\u9996\u9009 IBKR 20 \u65e5\u5747\u6210\u4ea4\u989d\u6700\u9ad8\u7684 IBIT\uff08$1,856.94M\uff09\uff0c\u672c\u884c\u4e0d\u4ea4\u5355\u3002FBTC \u672c\u8eab\u6d41\u52a8\u6027\u8fc7\u5173\uff1aIBKR 2026-11-25 \u6536\u2026"}},{"id":"20261126-12","sym":"BITB","last":"11-26 04:39","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u540c\u5e01\u79cd/\u540c\u7ec4\u9650\u5236","why":"\u5426\u51b3\uff1a\u540c\u5e01\u79cd\uff08BTC\uff09\u53ea\u9009\u4e00\u53ea\uff0c\u9996\u9009 IBIT\uff08ADV \u66f4\u9ad8\uff09\uff0c\u672c\u884c\u4e0d\u4ea4\u5355\u3002BITB \u672c\u8eab\u6d41\u52a8\u6027\u8fc7\u5173\uff1aIBKR 2026-11-25 \u6536 32.65\uff0c20 \u65e5\u5747\u6210\u4ea4\u989d $45.9\u2026"}},{"id":"20261126-13","sym":"ARKB","last":"11-26 04:39","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u540c\u5e01\u79cd/\u540c\u7ec4\u9650\u5236","why":"\u5426\u51b3\uff1a\u540c\u5e01\u79cd\uff08BTC\uff09\u53ea\u9009\u4e00\u53ea\uff0c\u9996\u9009 IBIT\uff08ADV \u66f4\u9ad8\uff09\uff0c\u672c\u884c\u4e0d\u4ea4\u5355\u3002ARKB \u672c\u8eab\u6d41\u52a8\u6027\u8fc7\u5173\uff1aIBKR 2026-11-25 \u6536 19.95\uff0c20 \u65e5\u5747\u6210\u4ea4\u989d $50.4\u2026"}},{"id":"20261126-14","sym":"GBTC","last":"11-26 04:39","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u540c\u5e01\u79cd/\u540c\u7ec4\u9650\u5236","why":"\u5426\u51b3\uff1a\u540c\u5e01\u79cd\uff08BTC\uff09\u53ea\u9009\u4e00\u53ea\uff0c\u9996\u9009 IBIT\uff08ADV \u66f4\u9ad8\uff09\uff0c\u672c\u884c\u4e0d\u4ea4\u5355\u3002GBTC \u672c\u8eab\u6d41\u52a8\u6027\u8fc7\u5173\uff1aIBKR 2026-11-25 \u6536 46.41\uff0c20 \u65e5\u5747\u6210\u4ea4\u989d $80.0\u2026"}},{"id":"20261126-04","sym":"ETHD","last":"11-26 00:43","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u6760\u6746/\u53cd\u5411 ETF","why":"\u5426\u51b3 ETHD \u591a\uff08\u22122x \u53cd\u5411\u4ee5\u592a ETF\uff09\u3002\u89c4\u683c\u7b2c493\u884c\uff1a\u6760\u6746/\u53cd\u5411 ETF \u53ea\u505a\u591a\u3001\u6301\u6709\u22642\u4e2a\u4ea4\u6613\u65e5\u3001\u6b62\u635f\u8ddd\u79bb\u22651\u00d7ETF ATR14\u3002\u8d8b\u52bf\u6761\u4ef6\u6ee1\u8db3\uff08ETH 4h \u6536 1\u2026"}},{"id":"20261126-05","sym":"SETH","last":"11-26 00:43","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u6760\u6746/\u53cd\u5411 ETF","why":"\u5426\u51b3 SETH \u591a\uff08\u22121x \u53cd\u5411\u4ee5\u592a ETF\uff09\u3002\u89c4\u683c\u7b2c493\u884c\u53ea\u505a\u591a\u3001\u6301\u6709\u22642\u65e5\u3001\u6b62\u635f\u22651\u00d7ATR14\u3002\u8d8b\u52bf\u6761\u4ef6\u6ee1\u8db3\uff08ETH 4h \u4f4e\u4e8e EMA200\uff09\u3002Alpaca trada\u2026"}},{"id":"20261126-06","sym":"FSOL","last":"11-26 00:43","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u4e0d\u53ef\u501f/ETB","why":"\u5426\u51b3 FSOL \u7a7a\uff08Fidelity Solana Fund\uff0c1 \u500d\uff09\u3002\u8d8b\u52bf\u6761\u4ef6\u6ee1\u8db3\uff08SOL 4h \u4f4e\u4e8e EMA200\uff09\u3002Alpaca shortable \u4e14 ETB\u3002\u70b9\u5dee Al\u2026"}},{"id":"20261126-07","sym":"GSOL","last":"11-26 00:43","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u4e0d\u53ef\u501f/ETB","why":"\u5426\u51b3 GSOL \u7a7a\uff08Grayscale Solana Staking ETF\uff0c1 \u500d\uff09\u3002\u8d8b\u52bf\u6761\u4ef6\u6ee1\u8db3\u3002Alpaca 2026-11-26 00:35 Europe/London\uff1a\u2026"}},{"id":"20261126-08","sym":"SOEZ","last":"11-26 00:43","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u4e0d\u53ef\u501f/ETB","why":"\u5426\u51b3 SOEZ \u7a7a\uff08Franklin Solana ETF\uff0c1 \u500d\uff09\u3002\u8d8b\u52bf\u6761\u4ef6\u6ee1\u8db3\u3002Alpaca shortable \u4e14 ETB\u3002 \u6d41\u52a8\u6027\uff1aIBKR 20\u65e5\u5747\u6210\u4ea4\u989d $0.18M\u2026"}},{"id":"20261126-09","sym":"SLOP,SLO","last":"11-26 00:43","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u6743\u9650/\u5730\u533a\u9650\u5236","why":"\u5426\u51b3 SOL \u53cd\u5411/\u505a\u7a7a ETF \u591a\u8def\u5f84\u3002Alpaca \u67e5\u65e0 SLOP\u3001SLO\uff08404 asset not found\uff09\uff1bIBKR search_contracts \u65e0 US \u4e0a\u2026"}},{"id":"20261126-01-METZ6","sym":"METZ6","last":"11-26 00:31","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u6743\u9650/\u5730\u533a\u9650\u5236","why":"\u5426\u51b3\u4fe1\u53f7 20261126-01 \u7684 METZ6 \u8def\u5f84\u3002\u6267\u884c\u5458 2026-11-26 00:27 Europe/London \u62a5\u544a\uff1aIBKR Client Portal \u6a21\u62df\u76d8 \u2026"}},{"id":"20261125-29","sym":"MSLZ6","last":"11-26 00:30","at":5,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3","2":"\u901a\u8fc7","3":"\u901a\u8fc7\uff08\u91cd\u5ba1\uff09","4":"\u901a\u8fc7","5":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u6743\u9650/\u5730\u533a\u9650\u5236","why":"\u5426\u51b3\u3002\u6267\u884c\u5458 2026-11-26 00:27 Europe/London \u62a5\u544a\uff1aIBKR Client Portal \u6a21\u62df\u76d8 [acct]\uff0cMSLZ6 \u4e0b\u5355\u7968\u663e\u793a\u300cRestri\u2026"}},{"id":"20261124-ANT-X1","sym":"ANT","last":"11-26 00:26","at":5,"status":"\u5df2\u6267\u884c/\u5b8c\u6210","stages":{"5":"\u5e73\u4ed3","4":"\u901a\u8fc7","3":"\u4e8b\u540e\u590d\u6838\uff1a\u672c\u5173\u4f1a\u5426\u2026","2":"\u4e8b\u540e\u590d\u6838\uff1a\u672c\u5173\u4f1a\u5426\u2026"},"reject":null},{"id":"20261124-31","sym":"SOL/USD","last":"11-26 00:26","at":5,"status":"\u5df2\u6267\u884c/\u5b8c\u6210","stages":{"1":"\u901a\u8fc7","2":"\u901a\u8fc7","3":"\u901a\u8fc7","5":"\u5e73\u4ed3","4":"\u901a\u8fc7"},"reject":null},{"id":"20261125-22","sym":"MRK","last":"11-25 22:35","at":3,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u901a\u8fc7","2":"\u901a\u8fc7","3":"\u5426\u51b3"},"reject":{"stage":3,"rule":"SPY \u5927\u6da8\u7981\u7a7a","why":"\u7a7a\uff0cdiscretionary_short\u3002\u5426\u51b3\u7406\u7531\uff1a\u2460\u6263\u8d39rr_net 1.51\u4ec5\u64e6\u7ebf\uff0c\u4e14t1 131.36\u6b63\u662f11/24\u5927\u9633\u7ebf\uff08+4.5%\uff0c\u91cf1467\u4e07\uff09\u7684\u53cd\u8f6c\u8d77\u70b9\uff0c\u76ee\u6807\u4f4d\u652f\u2026"}},{"id":"20261125-28","sym":"BSOL,FSOL,GSOL,\u2026","last":"11-25 20:32","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u540c\u5e01\u79cd/\u540c\u7ec4\u9650\u5236","why":"\u5426\u51b3\u73b0\u8d27 SOL ETF \u7a7a\u5355\u8def\u5f84\uff08BSOL/FSOL/GSOL/SOEZ\uff09\u3002\u4e0d\u4ea4\u770b\u56fe\u5458\u3002\u672c\u884c\u662f 20261125-27 \u4e4b\u540e\u5bf9\u53ef\u4ea4\u6613\u73b0\u8d27 SOL ETF \u901a\u9053\u7684\u7b2c1\u5173\u590d\u6838\uff0c\u4e0d\u662f\u2026"}},{"id":"20261125-27","sym":"SOL/USD","last":"11-25 20:26","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u540c\u5e01\u79cd/\u540c\u7ec4\u9650\u5236","why":"\u5426\u51b3\uff08\u65e0\u53ef\u6267\u884c\u7eb8\u9762\u8def\u5f84\uff09\u3002\u4e0d\u91cd\u590d Nova \u5df2\u5199\u7684 20261125-27 \u76ef\u76d8\u4fe1\u53f7\u884c\uff0c\u672c\u884c\u662f\u7b2c1\u5173\u590d\u6838\u3002\u4fe1\u53f7\u672c\u8eab\u6309\u73b0\u884c\u6807\u51c6\u52a0\u5bc6\u7a7a\u89c4\u5219\uff08\u4e0d\u662f crypto_discretiona\u2026"}},{"id":"20261125-23","sym":"ROST","last":"11-25 19:15","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u4e0d\u53ef\u501f/ETB","why":"\u5426\u51b3 ROST \u53cd\u5f39\u5931\u8d25\u7a7a\uff08trial B \u590d\u8bc4\uff09\u3002IBKR SMART \u5b9e\u65f6\uff08top-status=REALTIME\uff092026-11-25 19:11:56 Europe/Lo\u2026"}},{"id":"20261125-24","sym":"NBIS,SNDK,BE,CR\u2026","last":"11-25 19:15","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u6760\u6746/\u53cd\u5411 ETF","why":"\u5426\u51b3\u65b0\u7a7a\u540d\u5355 NBIS/SNDK/BE/CRWV/ORCL/INTC/IREN/NVDA/MRVL/TSM\uff08trial B discretionary_short\uff09\u3002IBKR S\u2026"}},{"id":"20261125-25","sym":"HPQ","last":"11-25 19:15","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u4e0d\u53ef\u501f/ETB","why":"\u5426\u51b3 HPQ \u591a\u7a7a\uff08\u666e\u901a\u89c4\u5219 rr\u22652.2\u3001\u00a320\uff1b\u7a7a\u5355\u6570\u5b57\u867d\u4e5f\u6ee1\u8db3 trial B\uff0c\u4f46\u5f62\u6001\u4e0d\u6210\u7acb\uff09\u3002IBKR SMART \u5b9e\u65f6 19:12:16 Europe/London\uff1a\u6210\u2026"}},{"id":"20261125-26","sym":"AMD,MU,LRCX","last":"11-25 19:15","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u4e0d\u53ef\u501f/ETB","why":"\u590d\u8bc4 LRCX/MU/AMD\uff08trial B\uff09\u3002IBKR SMART \u5b9e\u65f6 19:12:14\u201319:12:15 Europe/London\u3002SPY \u8dcc 0.18%\uff0cP6 \u672a\u89e6\u53d1\u3002\u2026"}},{"id":"20261125-11","sym":"RYCEY","last":"11-25 15:05","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u4e0d\u53ef\u501f/ETB","why":"\u5426\u51b3\uff08trial B discretionary_short\uff09\u3002\u89c4\u683c\u5df2\u5199\u5165\uff1arr\u22651.5\u3001\u5355\u7b14\u00a310\u3001thesis\u226520\u5b57\u3001\u5238\u5546GTC\u6b62\u635f\u3001\u53ea\u9650\u7f8e\u80a1\u6b63\u80a1\u3001\u987b\u53ef\u501f\u4e14ETB\u3002RYCE\u2026"}},{"id":"20261125-12","sym":"RR.L","last":"11-25 15:05","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u6b62\u635f\u4e0d\u8db3 1\u00d7ATR","why":"\u5426\u51b3\u3002RR.L \u4e3a\u4f26\u6566\u6b63\u80a1\u3002\u89c4\u683c\u82f1\u80a1\u4ecd\u662f\u53ea\u89c2\u5bdf\u3001\u4e0d\u4ea4\u5355\uff08handoff-spec \u82f1\u80a1 LSE\uff1auk_enabled=false\uff0creview.uk_observe_only\uff1b\u91cd\u2026"}},{"id":"20261125-14","sym":"GDX","last":"11-25 15:05","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u4e0d\u53ef\u501f/ETB","why":"\u5426\u51b3 GDX \u6b63\u80a1\u7a7a\u300215:01 \u82f1\u56fd\u65f6\u95f4 Alpaca IEX 68.92\uff08bid/ask 68.90/68.93\uff09\uff0c\u8f83 11/24 \u6536 71.37 \u8dcc 3.43%\u3002\u5165\u573a 68\u2026"}},{"id":"20261125-15","sym":"GLD,GDX","last":"11-25 15:05","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u76c8\u4e8f\u6bd4 rr \u4e0d\u8db3","why":"\u5426\u51b3 GLD/GDX \u770b\u8dcc\u501f\u65b9\u5dee\u3002options_scan 15:02 \u82f1\u56fd\u65f6\u95f4\u3001\u7f8e\u80a1\u5df2\u5f00\u76d8\uff1aGLD 1752 \u5408\u7ea6\u3001GDX 358 \u5408\u7ea6\uff0crr\u22652.0\uff08\u4ef7\u5dee\u4ecd\u6309 P2 2.0\uff0c\u2026"}},{"id":"20261125-13","sym":"GLD","last":"11-25 15:05","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u6b62\u635f\u4e0d\u8db3 1\u00d7ATR","why":"\u5426\u51b3\u9ec4\u91d1\u6b63\u80a1\u7a7a\u3002\u73b0\u8d27/\u671f\u8d27\u5df2\u8dcc\u7834 3500\uff1aGC=F yfinance 15:00 \u82f1\u56fd\u65f6\u95f4\u9644\u8fd1 3486\uff08\u4eca\u65e5\u4f4e 3481.10\uff09\uff0cCNBC \u62a5\u73b0\u8d27 3483.59\uff0c\u4e3a 202\u2026"}},{"id":"20261125-16","sym":"MU,AMD,DELL,MSTR","last":"11-25 15:05","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u540c\u5e01\u79cd/\u540c\u7ec4\u9650\u5236","why":"\u5426\u51b3\uff08\u590d\u8bc4\u4eca\u65e9 20261125-02\uff0c\u6309 trial B rr\u22651.5\u3001\u00a310\uff09\u300215:04 \u82f1\u56fd\u65f6\u95f4 Alpaca IEX\uff1aSPY \u4ecd\u7ea6 \u22122%\uff0c\u7981\u65b0\u7a7a\u672a\u89e6\u53d1\u3002MU \u6210\u4ea4 5\u2026"}},{"id":"20261125-17","sym":"SOXX","last":"11-25 15:05","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u4e0d\u53ef\u501f/ETB","why":"\u5426\u51b3 SOXX \u7834\u4f4d\u7a7a\u3002\u6838\u8fc7 Nova \u4ef7\uff1a121.81/132.95/102.42\uff0c\u7968\u9762 rr 1.74\uff0c\u6b62\u635f\u6b63\u597d 1.0\u00d7ATR14\uff0811.14\uff09\uff0ct1 \u4e0e first_st\u2026"}},{"id":"20261125-18","sym":"ROST","last":"11-25 15:05","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u4e0d\u53ef\u501f/ETB","why":"\u5426\u51b3 ROST \u53cd\u5f39\u5931\u8d25\u7a7a\u3002Nova \u5165\u573a/\u6b62\u635f 223.01/231.86\uff0ct1 \u6838\u4e3a 208.22\uff0c\u7968\u9762 rr 1.67\u3002\u6b62\u635f 231.86 \u6bd4 1\u00d7ATR14\uff088.8537\u2026"}},{"id":"20261125-19","sym":"MRK","last":"11-25 15:05","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u6743\u9650/\u5730\u533a\u9650\u5236","why":"\u5426\u51b3 MRK \u53cd\u5f39\u5931\u8d25\u7a7a\u3002Nova 139.89/144.33\uff0ct1 \u6838\u4e3a 131.36\uff0c\u7968\u9762 rr 1.92\u3002\u6b62\u635f\u8865\u5230 144.3347\uff08\u22651\u00d7ATR14=4.4447\uff09\u3002\u89e6\u53d1\u2026"}},{"id":"20261125-21","sym":"NTNX","last":"11-25 15:05","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u4e0d\u53ef\u501f/ETB","why":"\u5426\u51b3 NTNX \u6b63\u80a1\u7a7a\uff08\u4e0d\u56e0 chase \u672c\u8eab\u5426\u51b3\uff09\u300211/24 \u76d8\u540e\u8d22\u62a5\uff1a\u4e00\u5b63\u8425\u6536\u4e0e\u8c03\u6574\u540e EPS \u8d85\u9884\u671f\uff0c\u4f46\u5168\u5e74\u8425\u6536\u6307\u5f15\u4e2d\u503c\u4f4e\u4e8e\u5171\u8bc6\uff0c\u5e76\u5ba3\u5e03 CEO \u7ee7\u4efb\u5b89\u6392\uff08\u5b98\u7f51 http\u2026"}},{"id":"20261125-20","sym":"AMBA","last":"11-25 15:05","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u4e0d\u53ef\u501f/ETB","why":"\u5426\u51b3 AMBA \u6b63\u80a1\u7a7a\uff08\u4e0d\u56e0 chase \u672c\u8eab\u5426\u51b3\uff09\u300211/24 16:05 ET \u76d8\u540e\u8d22\u62a5\uff1a\u8425\u6536\u4e0e\u8c03\u6574\u540e EPS \u4f4e\u4e8e\u9884\u671f\uff0c\u56db\u5b63\u5ea6\u6307\u5f15 0.70\u20130.75 \u4ebf\u7f8e\u5143\uff0c\u8fdc\u4f4e\u4e8e\u7ea6 1\u2026"}},{"id":"20261125-01","sym":"ANT","last":"11-25 07:48","at":1,"status":"\u8fdb\u884c\u4e2d","stages":{"1":"\u76ef\u76d8"},"reject":null},{"id":"20261125-02","sym":"MU,AMD,DELL,MSTR","last":"11-25 07:48","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"SPY \u5927\u6da8\u7981\u7a7a","why":"\u5426\u51b3\uff08\u65e9\u62a5\u7b2c2\u6761\uff1a\u7a7a MU/AMD/DELL/MSTR\uff0c14:45 \u540e\u8dcc\u7834\u6628\u4f4e\uff09\u3002\u89c4\u683c\u672a\u5199\u5165\u300c\u770b\u7a7a\u5c31\u505a\u7a7a\u300d\u5168\u9762\u53d6\u6d88 rr\u22652.2\uff1b\u4e66\u9762\u53ea\u6709 discretionary_short\u2026"}},{"id":"20261125-03","sym":"DE","last":"11-25 07:48","at":1,"status":"\u8fdb\u884c\u4e2d","stages":{"1":"\u5f85\u5b9a"},"reject":null},{"id":"20261125-04","sym":"XLP,XLV,ITB","last":"11-25 07:48","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u6b62\u635f\u4e0d\u8db3 1\u00d7ATR","why":"\u5426\u51b3\uff08\u65e9\u62a5\u7b2c4\u6761\uff1a\u591a XLP/XLV/ITB\uff0c\u56de\u8e29 20 \u65e5\u5747\u7ebf\u4f01\u7a33\uff09\u3002\u4ef7\u683c\u4e3a 11/24 \u6536\u76d8\uff08Alpaca SIP\uff0c07:45 \u82f1\u56fd\u65f6\u95f4\u6838\uff0c\u7f8e\u80a1\u672a\u5f00\u76d8\uff09\u3002XLP \u6536 91.8\u2026"}}],"rej_today":[["\u6743\u9650/\u5730\u533a\u9650\u5236",5],["\u540c\u5e01\u79cd/\u540c\u7ec4\u9650\u5236",4],["\u4e0d\u53ef\u501f/ETB",3],["\u6760\u6746/\u53cd\u5411 ETF",2],["\u76c8\u4e8f\u6bd4 rr \u4e0d\u8db3",1]],"pass_n":4,"rej_n":15,"log":[{"t":"11-26 16:22","who":"\u770b\u56fe\u5458","sym":"SOL/USD","gate":"\u7b2c2\u5173","v":"\u5426\u51b3","txt":"t1 54.64\u4e0d\u662f\u56fe\u4e0a\u7ed3\u6784\uff1a\u4e00\u5e74\u5185\u6700\u4f4e60.18(2026-06-06)\uff0ct1\u5728\u5176\u4e0b9%\u3002\u53ef\u89c1\u652f\u649164.83(11/21\u4f4e)\u300165.67(11/25\u4f4e)\u30016\u2026"},{"t":"11-26 16:21","who":"\u4fa6\u5bdf\u5175","sym":"SOL/USD","gate":"\u7b2c1\u5173","v":"\u901a\u8fc7","txt":"\u901a\u8fc7\uff08\u53ea\u8bb0\u8d26\u5230 crypto-paper.csv \u6a21\u62df\u76d8\uff0c\u4e0d\u8d70 IBKR\uff0c\u672c\u884c\u4e0d\u4e0b\u5355\u3001\u4e0d\u53d1\u9001\uff09\u3002SOL/USD \u73b0\u8d27\u7a7a\u3002Nova 16:13 Europe/L\u2026"},{"t":"11-26 16:12","who":"Nova","sym":"\u52a0\u5bc6\u626b\u76d8","gate":"\u76ef\u76d8","v":"\u4fe1\u53f7","txt":"SOL\u7eb8\u9762\u505a\u7a7a RSI2 86.9 EMA200\u4e0b\u65b9 \u5165\u573a70.92 \u6b62\u635f76.35 \u76ee\u680754.64 \u6570\u91cf3.75 \u6700\u5927\u4e8f\u00a320 rr2.3 \u5df2\u4ea4\u4fa6\u5bdf\u5175"},{"t":"11-26 12:15","who":"Nova","sym":"\u52a0\u5bc6\u626b\u76d8","gate":"\u76ef\u76d8","v":"\u65e0\u4fe1\u53f7","txt":"\u65e0\u6301\u4ed3; BTC/ETH/SOL RSI2\u672a\u8fbe85 (75/78/77); \u5bbd\u626b\u65e0\u5408\u683csetup; AAVE\u91cfx2.14 S_rally\u672a\u56de\u6d4b\u4ec5\u89c2\u5bdf"},{"t":"11-26 08:12","who":"Nova","sym":"\u52a0\u5bc6\u626b\u76d8","gate":"\u76ef\u76d8","v":"\u65e0\u4fe1\u53f7","txt":"\u65e0\u6301\u4ed3; BTC/ETH/SOL RSI2\u672a\u8fbe85; \u5bbd\u626b\u65e0\u5408\u683csetup; SUSHI\u91cfx3.48\u4f46\u6d41\u52a8\u6027\u5c0f\u4ec5\u89c2\u5bdf"},{"t":"11-26 04:39","who":"\u4fa6\u5bdf\u5175","sym":"BSOL","gate":"\u590d\u76d8-\u7b2c1\u5173","v":"\u901a\u8fc7","txt":"\u590d\u76d8-\u7b2c1\u5173\uff08\u98ce\u63a7 04:24 / \u89c4\u683c\u7b2c496\u884c\u5468\u672b\u8df3\u7a7a\u4e0b\u9650\u5199\u5165\u540e\u91cd\u65b0\u5b9a\u91cf\uff1b\u4e0d\u6539\u6b63\u5348 00:43 \u901a\u8fc7\u884c\uff0c\u53ea\u8ffd\u52a0\uff09\u3002BSOL \u7a7a\uff0c\u7ed3\u6784\u4ef7\u4e0d\u53d8\uff1a9.79 / \u2026"},{"t":"11-26 04:39","who":"\u4fa6\u5bdf\u5175","sym":"ETHA","gate":"\u590d\u76d8-\u7b2c1\u5173","v":"\u901a\u8fc7","txt":"\u590d\u76d8-\u7b2c1\u5173\uff08\u98ce\u63a7 04:24 / \u89c4\u683c\u7b2c496\u884c\u5468\u672b\u8df3\u7a7a\u4e0b\u9650\u5199\u5165\u540e\u91cd\u65b0\u5b9a\u91cf\uff1b\u4e0d\u6539\u6b63\u5348 00:43 \u901a\u8fc7\u884c\uff0c\u53ea\u8ffd\u52a0\uff09\u3002ETHA \u7a7a\uff0c\u7ed3\u6784\u4ef7\u4e0d\u53d8\uff1a38.17 /\u2026"},{"t":"11-26 04:39","who":"\u4fa6\u5bdf\u5175","sym":"GBTC","gate":"\u7b2c1\u5173","v":"\u5426\u51b3","txt":"\u5426\u51b3\uff1a\u540c\u5e01\u79cd\uff08BTC\uff09\u53ea\u9009\u4e00\u53ea\uff0c\u9996\u9009 IBIT\uff08ADV \u66f4\u9ad8\uff09\uff0c\u672c\u884c\u4e0d\u4ea4\u5355\u3002GBTC \u672c\u8eab\u6d41\u52a8\u6027\u8fc7\u5173\uff1aIBKR 2026-11-25 \u6536 46.41\uff0c20 \u65e5\u2026"},{"t":"11-26 04:39","who":"\u4fa6\u5bdf\u5175","sym":"ARKB","gate":"\u7b2c1\u5173","v":"\u5426\u51b3","txt":"\u5426\u51b3\uff1a\u540c\u5e01\u79cd\uff08BTC\uff09\u53ea\u9009\u4e00\u53ea\uff0c\u9996\u9009 IBIT\uff08ADV \u66f4\u9ad8\uff09\uff0c\u672c\u884c\u4e0d\u4ea4\u5355\u3002ARKB \u672c\u8eab\u6d41\u52a8\u6027\u8fc7\u5173\uff1aIBKR 2026-11-25 \u6536 19.95\uff0c20 \u65e5\u2026"},{"t":"11-26 04:39","who":"\u4fa6\u5bdf\u5175","sym":"BITB","gate":"\u7b2c1\u5173","v":"\u5426\u51b3","txt":"\u5426\u51b3\uff1a\u540c\u5e01\u79cd\uff08BTC\uff09\u53ea\u9009\u4e00\u53ea\uff0c\u9996\u9009 IBIT\uff08ADV \u66f4\u9ad8\uff09\uff0c\u672c\u884c\u4e0d\u4ea4\u5355\u3002BITB \u672c\u8eab\u6d41\u52a8\u6027\u8fc7\u5173\uff1aIBKR 2026-11-25 \u6536 32.65\uff0c20 \u65e5\u2026"},{"t":"11-26 04:39","who":"\u4fa6\u5bdf\u5175","sym":"FBTC","gate":"\u7b2c1\u5173","v":"\u5426\u51b3","txt":"\u5426\u51b3\uff1a\u540c\u5e01\u79cd\uff08BTC\uff09\u53ea\u9009\u4e00\u53ea\uff0c\u9996\u9009 IBKR 20 \u65e5\u5747\u6210\u4ea4\u989d\u6700\u9ad8\u7684 IBIT\uff08$1,856.94M\uff09\uff0c\u672c\u884c\u4e0d\u4ea4\u5355\u3002FBTC \u672c\u8eab\u6d41\u52a8\u6027\u8fc7\u5173\uff1aIBKR 20\u2026"},{"t":"11-26 04:39","who":"\u4fa6\u5bdf\u5175","sym":"IBIT","gate":"\u7b2c1\u5173","v":"\u901a\u8fc7","txt":"\u901a\u8fc7\uff08\u6761\u4ef6\uff1a\u5468\u4e94 11/27 \u7f8e\u80a1\u534a\u5929\u5e38\u89c4\u65f6\u6bb5 14:30\u201318:00 Europe/London \u5f00\u76d8\u524d\u7528\u5b9e\u65f6\u62a5\u4ef7\u91cd\u6838\u70b9\u5dee/\u53ef\u501f\u540e\u518d\u4ea4\u5355\uff1b\u672c\u884c\u4e0d\u4e0b\u5355\u3001\u4e0d\u53d1\u9001\u2026"},{"t":"11-26 04:25","who":"Nova","sym":"BTC/ETH/SOL","gate":"\u76ef\u76d8","v":"\u4fe1\u53f7","txt":"4h RSI2>93 \u4e14\u4f4e\u4e8eEMA200 \u4e09\u5e01\u7eb8\u9762\u7a7a\u4fe1\u53f7 BTC\u516560884\u6b6264131\u680751142 ETH\u51651701\u6b621811\u68071371 SOL\u516571.09\u2026"},{"t":"11-26 00:43","who":"\u4fa6\u5bdf\u5175","sym":"SLOP,SLO","gate":"\u7b2c1\u5173","v":"\u5426\u51b3","txt":"\u5426\u51b3 SOL \u53cd\u5411/\u505a\u7a7a ETF \u591a\u8def\u5f84\u3002Alpaca \u67e5\u65e0 SLOP\u3001SLO\uff08404 asset not found\uff09\uff1bIBKR search_contra\u2026"},{"t":"11-26 00:43","who":"\u4fa6\u5bdf\u5175","sym":"SOEZ","gate":"\u7b2c1\u5173","v":"\u5426\u51b3","txt":"\u5426\u51b3 SOEZ \u7a7a\uff08Franklin Solana ETF\uff0c1 \u500d\uff09\u3002\u8d8b\u52bf\u6761\u4ef6\u6ee1\u8db3\u3002Alpaca shortable \u4e14 ETB\u3002 \u6d41\u52a8\u6027\uff1aIBKR 20\u65e5\u5747\u2026"}],"meme":{"gen":"2026-11-26 16:36 UTC","cycle":68,"A":{"equity":279.02,"closed":3,"wins":1,"losses":2,"realized":-0.98,"open":0},"B":{"equity":266.01,"closed":13,"wins":2,"losses":11,"realized":-13.99,"open":0}}};
+const SNAP={"asof":"2026-11-26 17:38:44","tz":"Europe/London","market":"\u7f8e\u80a1\u4f11\u5e02 \u00b7 \u4e0b\u6b21\u5f00\u76d8 2026-11-27 09:30\uff08\u7f8e\u4e1c\uff09","alerts":[],"equity_usd":100136.22,"day_usd":0.0,"total_usd":136.22,"stocks_bal":961.11,"stocks_pnl":-38.89,"stocks_today":0,"crypto_bal":1136.48,"crypto_pnl":136.48,"crypto_today":0,"today_gbp":0,"total_gbp":97.59,"w":3,"l":4,"positions":[],"orders":[],"has_positions":false,"has_orders":false,"bots":[{"name":"\u4fa6\u5bdf\u5175","t":"11-26 16:21","age":77,"age_label":"1 \u5c0f\u65f6 17 \u5206\u524d","stalled":false,"sym":"SOL/USD","gate":"\u7b2c1\u5173","v":"\u901a\u8fc7","txt":"\u901a\u8fc7\uff08\u53ea\u8bb0\u8d26\u5230 crypto-paper.csv \u6a21\u62df\u76d8\uff0c\u4e0d\u8d70 IBKR\uff0c\u672c\u884c\u4e0d\u4e0b\u5355\u3001\u4e0d\u53d1\u9001\uff09\u3002SOL/USD \u73b0\u8d27\u7a7a\u3002Nova 16:13 Europe/L\u2026","n_today":22},{"name":"\u770b\u56fe\u5458","t":"11-26 16:22","age":76,"age_label":"1 \u5c0f\u65f6 16 \u5206\u524d","stalled":false,"sym":"SOL/USD","gate":"\u7b2c2\u5173","v":"\u5426\u51b3","txt":"t1 54.64\u4e0d\u662f\u56fe\u4e0a\u7ed3\u6784\uff1a\u4e00\u5e74\u5185\u6700\u4f4e60.18(2026-06-06)\uff0ct1\u5728\u5176\u4e0b9%\u3002\u53ef\u89c1\u652f\u649164.83(11/21\u4f4e)\u300165.67(11/25\u4f4e)\u30016\u2026","n_today":1},{"name":"\u519b\u5e08","t":"11-25 22:35","age":1143,"age_label":"19 \u5c0f\u65f6 3 \u5206\u524d","stalled":false,"sym":"MSLZ6/SOL","gate":"\u7b2c3\u5173","v":"\u901a\u8fc7\uff08\u91cd\u5ba1\uff09","txt":"\u91cd\u5ba1\uff0c\u8986\u76d6\u7b2c543\u884c\u3002\u4f9d\u636e\u89c4\u5219\uff1ahandoff-spec \u7b2c472\u2013486\u884c\uff08\u98ce\u63a711/25 20:35/20:45\u5b9a\u7a3f\uff0c\u989d\u5ea6\u7531\u98ce\u63a7\u6309\u5355\u88c1\u5b9a\uff0c\u5f15Ryan 20\u2026","n_today":0},{"name":"\u98ce\u63a7","t":"11-25 22:35","age":1143,"age_label":"19 \u5c0f\u65f6 3 \u5206\u524d","stalled":false,"sym":"MSLZ6","gate":"\u7b2c4\u5173","v":"\u901a\u8fc7","txt":"\u7a7a1\u624bCME Micro SOL 12\u6708\uff0c\u53ea\u505aIBKR\u6a21\u62df\u76d8[acct]\u3002\u6309handoff-spec\u7b2c472\u2013486\u884c\uff0c1\u624b\u4e0d\u53ef\u62c6\uff0c\u5355\u7b14\u4f8b\u5916\u2264\u00a365\u3002\u5165\u573a\u9650\u4ef7\u2026","n_today":0},{"name":"\u6267\u884c\u5458","t":"11-26 00:27","age":1031,"age_label":"17 \u5c0f\u65f6 11 \u5206\u524d","stalled":false,"sym":"METX6\uff08MET Nov27'2\u2026","gate":"\u7b2c5\u5173","v":"\u5426\u51b3","txt":"\u9884\u89c8\uff08\u4e0d\u662f\u6210\u4ea4\uff09\uff1aIBKR Client Portal \u6a21\u62df\u76d8 [acct]\uff0c2026-11-26 \u7ea600:27 UK\uff0cMET Nov27'26\uff08CME\uff0c1\u70b9\u2026","n_today":3}],"board":[{"id":"20261126-15","sym":"SOL/USD","last":"11-26 16:22","at":2,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u901a\u8fc7","2":"\u5426\u51b3"},"reject":{"stage":2,"rule":"\u76c8\u4e8f\u6bd4 rr \u4e0d\u8db3","why":"t1 54.64\u4e0d\u662f\u56fe\u4e0a\u7ed3\u6784\uff1a\u4e00\u5e74\u5185\u6700\u4f4e60.18(2026-06-06)\uff0ct1\u5728\u5176\u4e0b9%\u3002\u53ef\u89c1\u652f\u649164.83(11/21\u4f4e)\u300165.67(11/25\u4f4e)\u300160.18\u3002\u6309\u5165\u573a70\u2026"}},{"id":"20261126-02","sym":"ETHA","last":"11-26 04:39","at":1,"status":"\u8fdb\u884c\u4e2d","stages":{"1":"\u901a\u8fc7"},"reject":null},{"id":"20261126-03","sym":"BSOL","last":"11-26 04:39","at":1,"status":"\u8fdb\u884c\u4e2d","stages":{"1":"\u901a\u8fc7"},"reject":null},{"id":"20261126-10","sym":"IBIT","last":"11-26 04:39","at":1,"status":"\u8fdb\u884c\u4e2d","stages":{"1":"\u901a\u8fc7"},"reject":null},{"id":"20261126-11","sym":"FBTC","last":"11-26 04:39","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u540c\u5e01\u79cd/\u540c\u7ec4\u9650\u5236","why":"\u5426\u51b3\uff1a\u540c\u5e01\u79cd\uff08BTC\uff09\u53ea\u9009\u4e00\u53ea\uff0c\u9996\u9009 IBKR 20 \u65e5\u5747\u6210\u4ea4\u989d\u6700\u9ad8\u7684 IBIT\uff08$1,856.94M\uff09\uff0c\u672c\u884c\u4e0d\u4ea4\u5355\u3002FBTC \u672c\u8eab\u6d41\u52a8\u6027\u8fc7\u5173\uff1aIBKR 2026-11-25 \u6536\u2026"}},{"id":"20261126-12","sym":"BITB","last":"11-26 04:39","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u540c\u5e01\u79cd/\u540c\u7ec4\u9650\u5236","why":"\u5426\u51b3\uff1a\u540c\u5e01\u79cd\uff08BTC\uff09\u53ea\u9009\u4e00\u53ea\uff0c\u9996\u9009 IBIT\uff08ADV \u66f4\u9ad8\uff09\uff0c\u672c\u884c\u4e0d\u4ea4\u5355\u3002BITB \u672c\u8eab\u6d41\u52a8\u6027\u8fc7\u5173\uff1aIBKR 2026-11-25 \u6536 32.65\uff0c20 \u65e5\u5747\u6210\u4ea4\u989d $45.9\u2026"}},{"id":"20261126-13","sym":"ARKB","last":"11-26 04:39","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u540c\u5e01\u79cd/\u540c\u7ec4\u9650\u5236","why":"\u5426\u51b3\uff1a\u540c\u5e01\u79cd\uff08BTC\uff09\u53ea\u9009\u4e00\u53ea\uff0c\u9996\u9009 IBIT\uff08ADV \u66f4\u9ad8\uff09\uff0c\u672c\u884c\u4e0d\u4ea4\u5355\u3002ARKB \u672c\u8eab\u6d41\u52a8\u6027\u8fc7\u5173\uff1aIBKR 2026-11-25 \u6536 19.95\uff0c20 \u65e5\u5747\u6210\u4ea4\u989d $50.4\u2026"}},{"id":"20261126-14","sym":"GBTC","last":"11-26 04:39","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u540c\u5e01\u79cd/\u540c\u7ec4\u9650\u5236","why":"\u5426\u51b3\uff1a\u540c\u5e01\u79cd\uff08BTC\uff09\u53ea\u9009\u4e00\u53ea\uff0c\u9996\u9009 IBIT\uff08ADV \u66f4\u9ad8\uff09\uff0c\u672c\u884c\u4e0d\u4ea4\u5355\u3002GBTC \u672c\u8eab\u6d41\u52a8\u6027\u8fc7\u5173\uff1aIBKR 2026-11-25 \u6536 46.41\uff0c20 \u65e5\u5747\u6210\u4ea4\u989d $80.0\u2026"}},{"id":"20261126-04","sym":"ETHD","last":"11-26 00:43","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u6760\u6746/\u53cd\u5411 ETF","why":"\u5426\u51b3 ETHD \u591a\uff08\u22122x \u53cd\u5411\u4ee5\u592a ETF\uff09\u3002\u89c4\u683c\u7b2c493\u884c\uff1a\u6760\u6746/\u53cd\u5411 ETF \u53ea\u505a\u591a\u3001\u6301\u6709\u22642\u4e2a\u4ea4\u6613\u65e5\u3001\u6b62\u635f\u8ddd\u79bb\u22651\u00d7ETF ATR14\u3002\u8d8b\u52bf\u6761\u4ef6\u6ee1\u8db3\uff08ETH 4h \u6536 1\u2026"}},{"id":"20261126-05","sym":"SETH","last":"11-26 00:43","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u6760\u6746/\u53cd\u5411 ETF","why":"\u5426\u51b3 SETH \u591a\uff08\u22121x \u53cd\u5411\u4ee5\u592a ETF\uff09\u3002\u89c4\u683c\u7b2c493\u884c\u53ea\u505a\u591a\u3001\u6301\u6709\u22642\u65e5\u3001\u6b62\u635f\u22651\u00d7ATR14\u3002\u8d8b\u52bf\u6761\u4ef6\u6ee1\u8db3\uff08ETH 4h \u4f4e\u4e8e EMA200\uff09\u3002Alpaca trada\u2026"}},{"id":"20261126-06","sym":"FSOL","last":"11-26 00:43","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u4e0d\u53ef\u501f/ETB","why":"\u5426\u51b3 FSOL \u7a7a\uff08Fidelity Solana Fund\uff0c1 \u500d\uff09\u3002\u8d8b\u52bf\u6761\u4ef6\u6ee1\u8db3\uff08SOL 4h \u4f4e\u4e8e EMA200\uff09\u3002Alpaca shortable \u4e14 ETB\u3002\u70b9\u5dee Al\u2026"}},{"id":"20261126-07","sym":"GSOL","last":"11-26 00:43","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u4e0d\u53ef\u501f/ETB","why":"\u5426\u51b3 GSOL \u7a7a\uff08Grayscale Solana Staking ETF\uff0c1 \u500d\uff09\u3002\u8d8b\u52bf\u6761\u4ef6\u6ee1\u8db3\u3002Alpaca 2026-11-26 00:35 Europe/London\uff1a\u2026"}},{"id":"20261126-08","sym":"SOEZ","last":"11-26 00:43","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u4e0d\u53ef\u501f/ETB","why":"\u5426\u51b3 SOEZ \u7a7a\uff08Franklin Solana ETF\uff0c1 \u500d\uff09\u3002\u8d8b\u52bf\u6761\u4ef6\u6ee1\u8db3\u3002Alpaca shortable \u4e14 ETB\u3002 \u6d41\u52a8\u6027\uff1aIBKR 20\u65e5\u5747\u6210\u4ea4\u989d $0.18M\u2026"}},{"id":"20261126-09","sym":"SLOP,SLO","last":"11-26 00:43","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u6743\u9650/\u5730\u533a\u9650\u5236","why":"\u5426\u51b3 SOL \u53cd\u5411/\u505a\u7a7a ETF \u591a\u8def\u5f84\u3002Alpaca \u67e5\u65e0 SLOP\u3001SLO\uff08404 asset not found\uff09\uff1bIBKR search_contracts \u65e0 US \u4e0a\u2026"}},{"id":"20261126-01-METZ6","sym":"METZ6","last":"11-26 00:31","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u6743\u9650/\u5730\u533a\u9650\u5236","why":"\u5426\u51b3\u4fe1\u53f7 20261126-01 \u7684 METZ6 \u8def\u5f84\u3002\u6267\u884c\u5458 2026-11-26 00:27 Europe/London \u62a5\u544a\uff1aIBKR Client Portal \u6a21\u62df\u76d8 \u2026"}},{"id":"20261125-29","sym":"MSLZ6","last":"11-26 00:30","at":5,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3","2":"\u901a\u8fc7","3":"\u901a\u8fc7\uff08\u91cd\u5ba1\uff09","4":"\u901a\u8fc7","5":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u6743\u9650/\u5730\u533a\u9650\u5236","why":"\u5426\u51b3\u3002\u6267\u884c\u5458 2026-11-26 00:27 Europe/London \u62a5\u544a\uff1aIBKR Client Portal \u6a21\u62df\u76d8 [acct]\uff0cMSLZ6 \u4e0b\u5355\u7968\u663e\u793a\u300cRestri\u2026"}},{"id":"20261124-ANT-X1","sym":"ANT","last":"11-26 00:26","at":5,"status":"\u5df2\u6267\u884c/\u5b8c\u6210","stages":{"5":"\u5e73\u4ed3","4":"\u901a\u8fc7","3":"\u4e8b\u540e\u590d\u6838\uff1a\u672c\u5173\u4f1a\u5426\u2026","2":"\u4e8b\u540e\u590d\u6838\uff1a\u672c\u5173\u4f1a\u5426\u2026"},"reject":null},{"id":"20261124-31","sym":"SOL/USD","last":"11-26 00:26","at":5,"status":"\u5df2\u6267\u884c/\u5b8c\u6210","stages":{"1":"\u901a\u8fc7","2":"\u901a\u8fc7","3":"\u901a\u8fc7","5":"\u5e73\u4ed3","4":"\u901a\u8fc7"},"reject":null},{"id":"20261125-22","sym":"MRK","last":"11-25 22:35","at":3,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u901a\u8fc7","2":"\u901a\u8fc7","3":"\u5426\u51b3"},"reject":{"stage":3,"rule":"SPY \u5927\u6da8\u7981\u7a7a","why":"\u7a7a\uff0cdiscretionary_short\u3002\u5426\u51b3\u7406\u7531\uff1a\u2460\u6263\u8d39rr_net 1.51\u4ec5\u64e6\u7ebf\uff0c\u4e14t1 131.36\u6b63\u662f11/24\u5927\u9633\u7ebf\uff08+4.5%\uff0c\u91cf1467\u4e07\uff09\u7684\u53cd\u8f6c\u8d77\u70b9\uff0c\u76ee\u6807\u4f4d\u652f\u2026"}},{"id":"20261125-28","sym":"BSOL,FSOL,GSOL,\u2026","last":"11-25 20:32","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u540c\u5e01\u79cd/\u540c\u7ec4\u9650\u5236","why":"\u5426\u51b3\u73b0\u8d27 SOL ETF \u7a7a\u5355\u8def\u5f84\uff08BSOL/FSOL/GSOL/SOEZ\uff09\u3002\u4e0d\u4ea4\u770b\u56fe\u5458\u3002\u672c\u884c\u662f 20261125-27 \u4e4b\u540e\u5bf9\u53ef\u4ea4\u6613\u73b0\u8d27 SOL ETF \u901a\u9053\u7684\u7b2c1\u5173\u590d\u6838\uff0c\u4e0d\u662f\u2026"}},{"id":"20261125-27","sym":"SOL/USD","last":"11-25 20:26","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u540c\u5e01\u79cd/\u540c\u7ec4\u9650\u5236","why":"\u5426\u51b3\uff08\u65e0\u53ef\u6267\u884c\u7eb8\u9762\u8def\u5f84\uff09\u3002\u4e0d\u91cd\u590d Nova \u5df2\u5199\u7684 20261125-27 \u76ef\u76d8\u4fe1\u53f7\u884c\uff0c\u672c\u884c\u662f\u7b2c1\u5173\u590d\u6838\u3002\u4fe1\u53f7\u672c\u8eab\u6309\u73b0\u884c\u6807\u51c6\u52a0\u5bc6\u7a7a\u89c4\u5219\uff08\u4e0d\u662f crypto_discretiona\u2026"}},{"id":"20261125-23","sym":"ROST","last":"11-25 19:15","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u4e0d\u53ef\u501f/ETB","why":"\u5426\u51b3 ROST \u53cd\u5f39\u5931\u8d25\u7a7a\uff08trial B \u590d\u8bc4\uff09\u3002IBKR SMART \u5b9e\u65f6\uff08top-status=REALTIME\uff092026-11-25 19:11:56 Europe/Lo\u2026"}},{"id":"20261125-24","sym":"NBIS,SNDK,BE,CR\u2026","last":"11-25 19:15","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u6760\u6746/\u53cd\u5411 ETF","why":"\u5426\u51b3\u65b0\u7a7a\u540d\u5355 NBIS/SNDK/BE/CRWV/ORCL/INTC/IREN/NVDA/MRVL/TSM\uff08trial B discretionary_short\uff09\u3002IBKR S\u2026"}},{"id":"20261125-25","sym":"HPQ","last":"11-25 19:15","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u4e0d\u53ef\u501f/ETB","why":"\u5426\u51b3 HPQ \u591a\u7a7a\uff08\u666e\u901a\u89c4\u5219 rr\u22652.2\u3001\u00a320\uff1b\u7a7a\u5355\u6570\u5b57\u867d\u4e5f\u6ee1\u8db3 trial B\uff0c\u4f46\u5f62\u6001\u4e0d\u6210\u7acb\uff09\u3002IBKR SMART \u5b9e\u65f6 19:12:16 Europe/London\uff1a\u6210\u2026"}},{"id":"20261125-26","sym":"AMD,MU,LRCX","last":"11-25 19:15","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u4e0d\u53ef\u501f/ETB","why":"\u590d\u8bc4 LRCX/MU/AMD\uff08trial B\uff09\u3002IBKR SMART \u5b9e\u65f6 19:12:14\u201319:12:15 Europe/London\u3002SPY \u8dcc 0.18%\uff0cP6 \u672a\u89e6\u53d1\u3002\u2026"}},{"id":"20261125-11","sym":"RYCEY","last":"11-25 15:05","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u4e0d\u53ef\u501f/ETB","why":"\u5426\u51b3\uff08trial B discretionary_short\uff09\u3002\u89c4\u683c\u5df2\u5199\u5165\uff1arr\u22651.5\u3001\u5355\u7b14\u00a310\u3001thesis\u226520\u5b57\u3001\u5238\u5546GTC\u6b62\u635f\u3001\u53ea\u9650\u7f8e\u80a1\u6b63\u80a1\u3001\u987b\u53ef\u501f\u4e14ETB\u3002RYCE\u2026"}},{"id":"20261125-12","sym":"RR.L","last":"11-25 15:05","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u6b62\u635f\u4e0d\u8db3 1\u00d7ATR","why":"\u5426\u51b3\u3002RR.L \u4e3a\u4f26\u6566\u6b63\u80a1\u3002\u89c4\u683c\u82f1\u80a1\u4ecd\u662f\u53ea\u89c2\u5bdf\u3001\u4e0d\u4ea4\u5355\uff08handoff-spec \u82f1\u80a1 LSE\uff1auk_enabled=false\uff0creview.uk_observe_only\uff1b\u91cd\u2026"}},{"id":"20261125-14","sym":"GDX","last":"11-25 15:05","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u4e0d\u53ef\u501f/ETB","why":"\u5426\u51b3 GDX \u6b63\u80a1\u7a7a\u300215:01 \u82f1\u56fd\u65f6\u95f4 Alpaca IEX 68.92\uff08bid/ask 68.90/68.93\uff09\uff0c\u8f83 11/24 \u6536 71.37 \u8dcc 3.43%\u3002\u5165\u573a 68\u2026"}},{"id":"20261125-15","sym":"GLD,GDX","last":"11-25 15:05","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u76c8\u4e8f\u6bd4 rr \u4e0d\u8db3","why":"\u5426\u51b3 GLD/GDX \u770b\u8dcc\u501f\u65b9\u5dee\u3002options_scan 15:02 \u82f1\u56fd\u65f6\u95f4\u3001\u7f8e\u80a1\u5df2\u5f00\u76d8\uff1aGLD 1752 \u5408\u7ea6\u3001GDX 358 \u5408\u7ea6\uff0crr\u22652.0\uff08\u4ef7\u5dee\u4ecd\u6309 P2 2.0\uff0c\u2026"}},{"id":"20261125-13","sym":"GLD","last":"11-25 15:05","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u6b62\u635f\u4e0d\u8db3 1\u00d7ATR","why":"\u5426\u51b3\u9ec4\u91d1\u6b63\u80a1\u7a7a\u3002\u73b0\u8d27/\u671f\u8d27\u5df2\u8dcc\u7834 3500\uff1aGC=F yfinance 15:00 \u82f1\u56fd\u65f6\u95f4\u9644\u8fd1 3486\uff08\u4eca\u65e5\u4f4e 3481.10\uff09\uff0cCNBC \u62a5\u73b0\u8d27 3483.59\uff0c\u4e3a 202\u2026"}},{"id":"20261125-16","sym":"MU,AMD,DELL,MSTR","last":"11-25 15:05","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u540c\u5e01\u79cd/\u540c\u7ec4\u9650\u5236","why":"\u5426\u51b3\uff08\u590d\u8bc4\u4eca\u65e9 20261125-02\uff0c\u6309 trial B rr\u22651.5\u3001\u00a310\uff09\u300215:04 \u82f1\u56fd\u65f6\u95f4 Alpaca IEX\uff1aSPY \u4ecd\u7ea6 \u22122%\uff0c\u7981\u65b0\u7a7a\u672a\u89e6\u53d1\u3002MU \u6210\u4ea4 5\u2026"}},{"id":"20261125-17","sym":"SOXX","last":"11-25 15:05","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u4e0d\u53ef\u501f/ETB","why":"\u5426\u51b3 SOXX \u7834\u4f4d\u7a7a\u3002\u6838\u8fc7 Nova \u4ef7\uff1a121.81/132.95/102.42\uff0c\u7968\u9762 rr 1.74\uff0c\u6b62\u635f\u6b63\u597d 1.0\u00d7ATR14\uff0811.14\uff09\uff0ct1 \u4e0e first_st\u2026"}},{"id":"20261125-18","sym":"ROST","last":"11-25 15:05","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u4e0d\u53ef\u501f/ETB","why":"\u5426\u51b3 ROST \u53cd\u5f39\u5931\u8d25\u7a7a\u3002Nova \u5165\u573a/\u6b62\u635f 223.01/231.86\uff0ct1 \u6838\u4e3a 208.22\uff0c\u7968\u9762 rr 1.67\u3002\u6b62\u635f 231.86 \u6bd4 1\u00d7ATR14\uff088.8537\u2026"}},{"id":"20261125-19","sym":"MRK","last":"11-25 15:05","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u6743\u9650/\u5730\u533a\u9650\u5236","why":"\u5426\u51b3 MRK \u53cd\u5f39\u5931\u8d25\u7a7a\u3002Nova 139.89/144.33\uff0ct1 \u6838\u4e3a 131.36\uff0c\u7968\u9762 rr 1.92\u3002\u6b62\u635f\u8865\u5230 144.3347\uff08\u22651\u00d7ATR14=4.4447\uff09\u3002\u89e6\u53d1\u2026"}},{"id":"20261125-21","sym":"NTNX","last":"11-25 15:05","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u4e0d\u53ef\u501f/ETB","why":"\u5426\u51b3 NTNX \u6b63\u80a1\u7a7a\uff08\u4e0d\u56e0 chase \u672c\u8eab\u5426\u51b3\uff09\u300211/24 \u76d8\u540e\u8d22\u62a5\uff1a\u4e00\u5b63\u8425\u6536\u4e0e\u8c03\u6574\u540e EPS \u8d85\u9884\u671f\uff0c\u4f46\u5168\u5e74\u8425\u6536\u6307\u5f15\u4e2d\u503c\u4f4e\u4e8e\u5171\u8bc6\uff0c\u5e76\u5ba3\u5e03 CEO \u7ee7\u4efb\u5b89\u6392\uff08\u5b98\u7f51 http\u2026"}},{"id":"20261125-20","sym":"AMBA","last":"11-25 15:05","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u4e0d\u53ef\u501f/ETB","why":"\u5426\u51b3 AMBA \u6b63\u80a1\u7a7a\uff08\u4e0d\u56e0 chase \u672c\u8eab\u5426\u51b3\uff09\u300211/24 16:05 ET \u76d8\u540e\u8d22\u62a5\uff1a\u8425\u6536\u4e0e\u8c03\u6574\u540e EPS \u4f4e\u4e8e\u9884\u671f\uff0c\u56db\u5b63\u5ea6\u6307\u5f15 0.70\u20130.75 \u4ebf\u7f8e\u5143\uff0c\u8fdc\u4f4e\u4e8e\u7ea6 1\u2026"}},{"id":"20261125-01","sym":"ANT","last":"11-25 07:48","at":1,"status":"\u8fdb\u884c\u4e2d","stages":{"1":"\u76ef\u76d8"},"reject":null},{"id":"20261125-02","sym":"MU,AMD,DELL,MSTR","last":"11-25 07:48","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"SPY \u5927\u6da8\u7981\u7a7a","why":"\u5426\u51b3\uff08\u65e9\u62a5\u7b2c2\u6761\uff1a\u7a7a MU/AMD/DELL/MSTR\uff0c14:45 \u540e\u8dcc\u7834\u6628\u4f4e\uff09\u3002\u89c4\u683c\u672a\u5199\u5165\u300c\u770b\u7a7a\u5c31\u505a\u7a7a\u300d\u5168\u9762\u53d6\u6d88 rr\u22652.2\uff1b\u4e66\u9762\u53ea\u6709 discretionary_short\u2026"}},{"id":"20261125-03","sym":"DE","last":"11-25 07:48","at":1,"status":"\u8fdb\u884c\u4e2d","stages":{"1":"\u5f85\u5b9a"},"reject":null},{"id":"20261125-04","sym":"XLP,XLV,ITB","last":"11-25 07:48","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u6b62\u635f\u4e0d\u8db3 1\u00d7ATR","why":"\u5426\u51b3\uff08\u65e9\u62a5\u7b2c4\u6761\uff1a\u591a XLP/XLV/ITB\uff0c\u56de\u8e29 20 \u65e5\u5747\u7ebf\u4f01\u7a33\uff09\u3002\u4ef7\u683c\u4e3a 11/24 \u6536\u76d8\uff08Alpaca SIP\uff0c07:45 \u82f1\u56fd\u65f6\u95f4\u6838\uff0c\u7f8e\u80a1\u672a\u5f00\u76d8\uff09\u3002XLP \u6536 91.8\u2026"}}],"rej_today":[["\u6743\u9650/\u5730\u533a\u9650\u5236",5],["\u540c\u5e01\u79cd/\u540c\u7ec4\u9650\u5236",4],["\u4e0d\u53ef\u501f/ETB",3],["\u6760\u6746/\u53cd\u5411 ETF",2],["\u76c8\u4e8f\u6bd4 rr \u4e0d\u8db3",1]],"pass_n":4,"rej_n":15,"log":[{"t":"11-26 16:22","who":"\u770b\u56fe\u5458","sym":"SOL/USD","gate":"\u7b2c2\u5173","v":"\u5426\u51b3","txt":"t1 54.64\u4e0d\u662f\u56fe\u4e0a\u7ed3\u6784\uff1a\u4e00\u5e74\u5185\u6700\u4f4e60.18(2026-06-06)\uff0ct1\u5728\u5176\u4e0b9%\u3002\u53ef\u89c1\u652f\u649164.83(11/21\u4f4e)\u300165.67(11/25\u4f4e)\u30016\u2026"},{"t":"11-26 16:21","who":"\u4fa6\u5bdf\u5175","sym":"SOL/USD","gate":"\u7b2c1\u5173","v":"\u901a\u8fc7","txt":"\u901a\u8fc7\uff08\u53ea\u8bb0\u8d26\u5230 crypto-paper.csv \u6a21\u62df\u76d8\uff0c\u4e0d\u8d70 IBKR\uff0c\u672c\u884c\u4e0d\u4e0b\u5355\u3001\u4e0d\u53d1\u9001\uff09\u3002SOL/USD \u73b0\u8d27\u7a7a\u3002Nova 16:13 Europe/L\u2026"},{"t":"11-26 16:12","who":"Nova","sym":"\u52a0\u5bc6\u626b\u76d8","gate":"\u76ef\u76d8","v":"\u4fe1\u53f7","txt":"SOL\u7eb8\u9762\u505a\u7a7a RSI2 86.9 EMA200\u4e0b\u65b9 \u5165\u573a70.92 \u6b62\u635f76.35 \u76ee\u680754.64 \u6570\u91cf3.75 \u6700\u5927\u4e8f\u00a320 rr2.3 \u5df2\u4ea4\u4fa6\u5bdf\u5175"},{"t":"11-26 12:15","who":"Nova","sym":"\u52a0\u5bc6\u626b\u76d8","gate":"\u76ef\u76d8","v":"\u65e0\u4fe1\u53f7","txt":"\u65e0\u6301\u4ed3; BTC/ETH/SOL RSI2\u672a\u8fbe85 (75/78/77); \u5bbd\u626b\u65e0\u5408\u683csetup; AAVE\u91cfx2.14 S_rally\u672a\u56de\u6d4b\u4ec5\u89c2\u5bdf"},{"t":"11-26 08:12","who":"Nova","sym":"\u52a0\u5bc6\u626b\u76d8","gate":"\u76ef\u76d8","v":"\u65e0\u4fe1\u53f7","txt":"\u65e0\u6301\u4ed3; BTC/ETH/SOL RSI2\u672a\u8fbe85; \u5bbd\u626b\u65e0\u5408\u683csetup; SUSHI\u91cfx3.48\u4f46\u6d41\u52a8\u6027\u5c0f\u4ec5\u89c2\u5bdf"},{"t":"11-26 04:39","who":"\u4fa6\u5bdf\u5175","sym":"BSOL","gate":"\u590d\u76d8-\u7b2c1\u5173","v":"\u901a\u8fc7","txt":"\u590d\u76d8-\u7b2c1\u5173\uff08\u98ce\u63a7 04:24 / \u89c4\u683c\u7b2c496\u884c\u5468\u672b\u8df3\u7a7a\u4e0b\u9650\u5199\u5165\u540e\u91cd\u65b0\u5b9a\u91cf\uff1b\u4e0d\u6539\u6b63\u5348 00:43 \u901a\u8fc7\u884c\uff0c\u53ea\u8ffd\u52a0\uff09\u3002BSOL \u7a7a\uff0c\u7ed3\u6784\u4ef7\u4e0d\u53d8\uff1a9.79 / \u2026"},{"t":"11-26 04:39","who":"\u4fa6\u5bdf\u5175","sym":"ETHA","gate":"\u590d\u76d8-\u7b2c1\u5173","v":"\u901a\u8fc7","txt":"\u590d\u76d8-\u7b2c1\u5173\uff08\u98ce\u63a7 04:24 / \u89c4\u683c\u7b2c496\u884c\u5468\u672b\u8df3\u7a7a\u4e0b\u9650\u5199\u5165\u540e\u91cd\u65b0\u5b9a\u91cf\uff1b\u4e0d\u6539\u6b63\u5348 00:43 \u901a\u8fc7\u884c\uff0c\u53ea\u8ffd\u52a0\uff09\u3002ETHA \u7a7a\uff0c\u7ed3\u6784\u4ef7\u4e0d\u53d8\uff1a38.17 /\u2026"},{"t":"11-26 04:39","who":"\u4fa6\u5bdf\u5175","sym":"GBTC","gate":"\u7b2c1\u5173","v":"\u5426\u51b3","txt":"\u5426\u51b3\uff1a\u540c\u5e01\u79cd\uff08BTC\uff09\u53ea\u9009\u4e00\u53ea\uff0c\u9996\u9009 IBIT\uff08ADV \u66f4\u9ad8\uff09\uff0c\u672c\u884c\u4e0d\u4ea4\u5355\u3002GBTC \u672c\u8eab\u6d41\u52a8\u6027\u8fc7\u5173\uff1aIBKR 2026-11-25 \u6536 46.41\uff0c20 \u65e5\u2026"},{"t":"11-26 04:39","who":"\u4fa6\u5bdf\u5175","sym":"ARKB","gate":"\u7b2c1\u5173","v":"\u5426\u51b3","txt":"\u5426\u51b3\uff1a\u540c\u5e01\u79cd\uff08BTC\uff09\u53ea\u9009\u4e00\u53ea\uff0c\u9996\u9009 IBIT\uff08ADV \u66f4\u9ad8\uff09\uff0c\u672c\u884c\u4e0d\u4ea4\u5355\u3002ARKB \u672c\u8eab\u6d41\u52a8\u6027\u8fc7\u5173\uff1aIBKR 2026-11-25 \u6536 19.95\uff0c20 \u65e5\u2026"},{"t":"11-26 04:39","who":"\u4fa6\u5bdf\u5175","sym":"BITB","gate":"\u7b2c1\u5173","v":"\u5426\u51b3","txt":"\u5426\u51b3\uff1a\u540c\u5e01\u79cd\uff08BTC\uff09\u53ea\u9009\u4e00\u53ea\uff0c\u9996\u9009 IBIT\uff08ADV \u66f4\u9ad8\uff09\uff0c\u672c\u884c\u4e0d\u4ea4\u5355\u3002BITB \u672c\u8eab\u6d41\u52a8\u6027\u8fc7\u5173\uff1aIBKR 2026-11-25 \u6536 32.65\uff0c20 \u65e5\u2026"},{"t":"11-26 04:39","who":"\u4fa6\u5bdf\u5175","sym":"FBTC","gate":"\u7b2c1\u5173","v":"\u5426\u51b3","txt":"\u5426\u51b3\uff1a\u540c\u5e01\u79cd\uff08BTC\uff09\u53ea\u9009\u4e00\u53ea\uff0c\u9996\u9009 IBKR 20 \u65e5\u5747\u6210\u4ea4\u989d\u6700\u9ad8\u7684 IBIT\uff08$1,856.94M\uff09\uff0c\u672c\u884c\u4e0d\u4ea4\u5355\u3002FBTC \u672c\u8eab\u6d41\u52a8\u6027\u8fc7\u5173\uff1aIBKR 20\u2026"},{"t":"11-26 04:39","who":"\u4fa6\u5bdf\u5175","sym":"IBIT","gate":"\u7b2c1\u5173","v":"\u901a\u8fc7","txt":"\u901a\u8fc7\uff08\u6761\u4ef6\uff1a\u5468\u4e94 11/27 \u7f8e\u80a1\u534a\u5929\u5e38\u89c4\u65f6\u6bb5 14:30\u201318:00 Europe/London \u5f00\u76d8\u524d\u7528\u5b9e\u65f6\u62a5\u4ef7\u91cd\u6838\u70b9\u5dee/\u53ef\u501f\u540e\u518d\u4ea4\u5355\uff1b\u672c\u884c\u4e0d\u4e0b\u5355\u3001\u4e0d\u53d1\u9001\u2026"},{"t":"11-26 04:25","who":"Nova","sym":"BTC/ETH/SOL","gate":"\u76ef\u76d8","v":"\u4fe1\u53f7","txt":"4h RSI2>93 \u4e14\u4f4e\u4e8eEMA200 \u4e09\u5e01\u7eb8\u9762\u7a7a\u4fe1\u53f7 BTC\u516560884\u6b6264131\u680751142 ETH\u51651701\u6b621811\u68071371 SOL\u516571.09\u2026"},{"t":"11-26 00:43","who":"\u4fa6\u5bdf\u5175","sym":"SLOP,SLO","gate":"\u7b2c1\u5173","v":"\u5426\u51b3","txt":"\u5426\u51b3 SOL \u53cd\u5411/\u505a\u7a7a ETF \u591a\u8def\u5f84\u3002Alpaca \u67e5\u65e0 SLOP\u3001SLO\uff08404 asset not found\uff09\uff1bIBKR search_contra\u2026"},{"t":"11-26 00:43","who":"\u4fa6\u5bdf\u5175","sym":"SOEZ","gate":"\u7b2c1\u5173","v":"\u5426\u51b3","txt":"\u5426\u51b3 SOEZ \u7a7a\uff08Franklin Solana ETF\uff0c1 \u500d\uff09\u3002\u8d8b\u52bf\u6761\u4ef6\u6ee1\u8db3\u3002Alpaca shortable \u4e14 ETB\u3002 \u6d41\u52a8\u6027\uff1aIBKR 20\u65e5\u5747\u2026"}],"meme":{"gen":"2026-11-26 17:34 UTC","cycle":79,"A":{"equity":279.02,"closed":3,"wins":1,"losses":2,"realized":-0.98,"open":0},"B":{"equity":266.01,"closed":13,"wins":2,"losses":11,"realized":-13.99,"open":0}},"health":[{"name":"scan5 \u626b\u63cf\u5668","age":3,"ok":true},{"name":"\u52a0\u5bc6\u76ef\u76d8 monitor","age":5,"ok":true},{"name":"\u52a0\u5bc6\u5b88\u62a4 guard","age":0,"ok":true},{"name":"\u94fe\u4e0a\u5c0f\u5e01\u6a21\u62df\u76d8","age":4,"ok":true},{"name":"ledger.csv","age":76,"ok":true}],"scan5":{"ts":"2026-11-26 17:35 Europe/London","ok":true,"crypto":40,"sig":7,"tradable":0,"stocks":"NYSE closed 2026-11-26"},"spark":[{"t":"open","v":0.0},{"t":"11-18 15:37","v":-7.46},{"t":"11-22 05:08","v":-6.3},{"t":"11-23 14:26","v":107.38},{"t":"11-23 14:31","v":90.41},{"t":"11-23 15:26","v":118.95},{"t":"11-25 05:40","v":112.05},{"t":"11-25 17:35","v":97.59}]};
 const E=s=>String(s??"").replace(/[\x26\x3c\x3e\x22]/g,c=>({'\x26':'\x26amp;','\x3c':'\x3clt;','\x3e':'\x3egt;','\x22':'\x26quot;'}[c]));
 const usd=(n,s=1)=>{n=Number(n);if(!Number.isFinite(n))n=0;return (n<0?"\u2212":(s&&n>0?"+":""))+"$"+Math.abs(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})};
 const gbp=(n,s=1)=>{n=Number(n);if(!Number.isFinite(n))n=0;return (n<0?"\u2212":(s&&n>0?"+":""))+"\u00a3"+Math.abs(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})};
 const cl=n=>n>0.004?"g":n<-0.004?"r":"m";
-const vcls=v=>/通过|平仓/.test(v)?"p":/否决|撤/.test(v)?"x":/待|有条件|盯盘/.test(v)?"o":"";
+const vcls=v=>/平仓|成交|fill/i.test(v)?"g":/止损|stop/i.test(v)?"r":/否决|reject/i.test(v)?"a":/通过|信号/.test(v)?"g":"m";
 let D=null,tab="进行中",lastOk=0,live=false;
 
 function okData(j){return j && typeof j==="object" && j.alg!=="AES-GCM" && j.asof && Array.isArray(j.bots);}
 
+function parseAsOf(s){
+  const m=String(s||"").match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?/);
+  if(!m) return null;
+  return Date.UTC(+m[1],+m[2]-1,+m[3],+m[4],+m[5],+(m[6]||0));
+}
+function ageTxt(mins){
+  if(mins==null||!Number.isFinite(+mins)) return "--";
+  mins=+mins;
+  if(mins<1) return "<1m";
+  if(mins<60) return mins+"m";
+  return Math.floor(mins/60)+"h"+(mins%60?String(mins%60).padStart(2,"0")+"m":"");
+}
+function clockTick(){
+  try{
+    const fmt=new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/London",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});
+    const now=new Date();
+    document.getElementById("clock").textContent=fmt.format(now)+" LONDON";
+    if(D&&D.asof){
+      const t=parseAsOf(D.asof);
+      const sec=t?Math.max(0,Math.round((now-t)/1000)):null;
+      let a="UPD --";
+      if(sec!=null){
+        if(sec<60) a="UPD "+sec+"s";
+        else if(sec<3600) a="UPD "+Math.floor(sec/60)+"m";
+        else a="UPD "+Math.floor(sec/3600)+"h";
+      }
+      a+=" \u00b7 "+(live?"NET":"SNAP");
+      document.getElementById("upd").textContent=a;
+    }
+  }catch(e){}
+}
+
+function logTone(r){
+  const s=(r.v||"")+" "+(r.txt||"")+" "+(r.gate||"");
+  if(/止损/.test(s)) return "r";
+  if(/否决/.test(s)) return "a";
+  if(/平仓|成交/.test(s)) return "g";
+  if(/通过|信号/.test(s)) return "g";
+  return "m";
+}
+function sparkSvg(pts){
+  const el=document.getElementById("spark");
+  if(!pts||pts.length<2){el.innerHTML="";return;}
+  const vs=pts.map(p=>+p.v);
+  let lo=Math.min(0,...vs), hi=Math.max(0,...vs);
+  if(hi===lo){hi+=1;lo-=1;}
+  const W=370,H=36,p=2;
+  const x=i=>p+i*(W-p*2)/Math.max(1,vs.length-1);
+  const y=v=>H-p-(v-lo)/(hi-lo)*(H-p*2);
+  const d=vs.map((v,i)=>(i?"L":"M")+x(i).toFixed(1)+","+y(v).toFixed(1)).join(" ");
+  const z=y(0);
+  const last=vs[vs.length-1];
+  const col=last>0.004?"#9aff9a":last<-0.004?"#ff5a5a":"#6e8f6e";
+  el.innerHTML=`<path d="M${p},${z.toFixed(1)} H${W-p}" stroke="#123412" stroke-width="1" fill="none"/>`+
+    `<path d="${d}" stroke="${col}" stroke-width="1.6" fill="none"/>`+
+    `<circle cx="${x(vs.length-1).toFixed(1)}" cy="${y(last).toFixed(1)}" r="2.2" fill="${col}"/>`;
+}
+
 function render(){
   const d=D; if(!d) return;
-  const src=live?"已从网上更新":"内嵌快照，正在尝试更新";
-  document.getElementById("meta").innerHTML=`<div class="asof">数据时间 ${E(d.asof)}（伦敦）</div><div class="sm m">${E(d.market||"")}</div><div class="xs m">${src}</div>`;
+  document.getElementById("mkt").textContent=d.market||"";
   const als=d.alerts||[];
-  document.getElementById("alerts").innerHTML=als.length?als.map(a=>`<div class="al ${a.lvl}"><b>${a.lvl==="red"?"紧急":"注意"} · ${E(a.t)}</b><div class="sm wr">${E(a.m)}</div></div>`).join(""):`<div class="al ok">无告警：没有闲置 bot、止损已确认、账本解析正常</div>`;
-  document.getElementById("acct").innerHTML=`
-    <div class="row">
-      <div class="kpi"><div class="xs m">股票账本</div><div class="big">${gbp(d.stocks_bal,0)}</div><div class="sm ${cl(d.stocks_pnl)}">${gbp(d.stocks_pnl)}</div></div>
-      <div class="kpi"><div class="xs m">加密账本</div><div class="big">${gbp(d.crypto_bal,0)}</div><div class="sm ${cl(d.crypto_pnl)}">${gbp(d.crypto_pnl)}</div></div>
-    </div><hr>
-    <div class="row">
-      <div class="kpi"><div class="xs m">今日盈亏</div><div class="big ${cl(d.today_gbp)}">${gbp(d.today_gbp)}</div></div>
-      <div class="kpi"><div class="xs m">总盈亏</div><div class="big ${cl(d.total_gbp)}">${gbp(d.total_gbp)}</div><div class="xs m">Alpaca ${usd(d.total_usd,0)}</div></div>
-      <div class="kpi"><div class="xs m">战绩</div><div class="big">${d.w||0} 胜 / ${d.l||0} 负</div></div>
-    </div>`;
-  const pos=d.positions||[], ord=d.orders||[];
-  let po="";
-  if(pos.length){po+=`<div class="card"><h2>持仓</h2>`+pos.map(p=>`<div class="card" style="margin:0 0 8px;padding:10px"><b>${E(p.sym)}</b> ${E(p.side)} \u00d7 ${E(p.qty)}<div class="${cl(p.upl)}">${usd(p.upl)}（${p.uplpc}%）</div><div class="sm m">均价 ${E(p.avg)} · 现价 ${E(p.px)} · 止损 ${p.stop?E(p.stop):(p.opt?"脚本盯盘":"未确认")} · 止盈 ${p.tp?E(p.tp):"\u2014"}</div></div>`).join("")+`</div>`}
-  if(ord.length){po+=`<div class="card"><h2>挂单</h2>`+ord.map(o=>`<div class="sm wr" style="margin:0 0 8px"><b>${E(o.sym)}</b> ${E(o.side)} ${E(o.type)} \u00d7 ${E(o.qty)} · ${E(o.status)}<div class="m">${[o.limit?"限价 "+o.limit:"",o.stop?"止损价 "+o.stop:"",o.t].filter(Boolean).join(" · ")}</div></div>`).join("")+`</div>`}
-  if(!pos.length&&!ord.length) po=`<div class="card sm m">当前无持仓、无挂单（Alpaca 实时回读）</div>`;
-  document.getElementById("posord").innerHTML=po;
-  document.getElementById("bots").innerHTML=(d.bots||[]).map(b=>{
-    if(b.none) return `<div class="card"><b>${E(b.name)}</b><div class="m sm">无记录</div></div>`;
-    const col=b.stalled?"r":(b.age!=null&&b.age<30?"g":(b.age!=null&&b.age<120?"a":""));
-    return `<div class="card"><div class="row"><b>${E(b.name)}</b><span class="pill ${col}">${E(b.age_label)}${b.stalled?" · 闲置":""}</span></div>
-      <div class="xs m">${E(b.t)} · ${E(b.sym)} · ${E(b.gate)}</div>
-      <div><span class="st ${vcls(b.v)}">${E(b.v)}</span></div>
-      <div class="sm wr">${E(b.txt)}</div>
-      <div class="xs m">今日 ${b.n_today} 条</div></div>`}).join("");
+  document.getElementById("alerts").innerHTML=als.length?als.map(a=>`<div class="al ${a.lvl==="red"?"red":""}">! ${E(a.t)} \u2014 ${E(a.m)}</div>`).join(""):"";
+  const A=d.meme&&d.meme.A, B=d.meme&&d.meme.B;
+  document.getElementById("tick").innerHTML=`
+    <div class="kpi"><div class="k">STOCKS \u00a3</div><div class="v">${gbp(d.stocks_bal,0)}</div><div class="s ${cl(d.stocks_pnl)}">${gbp(d.stocks_pnl)} today ${gbp(d.stocks_today)}</div></div>
+    <div class="kpi"><div class="k">CRYPTO \u00a3</div><div class="v">${gbp(d.crypto_bal,0)}</div><div class="s ${cl(d.crypto_pnl)}">${gbp(d.crypto_pnl)} today ${gbp(d.crypto_today)}</div></div>
+    <div class="kpi"><div class="k">MEME A $</div><div class="v">${usd(A&&A.equity,0)}</div><div class="s ${cl(A&&A.realized)}">${usd(A&&A.realized)} ${A?A.wins:0}W/${A?A.losses:0}L</div></div>
+    <div class="kpi"><div class="k">MEME B $</div><div class="v">${usd(B&&B.equity,0)}</div><div class="s ${cl(B&&B.realized)}">${usd(B&&B.realized)} ${B?B.wins:0}W/${B?B.losses:0}L</div></div>`;
+  document.getElementById("tot").innerHTML=`<div><div class="k m">TOTAL P&L</div><div class="v ${cl(d.total_gbp)}">${gbp(d.total_gbp)}</div></div><div class="s hi">${d.w||0}W / ${d.l||0}L</div>`;
+  sparkSvg(d.spark||[]);
+
+  const rows=[];
+  (d.bots||[]).forEach(b=>{
+    if(b.none){rows.push({dot:"off",name:b.name,age:"--",line:"no records",sub:""});return;}
+    const rec=b.age!=null&&b.age<30;
+    const idle=b.stalled||(b.age!=null&&b.age>=120);
+    rows.push({
+      dot: rec?"on":(idle?"off":"id"),
+      name:b.name,
+      age:ageTxt(b.age),
+      line:`${b.sym||"-"}  ${b.gate||""}  ${b.v||""}`,
+      sub:b.txt||""
+    });
+  });
+  const hbOf=n=>{
+    const h=(d.health||[]).find(x=>(x.name||"").includes(n));
+    return h||null;
+  };
+  const mh=hbOf("小币")||hbOf("meme");
+  rows.push({
+    dot: mh?(mh.ok?"on":"off"):"id",
+    name:"小币循环",
+    age:ageTxt(mh&&mh.age),
+    line:d.meme?`cycle ${d.meme.cycle}  ${d.meme.gen||""}`:"offline",
+    sub:d.meme&&d.meme.A?`A ${usd(d.meme.A.equity,0)}  B ${usd(d.meme.B.equity,0)}`:""
+  });
+  (d.health||[]).filter(h=>/scan5|盯盘|守护/.test(h.name||"")).forEach(h=>{
+    const extra=h.name.includes("scan5")&&d.scan5?`  crypto ${d.scan5.crypto||0}  sig ${d.scan5.sig||0}  tradable ${d.scan5.tradable||0}`:"";
+    rows.push({
+      dot:h.ok?"on":"off",
+      name:h.name.replace("扫描器","").trim(),
+      age:ageTxt(h.age),
+      line:(h.ok?"online":"idle")+extra+(d.scan5&&h.name.includes("scan5")?"  "+(d.scan5.stocks||""):""),
+      sub:""
+    });
+  });
+  document.getElementById("proc").innerHTML=rows.map(r=>`<tr>
+    <td class="st"><span class="dot ${r.dot}">\u25cf</span></td>
+    <td class="nm">${E(r.name)}</td>
+    <td>${E(r.line)}<div class="tx">${E(r.sub)}</div></td>
+    <td class="ag">${E(r.age)}</td>
+  </tr>`).join("");
+
   const groups={"进行中":[],"已否决":[],"已执行/完成":[]};
   (d.board||[]).forEach(r=>{(groups[r.status]||groups["进行中"]).push(r)});
-  document.getElementById("btabs").innerHTML=Object.keys(groups).map(k=>`<span data-t="${k}" class="${tab===k?"on":""}">${k} ${groups[k].length}</span>`).join("");
+  document.getElementById("btabs").innerHTML=Object.keys(groups).map(k=>`<span data-t="${k}" class="${tab===k?"on":""}">[${k} ${groups[k].length}]</span>`).join("");
   const list=groups[tab]||[];
-  document.getElementById("board").innerHTML=list.length?list.map(r=>{
-    const stages=[1,2,3,4,5].map(i=>{const v=r.stages&&r.stages[String(i)];return `<span class="st ${v?vcls(v):""}">${i}${v?" "+E(v):""}</span>`}).join("");
-    const rj=r.reject?`<div class="sm r wr">${E(r.reject.rule)} · 第${r.reject.stage}关 · ${E(r.reject.why)}</div>`:`<div class="sm ${r.status==="进行中"?"a":"g"}">${E(r.status)}</div>`;
-    return `<div style="padding:10px 0;border-bottom:1px solid var(--line)"><div><b class="mono">${E(r.id)}</b> ${E(r.sym)} <span class="xs m">${E(r.last)}</span></div><div>${stages}</div>${rj}</div>`}).join(""):`<div class="sm m">这一栏暂时没有编号</div>`;
+  document.getElementById("board").innerHTML=list.length?list.slice(0,8).map(r=>{
+    const stages=[1,2,3,4,5].map(i=>{
+      const v=r.stages&&r.stages[String(i)];
+      return `<span class="${v?vcls(v):"m"}">${i}:${v?E(v):"·"}</span>`;
+    }).join(" ");
+    const extra=r.reject?`<div class="a">${E(r.reject.rule)}  st${r.reject.stage}  ${E(r.reject.why)}</div>`:"";
+    return `<div class="rowp"><div><span class="hi">${E(r.id)}</span> ${E(r.sym)} <span class="m">${E(r.last)}</span></div><div class="stg">${stages}</div>${extra}</div>`;
+  }).join(""):`<div class="m">no tickets in this lane</div>`;
+
   const rr=d.rej_today||[], mx=Math.max(1,...rr.map(x=>x[1]));
-  document.getElementById("rej").innerHTML=(rr.length?rr.map(x=>`<div style="margin:8px 0"><div class="sm">${E(x[0])} <b>${x[1]}</b></div><span class="bar" style="width:${Math.round(x[1]/mx*100)}%"></span></div>`).join(""):`<div class="sm m">今日暂无否决</div>`)+`<div class="sm m">今日关卡：通过 ${d.pass_n||0} · 否决 ${d.rej_n||0}</div>`;
-  document.getElementById("log").innerHTML=(d.log||[]).map(r=>`<div style="padding:8px 0;border-bottom:1px solid var(--line)"><div class="xs m">${E(r.t)} · ${E(r.who)} · ${E(r.sym)} · ${E(r.gate)} <span class="st ${vcls(r.v)}">${E(r.v)}</span></div><div class="sm wr">${E(r.txt)}</div></div>`).join("") || `<div class="sm m">暂无日志</div>`;
-  const m=d.meme;
-  document.getElementById("meme").innerHTML=m?`<div class="sm m">第 ${m.cycle} 轮 · ${E(m.gen)} GMT</div>
-    <div class="row"><div class="kpi"><b>A 严格</b><div class="big" style="font-size:22px">${usd(m.A.equity,0)}</div><div class="sm ${cl(m.A.realized)}">${usd(m.A.realized)} · ${m.A.wins}胜/${m.A.losses}负 · 平仓 ${m.A.closed}</div></div>
-    <div class="kpi"><b>B 含骗局币</b><div class="big" style="font-size:22px">${usd(m.B.equity,0)}</div><div class="sm ${cl(m.B.realized)}">${usd(m.B.realized)} · ${m.B.wins}胜/${m.B.losses}负 · 平仓 ${m.B.closed}</div></div></div>`:"<div class='sm m'>暂无</div>";
+  document.getElementById("rej").innerHTML=(rr.length?rr.map(x=>{
+    const n=Math.max(1,Math.round(x[1]/mx*12));
+    const bar="#".repeat(n)+".".repeat(12-n);
+    return `<div class="barline"><span class="n">${E(x[0])}</span><span class="b">${bar}</span><span class="c">${x[1]}</span></div>`;
+  }).join(""):`<div class="m">no rejects today</div>`)+`<div class="m">pass ${d.pass_n||0}  reject ${d.rej_n||0}</div>`;
+
+  const pos=d.positions||[], ord=d.orders||[];
+  let po="";
+  if(pos.length){
+    po+=`<table class="pos"><tr><th>SYM</th><th>SIDE</th><th>QTY</th><th>UPL</th><th>STOP</th></tr>`+
+      pos.map(p=>`<tr><td>${E(p.sym)}</td><td>${E(p.side)}</td><td>${E(p.qty)}</td><td class="${cl(p.upl)}">${usd(p.upl)}</td><td>${p.stop?E(p.stop):(p.opt?"script":"none")}</td></tr>`).join("")+`</table>`;
+  }
+  if(ord.length){
+    po+=`<table class="pos"><tr><th>ORD</th><th>SIDE</th><th>TYPE</th><th>QTY</th><th>STAT</th></tr>`+
+      ord.map(o=>`<tr><td>${E(o.sym)}</td><td>${E(o.side)}</td><td>${E(o.type)}</td><td>${E(o.qty)}</td><td>${E(o.status)}</td></tr>`).join("")+`</table>`;
+  }
+  if(!pos.length&&!ord.length) po=`<div class="m">no open positions / no working orders</div>`;
+  document.getElementById("posord").innerHTML=po;
+
+  const logs=d.log||[];
+  document.getElementById("log").innerHTML=logs.length?logs.map(r=>`<div class="e ${logTone(r)}"><div class="h">${E(r.t)}  ${E(r.who)}  ${E(r.sym)}  ${E(r.gate)}  ${E(r.v)}</div><div>${E(r.txt)}</div></div>`).join(""):`<div class="m">no log lines</div>`;
+  clockTick();
 }
 
 async function getJson(url, ms){
@@ -135,7 +277,6 @@ async function getJson(url, ms){
     return j;
   } finally { clearTimeout(t); }
 }
-
 function dataUrls(){
   const t=Date.now();
   return [
@@ -145,20 +286,19 @@ function dataUrls(){
     "data.json?t="+t
   ];
 }
-
 async function load(){
-  let lastErr="拉取数据失败";
+  let lastErr="fetch failed";
   for (const u of dataUrls()){
     try{
       const j=await getJson(u, 4000);
+      if(D&&Array.isArray(D.spark)&&!Array.isArray(j.spark)) j.spark=D.spark;
       D=j; live=true; lastOk=Date.now();
       render();
       return;
-    }catch(e){ lastErr=(e&&e.name==="AbortError")?"超时":(e&&e.message)||"拉取数据失败"; }
+    }catch(e){ lastErr=(e&&e.name==="AbortError")?"timeout":(e&&e.message)||"fetch failed"; }
   }
   throw new Error(lastErr);
 }
-
 function showSnap(){
   try{
     if(!okData(SNAP)) throw new Error("snap");
@@ -166,12 +306,12 @@ function showSnap(){
     return true;
   }catch(e){ return false; }
 }
-
 document.addEventListener("click",ev=>{const t=ev.target.dataset&&ev.target.dataset.t;if(t){tab=t;render()}});
 showSnap();
+setInterval(clockTick,1000);
 (async()=>{
   try{await load()}catch(e){
-    if(!D) document.getElementById("meta").innerHTML='<div class="r">暂时拉不到数据，稍后自动重试。</div>';
+    if(!D) document.getElementById("mkt").textContent="NO DATA \u2014 retrying";
     else { live=false; render(); }
   }
   setInterval(async()=>{try{await load()}catch(e){}},45000);

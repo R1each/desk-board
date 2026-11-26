@@ -39,14 +39,7 @@ hr{border:0;border-top:1px solid var(--line);margin:10px 0}
 <body>
 <div class="wrap" id="app">
   <h1>交易台监控 <span class="pill a">模拟盘</span></h1>
-  <div id="gate" class="card" hidden>
-    <h2>打开加密数据</h2>
-    <p class="sm">数据是加密后发布的。输入口令后会留在这台手机上，下次不用再输。</p>
-    <input id="pw" type="password" placeholder="口令" autocomplete="current-password">
-    <div id="pwerr" class="r sm" hidden></div>
-    <button id="pwbtn" type="button">打开</button>
-  </div>
-  <div id="main" hidden>
+  <div id="main">
     <div id="meta"></div>
     <div id="alerts"></div>
     <div class="card" id="acct"></div>
@@ -70,31 +63,16 @@ hr{border:0;border-top:1px solid var(--line);margin:10px 0}
       <summary><h2 style="display:inline">链上小币模拟盘</h2></summary>
       <div id="meme" style="margin-top:10px"></div>
     </details>
-    <p class="xs m">全部为模拟盘，实盘不动。页面每 45 秒拉取一次加密数据。口令只存在本机。</p>
-    <button class="sec" id="forget" type="button">忘记口令</button>
+    <p class="xs m">全部为模拟盘，实盘不动。页面每 45 秒刷新一次。数字已去掉密钥和账户号。</p>
   </div>
 </div>
 <script>
-const LS="desk-monitor-pass";
 const E=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&","<":"<",">":">",'"':"""}[c]));
 const usd=(n,s=1)=>(n<0?"−":(s&&n>0?"+":""))+"$"+Math.abs(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
 const gbp=(n,s=1)=>(n<0?"−":(s&&n>0?"+":""))+"£"+Math.abs(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
 const cl=n=>n>0.004?"g":n<-0.004?"r":"m";
 const vcls=v=>/通过|平仓/.test(v)?"p":/否决|撤/.test(v)?"x":/待|有条件|盯盘/.test(v)?"o":"";
 let D=null,tab="进行中",lastOk=0;
-
-function b64(s){const bin=atob(s);const u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return u}
-async function derive(pass,salt,iter){
-  const enc=new TextEncoder();
-  const base=await crypto.subtle.importKey("raw",enc.encode(pass),"PBKDF2",false,["deriveKey"]);
-  return crypto.subtle.deriveKey({name:"PBKDF2",salt,iterations:iter,hash:"SHA-256"},base,{name:"AES-GCM",length:256},false,["decrypt"]);
-}
-async function decrypt(env,pass){
-  if(!env||env.v!==1||env.alg!=="AES-GCM") throw new Error("数据格式不对");
-  const key=await derive(pass,b64(env.salt),env.iter||210000);
-  const pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:b64(env.iv)},key,b64(env.ct));
-  return JSON.parse(new TextDecoder().decode(pt));
-}
 
 function render(){
   const d=D; if(!d) return;
@@ -142,7 +120,7 @@ function render(){
     <div class="kpi"><b>B 含骗局币</b><div class="big" style="font-size:22px">${usd(m.B.equity,0)}</div><div class="sm ${cl(m.B.realized)}">${usd(m.B.realized)} · ${m.B.wins}胜/${m.B.losses}负 · 平仓 ${m.B.closed}</div></div></div>`:"<div class='sm m'>暂无</div>";
 }
 
-async function load(pass){
+async function load(){
   const urls=["data.json?t="+Date.now(),"https://raw.githubusercontent.com/R1each/desk-board/main/data.json?t="+Date.now()];
   let env=null, lastErr="拉取数据失败";
   for (const u of urls){
@@ -153,34 +131,14 @@ async function load(pass){
     }catch(e){ lastErr="拉取数据失败"; }
   }
   if(!env) throw new Error(lastErr);
-  D=await decrypt(env,pass);
+  D=env;
   lastOk=Date.now();
-  document.getElementById("gate").hidden=true;
-  document.getElementById("main").hidden=false;
   render();
 }
-function showGate(msg){
-  document.getElementById("gate").hidden=false;
-  document.getElementById("main").hidden=true;
-  const e=document.getElementById("pwerr");
-  if(msg){e.hidden=false;e.textContent=msg}else e.hidden=true;
-}
-async function unlock(pass,save){
-  try{await load(pass); if(save) localStorage.setItem(LS,pass)}
-  catch(err){ localStorage.removeItem(LS); showGate("口令不对，或数据还没就绪。"); }
-}
-document.getElementById("pwbtn").onclick=()=>unlock(document.getElementById("pw").value,true);
-document.getElementById("pw").addEventListener("keydown",ev=>{if(ev.key==="Enter")unlock(document.getElementById("pw").value,true)});
-document.getElementById("forget").onclick=()=>{localStorage.removeItem(LS);showGate("")};
 document.addEventListener("click",ev=>{const t=ev.target.dataset&&ev.target.dataset.t;if(t){tab=t;render()}});
 (async()=>{
-  const saved=localStorage.getItem(LS);
-  if(saved) await unlock(saved,false);
-  else showGate("");
-  setInterval(async()=>{
-    const p=localStorage.getItem(LS); if(!p) return;
-    try{await load(p)}catch(e){}
-  },45000);
+  try{await load()}catch(e){document.getElementById("meta").innerHTML='<div class="r">暂时拉不到数据，稍后自动重试。</div>'}
+  setInterval(async()=>{try{await load()}catch(e){}},45000);
 })();
 </script>
 </body>

@@ -4,293 +4,994 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<meta name="theme-color" content="#050605">
+<meta name="theme-color" content="#07080c">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
-<title>GROK DESK TERMINAL · PAPER</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<title>交易台 · 模拟盘</title>
 <style>
-:root{--bg:#050605;--fg:#9aff9a;--hi:#e4ffe4;--dim:#3f6a3f;--mut:#6e8f6e;--amb:#ffcc33;--red:#ff5a5a;--cyan:#7ee7ff;--line:#123412}
+:root{
+  --bg:#07080c;
+  --panel:#0b0c10;
+  --panel2:#101218;
+  --line:rgba(255,255,255,.09);
+  --line2:rgba(0,232,255,.18);
+  --tx:#e8eef7;
+  --mut:#8b93a7;
+  --dim:#5c6478;
+  --cyan:#00e8ff;
+  --blue:#4d8dff;
+  --mag:#ff2bd6;
+  --amber:#ffcc44;
+  --green:#3effa8;
+  --red:#ff5b73;
+  --c-侦察兵:#00e8ff;
+  --c-看图员:#4d8dff;
+  --c-军师:#ff2bd6;
+  --c-风控:#ffcc44;
+  --c-执行员:#3effa8;
+  --sans:"Noto Sans SC","Noto Sans CJK SC","Source Han Sans SC","Microsoft YaHei","PingFang SC",sans-serif;
+  --mono:"IBM Plex Mono","ui-monospace","SF Mono","Cascadia Mono","Noto Sans Mono CJK SC","Noto Sans SC",monospace;
+}
 *{box-sizing:border-box}
-html,body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.3 ui-monospace,"SF Mono","Cascadia Mono","JetBrains Mono","Noto Sans Mono CJK SC","Sarasa Mono SC","Noto Sans SC","Microsoft YaHei","PingFang SC","Heiti SC","Source Han Sans SC","WenQuanYi Micro Hei",Menlo,Consolas,sans-serif,monospace}
-.scan{position:fixed;inset:0;pointer-events:none;z-index:40;background:repeating-linear-gradient(180deg,transparent 0 2px,rgba(0,255,80,.03) 3px);mix-blend-mode:screen}
-@keyframes blink{50%{opacity:0}}
-.cur{display:inline-block;width:.55ch;height:.9em;background:var(--fg);margin-left:3px;animation:blink 1s step-end infinite;vertical-align:-2px}
-.wrap{max-width:390px;margin:0 auto;padding:0 0 24px;position:relative;z-index:1}
-.top{padding:6px 12px 5px;border-bottom:1px solid var(--line);background:var(--bg);position:sticky;top:0;z-index:5}
-.brand{color:var(--hi);font-weight:700;font-size:15px;letter-spacing:.03em}
-.meta{display:flex;justify-content:space-between;gap:8px;color:var(--cyan);font-size:12px;margin-top:2px}
-.mkt{color:var(--amb);font-size:11px;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sec{padding:6px 12px 4px;border-top:1px dashed var(--line)}
-.lab{color:var(--dim);font-size:11px;letter-spacing:.14em;margin:0 0 3px;text-transform:uppercase}
-.lab:before{content:"// "}
-.ln{display:flex;align-items:baseline;gap:7px;white-space:nowrap;overflow:hidden;padding:2px 0;font-size:15px}
-.ln > *{min-width:0}
-.nm{color:var(--hi);flex:0 0 auto}
-.st{flex:0 0 auto;font-size:13px;letter-spacing:.04em}
-.it{flex:1 1 auto;overflow:hidden;text-overflow:ellipsis;color:var(--fg)}
-.ag{flex:0 0 auto;color:var(--mut);font-size:13px}
-.dot{flex:0 0 auto}
-.g{color:var(--fg)}.a{color:var(--amb)}.r{color:var(--red)}.m{color:var(--mut)}.c{color:var(--cyan)}.hi{color:var(--hi)}
-.tot{font-size:30px;font-weight:700;letter-spacing:-.03em;line-height:1.05;margin:0}
-.totlab{color:var(--hi);font-size:12px;letter-spacing:.14em;margin:0 0 2px}
-.totsm{font-size:13px;font-weight:400;letter-spacing:0;margin-top:3px;white-space:normal}
-.totbox{padding:2px 0 8px;border-bottom:1px dashed var(--line);margin-bottom:6px}
-.wl{color:var(--hi);font-size:13px;margin:0 0 2px}
-.more{border-top:1px dashed var(--line);padding:4px 12px 10px}
-.more summary{color:var(--mut);font-size:15px;cursor:pointer;list-style:none}
+html,body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.45 var(--sans);min-height:100%}
+body{overflow-x:hidden}
+.bgfx,.gridbg,.scanlines{position:fixed;inset:0;pointer-events:none}
+.bgfx{z-index:0}
+.gridbg{z-index:0;background-image:linear-gradient(rgba(0,232,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,232,255,.04) 1px,transparent 1px);background-size:48px 48px;animation:gridshift 48s linear infinite;opacity:.55}
+.scanlines{z-index:50;background:repeating-linear-gradient(180deg,transparent 0 2px,rgba(0,0,0,.12) 3px);mix-blend-mode:overlay;opacity:.35}
+@keyframes gridshift{to{background-position:0 48px,48px 0}}
+.shell{position:relative;z-index:1;max-width:1320px;margin:0 auto;padding:12px 14px 88px;display:grid;gap:12px;grid-template-columns:280px minmax(0,1fr) 340px;grid-template-areas:"top top top" "tick tick tick" "hero hero hero" "agents flow logs" "bar bar bar"}
+.top{grid-area:top;display:flex;align-items:flex-start;justify-content:space-between;gap:12px 16px;flex-wrap:wrap;padding:10px 16px;background:var(--panel);border:1px solid var(--line);border-radius:12px}
+.brand .title{font-size:18px;font-weight:700;letter-spacing:.04em}
+.brand .sub{color:var(--mut);font-size:12px;margin-top:2px;max-width:36ch;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pill{display:inline-block;margin-left:8px;padding:1px 8px;border:1px solid var(--line2);border-radius:999px;color:var(--cyan);font-size:11px;font-weight:500;letter-spacing:.08em;vertical-align:2px}
+.head-stats{display:flex;flex-wrap:wrap;gap:14px 22px;align-items:flex-end;flex:1;min-width:0;justify-content:center}
+.hstat .k{display:block;color:var(--dim);font-size:10px;letter-spacing:.12em}
+.hstat .v{font-family:var(--mono);font-size:22px;font-weight:600;letter-spacing:-.02em;line-height:1.1}
+.hstat.eq .v{font-size:28px}
+.head-right{text-align:right;color:var(--mut);font-size:12px}
+.run{display:flex;align-items:center;justify-content:flex-end;gap:6px;color:var(--tx);font-family:var(--mono);font-size:13px}
+.run-dot{width:8px;height:8px;border-radius:50%;background:var(--dim);box-shadow:0 0 0 0 transparent;flex:0 0 auto}
+.run.on .run-dot{background:var(--green);box-shadow:0 0 8px var(--green);animation:blink 1.4s step-end infinite}
+.run.stale .run-dot{background:var(--red);box-shadow:0 0 8px var(--red);animation:none}
+.run.snap .run-dot{background:var(--amber);animation:none}
+@keyframes blink{50%{opacity:.35}}
+.nav{display:inline-block;margin-top:6px;color:var(--cyan);text-decoration:none;font-size:12px;border:1px solid var(--line2);border-radius:999px;padding:2px 10px}
+.nav:hover{background:rgba(0,232,255,.08)}
+.ticker{grid-area:tick;overflow:hidden;border:1px solid var(--line);border-radius:10px;background:rgba(11,12,16,.85);height:28px;display:flex;align-items:center}
+.ticker-track{display:inline-flex;gap:2.2rem;white-space:nowrap;padding:0 16px;font-family:var(--mono);font-size:12px;color:var(--mut);animation:marquee 48s linear infinite;will-change:transform}
+.ticker-track span{color:var(--tx)}
+.ticker-track .r{color:var(--red)}.ticker-track .g{color:var(--green)}.ticker-track .a{color:var(--amber)}.ticker-track .p{color:var(--mag)}
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.hero{grid-area:hero;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 16px 10px;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:12px;align-items:stretch}
+.hero-left h2{margin:0 0 2px;font-size:12px;letter-spacing:.16em;color:var(--mut);font-weight:500}
+.hero-pnl{font-family:var(--mono);font-size:42px;font-weight:600;letter-spacing:-.03em;line-height:1;margin:4px 0 8px;text-shadow:0 0 18px color-mix(in srgb, currentColor 45%, transparent)}
+.hero-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.hero-grid div{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.hero-grid .k{display:block;color:var(--dim);font-size:11px}
+.hero-grid b{font-family:var(--mono);font-size:15px;font-weight:600}
+.fx{color:var(--dim);font-size:11px;margin-top:8px}
+.chart-wrap{position:relative;min-height:120px}
+.chart-wrap .lab{position:absolute;top:0;left:0;color:var(--dim);font-size:11px;letter-spacing:.1em}
+.chart-wrap svg{width:100%;height:96px;display:block;margin-top:16px}
+.books{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;grid-column:1/-1}
+.book{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;min-width:0}
+.book h3{margin:0 0 6px;font-size:12px;font-weight:500;color:var(--mut);display:flex;justify-content:space-between;gap:8px}
+.book h3 span{font-family:var(--mono);white-space:nowrap}
+.book .row{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:12px;color:var(--mut)}
+.book b{font-family:var(--mono);font-weight:600;color:var(--tx);font-size:13px;white-space:nowrap;margin-left:auto}
+.book .spark{width:84px;height:22px;display:block;margin-top:4px}
+.agents{grid-area:agents;display:flex;flex-direction:column;gap:8px}
+.acard{display:grid;grid-template-columns:48px 1fr auto;grid-template-rows:auto auto auto auto;gap:0 8px;padding:8px;background:var(--panel);border:1px solid var(--line);border-radius:12px;transition:border-color .3s,box-shadow .3s}
+.acard .tile{grid-row:1/3;width:44px;height:44px;border-radius:10px;background:#0a0c12;border:1px solid color-mix(in srgb, var(--ac,var(--cyan)) 45%, transparent);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.acard .tile svg{width:40px;height:40px}
+.acard .nm{font-weight:700;font-size:14px;align-self:end}
+.acard .badge{grid-column:3;grid-row:1/3;align-self:center;font-family:var(--mono);font-size:10px;letter-spacing:.06em;border-radius:999px;padding:3px 7px;border:1px solid currentColor;color:var(--ac,var(--mut));background:color-mix(in srgb, var(--ac,var(--mut)) 12%, transparent)}
+.acard .badge.idle,.acard .badge.off{color:var(--mut);border-color:var(--line)}
+.acard .role{grid-column:2/4;color:var(--mut);font-size:12px}
+.acard .rule{grid-column:1/4;font-size:12px;color:var(--ac,var(--cyan));white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.acard .act{grid-column:1/4;font-size:12px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.acard.active{border-color:color-mix(in srgb, var(--ac) 70%, #fff 0%);box-shadow:0 0 0 1px color-mix(in srgb, var(--ac) 40%, transparent),0 0 22px color-mix(in srgb, var(--ac) 28%, transparent);animation:cardpulse 2.4s ease-in-out infinite}
+@keyframes cardpulse{50%{box-shadow:0 0 0 1px color-mix(in srgb, var(--ac) 55%, transparent),0 0 28px color-mix(in srgb, var(--ac) 42%, transparent)}}
+.flow-wrap{grid-area:flow;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 12px 14px;min-width:0}
+.sec-h{font-size:11px;letter-spacing:.16em;color:var(--mut);margin:0 0 8px;font-weight:500;display:flex;align-items:center;gap:8px}
+.term-cmd{font-family:var(--mono);letter-spacing:0;color:var(--dim);font-size:11px}
+.cands{display:flex;flex-wrap:wrap;gap:6px;min-height:28px;margin-bottom:10px}
+.chip{font-family:var(--mono);font-size:11px;padding:3px 8px;border-radius:999px;border:1px solid var(--line2);background:rgba(0,232,255,.06);color:var(--tx)}
+.chip.shadow{border-color:rgba(255,43,214,.4);background:rgba(255,43,214,.08);color:#ffc6ef}
+.chip.muted{color:var(--dim);border-style:dashed;background:transparent}
+.pipeline{position:relative;min-height:132px;margin:4px 0 10px}
+.pipe-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;z-index:0}
+#pipeGlow{fill:none;stroke:rgba(0,232,255,.18);stroke-width:6;stroke-linecap:round;filter:blur(2px)}
+#pipePath{fill:none;stroke:rgba(180,220,255,.28);stroke-width:1.4;stroke-dasharray:5 7;stroke-linecap:round}
+.packets{position:absolute;inset:0;z-index:2;pointer-events:none}
+.pkt{position:absolute;left:0;top:0;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;pointer-events:none;will-change:transform;box-shadow:0 0 10px currentColor}
+.nodes{position:relative;z-index:1;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;align-items:start}
+.node{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px}
+.node .orb{position:relative;width:54px;height:54px;border-radius:50%;background:#0a0c12;border:1px solid color-mix(in srgb, var(--ac) 55%, transparent);display:flex;align-items:center;justify-content:center;box-shadow:0 0 14px color-mix(in srgb, var(--ac) 22%, transparent)}
+.node .orb svg{width:46px;height:46px;border-radius:50%}
+.node .orb .radar{position:absolute;inset:-6px;border-radius:50%;background:conic-gradient(from 0deg,transparent 0 68%,color-mix(in srgb, var(--ac) 70%, transparent) 86%,transparent 100%);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2px));mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2px));animation:sweep 2.6s linear infinite;pointer-events:none;display:none}
+.node.scanning .orb .radar{display:block}
+.node.active .orb{animation:orbpulse 2.2s ease-in-out infinite}
+@keyframes sweep{to{transform:rotate(360deg)}}
+@keyframes orbpulse{50%{box-shadow:0 0 22px color-mix(in srgb, var(--ac) 55%, transparent)}}
+.node .nm{font-size:12px;font-weight:700}
+.node .stt{font-size:11px;color:var(--dim);max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.node .hold{display:flex;flex-direction:column;gap:3px;min-height:22px;width:100%}
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.tile-s{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:7px 8px}
+.tile-s .k{display:block;color:var(--dim);font-size:10px;letter-spacing:.08em}
+.tile-s .v{font-family:var(--mono);font-size:14px;font-weight:600}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.controls button,.controls select{background:var(--panel2);color:var(--tx);border:1px solid var(--line);border-radius:8px;padding:5px 10px;font:12px var(--sans);cursor:pointer}
+.controls button:hover{border-color:var(--line2)}
+.note{color:var(--dim);font-size:11px}
+.logs{grid-area:logs;display:flex;flex-direction:column;gap:8px;min-width:0}
+.term-panel,.table-panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px;min-width:0}
+.term{font-family:var(--mono);font-size:11px;line-height:1.45;height:220px;overflow:auto;background:#07080c;border-radius:8px;padding:8px;border:1px solid var(--line);color:#b8c0d0}
+.term .ln{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.term .t{color:var(--dim);margin-right:8px}
+.term .cur{display:inline-block;width:.6ch;height:1em;background:var(--green);margin-left:3px;animation:blink 1s step-end infinite;vertical-align:-1px}
+.dlog{max-height:280px;overflow:auto}
+.drow{display:grid;grid-template-columns:52px 52px minmax(0,1fr);gap:6px;padding:6px 2px;border-bottom:1px solid var(--line);font-size:12px;align-items:start}
+.drow .tm{font-family:var(--mono);color:var(--dim)}
+.tag{font-family:var(--mono);font-size:10px;letter-spacing:.04em;border-radius:4px;padding:1px 5px;border:1px solid currentColor;text-align:center}
+.tag.skip{color:var(--red)}.tag.enter{color:var(--green)}.tag.shadow{color:var(--mag)}.tag.wait{color:var(--amber)}.tag.misc{color:var(--mut)}
+.drow .sym{font-weight:600}
+.drow .why{color:var(--mut);font-size:11px;grid-column:1/-1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar{grid-area:bar;position:sticky;bottom:8px;z-index:20;display:flex;gap:0;overflow:auto;background:rgba(11,12,16,.92);border:1px solid var(--line);border-radius:12px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.bar .cell{flex:1 0 auto;min-width:140px;padding:8px 12px;border-right:1px solid var(--line);display:flex;align-items:center;gap:8px;font-size:12px}
+.bar .cell:last-child{border-right:0}
+.bar i{width:8px;height:8px;border-radius:50%;background:var(--dim);flex:0 0 auto}
+.bar .cell.active i{background:var(--ac);box-shadow:0 0 8px var(--ac)}
+.bar .who{font-weight:700;color:var(--ac,#fff)}
+.bar .tagline{color:var(--mut);white-space:nowrap}
+.g{color:var(--green)}.r{color:var(--red)}.a{color:var(--amber)}.m{color:var(--mut)}.p{color:var(--mag)}
+.more{grid-column:1/-1;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 14px 12px}
+.more summary{cursor:pointer;color:var(--mut);list-style:none;font-size:13px}
 .more summary::-webkit-details-marker{display:none}
-.more summary:before{content:"+ ";color:var(--dim)}
-.more[open] summary:before{content:"\2212 "}
-.more .lab{margin-top:10px}
-.sub{font-size:14px}
+.more .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:8px}
+.more .ln{display:flex;gap:8px;font-size:12px;color:var(--mut);font-family:var(--mono);white-space:nowrap;overflow:hidden}
+.foot{grid-column:1/-1;color:var(--dim);font-size:11px;padding:0 4px}
+@media(max-width:980px){
+  .shell{grid-template-columns:1fr;grid-template-areas:"top" "tick" "hero" "agents" "flow" "logs" "bar";padding:8px 8px 96px}
+  .top{flex-direction:column;align-items:stretch}
+  .hero{grid-template-columns:1fr}
+  .hero-grid{grid-template-columns:repeat(2,1fr)}
+  .books{grid-template-columns:repeat(2,1fr)}
+  .hero-pnl{font-size:34px}
+  .head-stats{display:grid !important;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 10px;justify-content:stretch;width:100%;flex:none}
+  .hstat.eq{grid-column:1/-1}
+  .hstat.eq .v{font-size:26px}
+  .hstat .v{font-size:18px;white-space:nowrap}
+  .hstat .k{white-space:nowrap}
+  .head-right{text-align:left;width:100%}
+  .run{justify-content:flex-start;flex-wrap:wrap}
+  .tiles{grid-template-columns:repeat(2,1fr)}
+  .nodes{min-width:520px}
+  .pipeline{overflow-x:auto}
+  .more .grid{grid-template-columns:1fr}
+  .bar{bottom:0;border-radius:12px 12px 0 0}
+}
+@media(max-width:420px){
+  .books{grid-template-columns:1fr 1fr}
+  .hero-pnl{font-size:30px}
+}
+@media(prefers-reduced-motion:reduce){
+  .gridbg,.scanlines,.bgfx{animation:none;display:none}
+  .ticker-track{animation:none;flex-wrap:wrap;white-space:normal;transform:none}
+  .acard.active,.node.active .orb,.node .orb .radar,.run.on .run-dot,.term .cur{animation:none}
+  .chart-stroke{stroke-dasharray:none}
+  *{scroll-behavior:auto}
+}
+
 </style>
 </head>
 <body>
-<div class="scan"></div>
-<div class="wrap">
-  <div class="top">
-    <div class="brand">GROK DESK TERMINAL · PAPER · LIVE<span class="cur"></span> <a href="anim.html" style="color:var(--cyan);font-weight:400;font-size:12px;text-decoration:none;margin-left:8px">动画台</a></div>
-    <div class="meta"><span id="clock">--:--:-- LONDON</span><span id="upd">UPD --</span></div>
-    <div class="mkt" id="mkt" hidden></div>
-  </div>
-  <div class="sec">
-    <div class="lab">总计 · P&amp;L</div>
-    <div class="totbox"><div class="tot" id="tot"></div></div>
-    <div class="wl" id="wl"></div>
-    <div id="books"></div>
-    <div id="trades"></div>
-  </div>
-  <div class="sec">
-    <div class="lab">AI STATUS</div>
-    <div id="ais"></div>
-  </div>
-  <div class="sec">
-    <div class="lab">QUEUED DECISIONS</div>
-    <div id="queue"></div>
-  </div>
-  <div class="sec">
-    <div class="lab">DECISION HANDOFF</div>
-    <div id="handoff"></div>
-  </div>
-  <details class="more">
-    <summary>&#x66F4;&#x591A;</summary>
-    <div class="lab">REJECT RULES</div>
-    <div class="sub" id="rej"></div>
-    <div class="lab">HEARTBEATS</div>
-    <div class="sub" id="hb"></div>
-    <div class="lab">POSITIONS</div>
-    <div class="sub" id="pos"></div>
-    <div class="lab">LOG</div>
-    <div class="sub" id="log"></div>
-  </details>
-</div>
-<script>
-const SNAP={"asof":"2026-11-26 17:55:48","tz":"Europe/London","market":"\u7f8e\u80a1\u4f11\u5e02 \u00b7 \u4e0b\u6b21\u5f00\u76d8 2026-11-27 09:30\uff08\u7f8e\u4e1c\uff09","alerts":[],"equity_usd":100136.22,"day_usd":0.0,"total_usd":136.22,"stocks_bal":961.11,"stocks_pnl":-38.89,"stocks_today":0,"crypto_bal":1136.48,"crypto_pnl":136.48,"crypto_today":0,"today_gbp":0,"total_gbp":97.59,"w":3,"l":4,"positions":[],"orders":[],"has_positions":false,"has_orders":false,"bots":[{"name":"\u4fa6\u5bdf\u5175","t":"11-26 16:21","age":94,"age_label":"1 \u5c0f\u65f6 34 \u5206\u524d","stalled":false,"sym":"SOL/USD","gate":"\u7b2c1\u5173","v":"\u901a\u8fc7","txt":"\u901a\u8fc7\uff08\u53ea\u8bb0\u8d26\u5230 crypto-paper.csv \u6a21\u62df\u76d8\uff0c\u4e0d\u8d70 IBKR\uff0c\u672c\u884c\u4e0d\u4e0b\u5355\u3001\u4e0d\u53d1\u9001\uff09\u3002SOL/USD \u73b0\u8d27\u7a7a\u3002Nova 16:13 Europe/L\u2026","n_today":22},{"name":"\u770b\u56fe\u5458","t":"11-26 16:22","age":93,"age_label":"1 \u5c0f\u65f6 33 \u5206\u524d","stalled":false,"sym":"SOL/USD","gate":"\u7b2c2\u5173","v":"\u5426\u51b3","txt":"t1 54.64\u4e0d\u662f\u56fe\u4e0a\u7ed3\u6784\uff1a\u4e00\u5e74\u5185\u6700\u4f4e60.18(2026-06-06)\uff0ct1\u5728\u5176\u4e0b9%\u3002\u53ef\u89c1\u652f\u649164.83(11/21\u4f4e)\u300165.67(11/25\u4f4e)\u30016\u2026","n_today":1},{"name":"\u519b\u5e08","t":"11-25 22:35","age":1160,"age_label":"19 \u5c0f\u65f6 20 \u5206\u524d","stalled":false,"sym":"MSLZ6/SOL","gate":"\u7b2c3\u5173","v":"\u901a\u8fc7\uff08\u91cd\u5ba1\uff09","txt":"\u91cd\u5ba1\uff0c\u8986\u76d6\u7b2c543\u884c\u3002\u4f9d\u636e\u89c4\u5219\uff1ahandoff-spec \u7b2c472\u2013486\u884c\uff08\u98ce\u63a711/25 20:35/20:45\u5b9a\u7a3f\uff0c\u989d\u5ea6\u7531\u98ce\u63a7\u6309\u5355\u88c1\u5b9a\uff0c\u5f15Ryan 20\u2026","n_today":0},{"name":"\u98ce\u63a7","t":"11-25 22:35","age":1160,"age_label":"19 \u5c0f\u65f6 20 \u5206\u524d","stalled":false,"sym":"MSLZ6","gate":"\u7b2c4\u5173","v":"\u901a\u8fc7","txt":"\u7a7a1\u624bCME Micro SOL 12\u6708\uff0c\u53ea\u505aIBKR\u6a21\u62df\u76d8[acct]\u3002\u6309handoff-spec\u7b2c472\u2013486\u884c\uff0c1\u624b\u4e0d\u53ef\u62c6\uff0c\u5355\u7b14\u4f8b\u5916\u2264\u00a365\u3002\u5165\u573a\u9650\u4ef7\u2026","n_today":0},{"name":"\u6267\u884c\u5458","t":"11-26 00:27","age":1048,"age_label":"17 \u5c0f\u65f6 28 \u5206\u524d","stalled":false,"sym":"METX6\uff08MET Nov27'2\u2026","gate":"\u7b2c5\u5173","v":"\u5426\u51b3","txt":"\u9884\u89c8\uff08\u4e0d\u662f\u6210\u4ea4\uff09\uff1aIBKR Client Portal \u6a21\u62df\u76d8 [acct]\uff0c2026-11-26 \u7ea600:27 UK\uff0cMET Nov27'26\uff08CME\uff0c1\u70b9\u2026","n_today":3}],"board":[{"id":"20261126-15","sym":"SOL/USD","last":"11-26 16:22","at":2,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u901a\u8fc7","2":"\u5426\u51b3"},"reject":{"stage":2,"rule":"\u76c8\u4e8f\u6bd4 rr \u4e0d\u8db3","why":"t1 54.64\u4e0d\u662f\u56fe\u4e0a\u7ed3\u6784\uff1a\u4e00\u5e74\u5185\u6700\u4f4e60.18(2026-06-06)\uff0ct1\u5728\u5176\u4e0b9%\u3002\u53ef\u89c1\u652f\u649164.83(11/21\u4f4e)\u300165.67(11/25\u4f4e)\u300160.18\u3002\u6309\u5165\u573a70\u2026"}},{"id":"20261126-02","sym":"ETHA","last":"11-26 04:39","at":1,"status":"\u8fdb\u884c\u4e2d","stages":{"1":"\u901a\u8fc7"},"reject":null},{"id":"20261126-03","sym":"BSOL","last":"11-26 04:39","at":1,"status":"\u8fdb\u884c\u4e2d","stages":{"1":"\u901a\u8fc7"},"reject":null},{"id":"20261126-10","sym":"IBIT","last":"11-26 04:39","at":1,"status":"\u8fdb\u884c\u4e2d","stages":{"1":"\u901a\u8fc7"},"reject":null},{"id":"20261126-11","sym":"FBTC","last":"11-26 04:39","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u540c\u5e01\u79cd/\u540c\u7ec4\u9650\u5236","why":"\u5426\u51b3\uff1a\u540c\u5e01\u79cd\uff08BTC\uff09\u53ea\u9009\u4e00\u53ea\uff0c\u9996\u9009 IBKR 20 \u65e5\u5747\u6210\u4ea4\u989d\u6700\u9ad8\u7684 IBIT\uff08$1,856.94M\uff09\uff0c\u672c\u884c\u4e0d\u4ea4\u5355\u3002FBTC \u672c\u8eab\u6d41\u52a8\u6027\u8fc7\u5173\uff1aIBKR 2026-11-25 \u6536\u2026"}},{"id":"20261126-12","sym":"BITB","last":"11-26 04:39","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u540c\u5e01\u79cd/\u540c\u7ec4\u9650\u5236","why":"\u5426\u51b3\uff1a\u540c\u5e01\u79cd\uff08BTC\uff09\u53ea\u9009\u4e00\u53ea\uff0c\u9996\u9009 IBIT\uff08ADV \u66f4\u9ad8\uff09\uff0c\u672c\u884c\u4e0d\u4ea4\u5355\u3002BITB \u672c\u8eab\u6d41\u52a8\u6027\u8fc7\u5173\uff1aIBKR 2026-11-25 \u6536 32.65\uff0c20 \u65e5\u5747\u6210\u4ea4\u989d $45.9\u2026"}},{"id":"20261126-13","sym":"ARKB","last":"11-26 04:39","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u540c\u5e01\u79cd/\u540c\u7ec4\u9650\u5236","why":"\u5426\u51b3\uff1a\u540c\u5e01\u79cd\uff08BTC\uff09\u53ea\u9009\u4e00\u53ea\uff0c\u9996\u9009 IBIT\uff08ADV \u66f4\u9ad8\uff09\uff0c\u672c\u884c\u4e0d\u4ea4\u5355\u3002ARKB \u672c\u8eab\u6d41\u52a8\u6027\u8fc7\u5173\uff1aIBKR 2026-11-25 \u6536 19.95\uff0c20 \u65e5\u5747\u6210\u4ea4\u989d $50.4\u2026"}},{"id":"20261126-14","sym":"GBTC","last":"11-26 04:39","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u540c\u5e01\u79cd/\u540c\u7ec4\u9650\u5236","why":"\u5426\u51b3\uff1a\u540c\u5e01\u79cd\uff08BTC\uff09\u53ea\u9009\u4e00\u53ea\uff0c\u9996\u9009 IBIT\uff08ADV \u66f4\u9ad8\uff09\uff0c\u672c\u884c\u4e0d\u4ea4\u5355\u3002GBTC \u672c\u8eab\u6d41\u52a8\u6027\u8fc7\u5173\uff1aIBKR 2026-11-25 \u6536 46.41\uff0c20 \u65e5\u5747\u6210\u4ea4\u989d $80.0\u2026"}},{"id":"20261126-04","sym":"ETHD","last":"11-26 00:43","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u6760\u6746/\u53cd\u5411 ETF","why":"\u5426\u51b3 ETHD \u591a\uff08\u22122x \u53cd\u5411\u4ee5\u592a ETF\uff09\u3002\u89c4\u683c\u7b2c493\u884c\uff1a\u6760\u6746/\u53cd\u5411 ETF \u53ea\u505a\u591a\u3001\u6301\u6709\u22642\u4e2a\u4ea4\u6613\u65e5\u3001\u6b62\u635f\u8ddd\u79bb\u22651\u00d7ETF ATR14\u3002\u8d8b\u52bf\u6761\u4ef6\u6ee1\u8db3\uff08ETH 4h \u6536 1\u2026"}},{"id":"20261126-05","sym":"SETH","last":"11-26 00:43","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u6760\u6746/\u53cd\u5411 ETF","why":"\u5426\u51b3 SETH \u591a\uff08\u22121x \u53cd\u5411\u4ee5\u592a ETF\uff09\u3002\u89c4\u683c\u7b2c493\u884c\u53ea\u505a\u591a\u3001\u6301\u6709\u22642\u65e5\u3001\u6b62\u635f\u22651\u00d7ATR14\u3002\u8d8b\u52bf\u6761\u4ef6\u6ee1\u8db3\uff08ETH 4h \u4f4e\u4e8e EMA200\uff09\u3002Alpaca trada\u2026"}},{"id":"20261126-06","sym":"FSOL","last":"11-26 00:43","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u4e0d\u53ef\u501f/ETB","why":"\u5426\u51b3 FSOL \u7a7a\uff08Fidelity Solana Fund\uff0c1 \u500d\uff09\u3002\u8d8b\u52bf\u6761\u4ef6\u6ee1\u8db3\uff08SOL 4h \u4f4e\u4e8e EMA200\uff09\u3002Alpaca shortable \u4e14 ETB\u3002\u70b9\u5dee Al\u2026"}},{"id":"20261126-07","sym":"GSOL","last":"11-26 00:43","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u4e0d\u53ef\u501f/ETB","why":"\u5426\u51b3 GSOL \u7a7a\uff08Grayscale Solana Staking ETF\uff0c1 \u500d\uff09\u3002\u8d8b\u52bf\u6761\u4ef6\u6ee1\u8db3\u3002Alpaca 2026-11-26 00:35 Europe/London\uff1a\u2026"}},{"id":"20261126-08","sym":"SOEZ","last":"11-26 00:43","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u4e0d\u53ef\u501f/ETB","why":"\u5426\u51b3 SOEZ \u7a7a\uff08Franklin Solana ETF\uff0c1 \u500d\uff09\u3002\u8d8b\u52bf\u6761\u4ef6\u6ee1\u8db3\u3002Alpaca shortable \u4e14 ETB\u3002 \u6d41\u52a8\u6027\uff1aIBKR 20\u65e5\u5747\u6210\u4ea4\u989d $0.18M\u2026"}},{"id":"20261126-09","sym":"SLOP,SLO","last":"11-26 00:43","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u6743\u9650/\u5730\u533a\u9650\u5236","why":"\u5426\u51b3 SOL \u53cd\u5411/\u505a\u7a7a ETF \u591a\u8def\u5f84\u3002Alpaca \u67e5\u65e0 SLOP\u3001SLO\uff08404 asset not found\uff09\uff1bIBKR search_contracts \u65e0 US \u4e0a\u2026"}},{"id":"20261126-01-METZ6","sym":"METZ6","last":"11-26 00:31","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u6743\u9650/\u5730\u533a\u9650\u5236","why":"\u5426\u51b3\u4fe1\u53f7 20261126-01 \u7684 METZ6 \u8def\u5f84\u3002\u6267\u884c\u5458 2026-11-26 00:27 Europe/London \u62a5\u544a\uff1aIBKR Client Portal \u6a21\u62df\u76d8 \u2026"}},{"id":"20261125-29","sym":"MSLZ6","last":"11-26 00:30","at":5,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3","2":"\u901a\u8fc7","3":"\u901a\u8fc7\uff08\u91cd\u5ba1\uff09","4":"\u901a\u8fc7","5":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u6743\u9650/\u5730\u533a\u9650\u5236","why":"\u5426\u51b3\u3002\u6267\u884c\u5458 2026-11-26 00:27 Europe/London \u62a5\u544a\uff1aIBKR Client Portal \u6a21\u62df\u76d8 [acct]\uff0cMSLZ6 \u4e0b\u5355\u7968\u663e\u793a\u300cRestri\u2026"}},{"id":"20261124-ANT-X1","sym":"ANT","last":"11-26 00:26","at":5,"status":"\u5df2\u6267\u884c/\u5b8c\u6210","stages":{"5":"\u5e73\u4ed3","4":"\u901a\u8fc7","3":"\u4e8b\u540e\u590d\u6838\uff1a\u672c\u5173\u4f1a\u5426\u2026","2":"\u4e8b\u540e\u590d\u6838\uff1a\u672c\u5173\u4f1a\u5426\u2026"},"reject":null},{"id":"20261124-31","sym":"SOL/USD","last":"11-26 00:26","at":5,"status":"\u5df2\u6267\u884c/\u5b8c\u6210","stages":{"1":"\u901a\u8fc7","2":"\u901a\u8fc7","3":"\u901a\u8fc7","5":"\u5e73\u4ed3","4":"\u901a\u8fc7"},"reject":null},{"id":"20261125-22","sym":"MRK","last":"11-25 22:35","at":3,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u901a\u8fc7","2":"\u901a\u8fc7","3":"\u5426\u51b3"},"reject":{"stage":3,"rule":"SPY \u5927\u6da8\u7981\u7a7a","why":"\u7a7a\uff0cdiscretionary_short\u3002\u5426\u51b3\u7406\u7531\uff1a\u2460\u6263\u8d39rr_net 1.51\u4ec5\u64e6\u7ebf\uff0c\u4e14t1 131.36\u6b63\u662f11/24\u5927\u9633\u7ebf\uff08+4.5%\uff0c\u91cf1467\u4e07\uff09\u7684\u53cd\u8f6c\u8d77\u70b9\uff0c\u76ee\u6807\u4f4d\u652f\u2026"}},{"id":"20261125-28","sym":"BSOL,FSOL,GSOL,\u2026","last":"11-25 20:32","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u540c\u5e01\u79cd/\u540c\u7ec4\u9650\u5236","why":"\u5426\u51b3\u73b0\u8d27 SOL ETF \u7a7a\u5355\u8def\u5f84\uff08BSOL/FSOL/GSOL/SOEZ\uff09\u3002\u4e0d\u4ea4\u770b\u56fe\u5458\u3002\u672c\u884c\u662f 20261125-27 \u4e4b\u540e\u5bf9\u53ef\u4ea4\u6613\u73b0\u8d27 SOL ETF \u901a\u9053\u7684\u7b2c1\u5173\u590d\u6838\uff0c\u4e0d\u662f\u2026"}},{"id":"20261125-27","sym":"SOL/USD","last":"11-25 20:26","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u540c\u5e01\u79cd/\u540c\u7ec4\u9650\u5236","why":"\u5426\u51b3\uff08\u65e0\u53ef\u6267\u884c\u7eb8\u9762\u8def\u5f84\uff09\u3002\u4e0d\u91cd\u590d Nova \u5df2\u5199\u7684 20261125-27 \u76ef\u76d8\u4fe1\u53f7\u884c\uff0c\u672c\u884c\u662f\u7b2c1\u5173\u590d\u6838\u3002\u4fe1\u53f7\u672c\u8eab\u6309\u73b0\u884c\u6807\u51c6\u52a0\u5bc6\u7a7a\u89c4\u5219\uff08\u4e0d\u662f crypto_discretiona\u2026"}},{"id":"20261125-23","sym":"ROST","last":"11-25 19:15","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u4e0d\u53ef\u501f/ETB","why":"\u5426\u51b3 ROST \u53cd\u5f39\u5931\u8d25\u7a7a\uff08trial B \u590d\u8bc4\uff09\u3002IBKR SMART \u5b9e\u65f6\uff08top-status=REALTIME\uff092026-11-25 19:11:56 Europe/Lo\u2026"}},{"id":"20261125-24","sym":"NBIS,SNDK,BE,CR\u2026","last":"11-25 19:15","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u6760\u6746/\u53cd\u5411 ETF","why":"\u5426\u51b3\u65b0\u7a7a\u540d\u5355 NBIS/SNDK/BE/CRWV/ORCL/INTC/IREN/NVDA/MRVL/TSM\uff08trial B discretionary_short\uff09\u3002IBKR S\u2026"}},{"id":"20261125-25","sym":"HPQ","last":"11-25 19:15","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u4e0d\u53ef\u501f/ETB","why":"\u5426\u51b3 HPQ \u591a\u7a7a\uff08\u666e\u901a\u89c4\u5219 rr\u22652.2\u3001\u00a320\uff1b\u7a7a\u5355\u6570\u5b57\u867d\u4e5f\u6ee1\u8db3 trial B\uff0c\u4f46\u5f62\u6001\u4e0d\u6210\u7acb\uff09\u3002IBKR SMART \u5b9e\u65f6 19:12:16 Europe/London\uff1a\u6210\u2026"}},{"id":"20261125-26","sym":"AMD,MU,LRCX","last":"11-25 19:15","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u4e0d\u53ef\u501f/ETB","why":"\u590d\u8bc4 LRCX/MU/AMD\uff08trial B\uff09\u3002IBKR SMART \u5b9e\u65f6 19:12:14\u201319:12:15 Europe/London\u3002SPY \u8dcc 0.18%\uff0cP6 \u672a\u89e6\u53d1\u3002\u2026"}},{"id":"20261125-11","sym":"RYCEY","last":"11-25 15:05","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u4e0d\u53ef\u501f/ETB","why":"\u5426\u51b3\uff08trial B discretionary_short\uff09\u3002\u89c4\u683c\u5df2\u5199\u5165\uff1arr\u22651.5\u3001\u5355\u7b14\u00a310\u3001thesis\u226520\u5b57\u3001\u5238\u5546GTC\u6b62\u635f\u3001\u53ea\u9650\u7f8e\u80a1\u6b63\u80a1\u3001\u987b\u53ef\u501f\u4e14ETB\u3002RYCE\u2026"}},{"id":"20261125-12","sym":"RR.L","last":"11-25 15:05","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u6b62\u635f\u4e0d\u8db3 1\u00d7ATR","why":"\u5426\u51b3\u3002RR.L \u4e3a\u4f26\u6566\u6b63\u80a1\u3002\u89c4\u683c\u82f1\u80a1\u4ecd\u662f\u53ea\u89c2\u5bdf\u3001\u4e0d\u4ea4\u5355\uff08handoff-spec \u82f1\u80a1 LSE\uff1auk_enabled=false\uff0creview.uk_observe_only\uff1b\u91cd\u2026"}},{"id":"20261125-14","sym":"GDX","last":"11-25 15:05","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u4e0d\u53ef\u501f/ETB","why":"\u5426\u51b3 GDX \u6b63\u80a1\u7a7a\u300215:01 \u82f1\u56fd\u65f6\u95f4 Alpaca IEX 68.92\uff08bid/ask 68.90/68.93\uff09\uff0c\u8f83 11/24 \u6536 71.37 \u8dcc 3.43%\u3002\u5165\u573a 68\u2026"}},{"id":"20261125-15","sym":"GLD,GDX","last":"11-25 15:05","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u76c8\u4e8f\u6bd4 rr \u4e0d\u8db3","why":"\u5426\u51b3 GLD/GDX \u770b\u8dcc\u501f\u65b9\u5dee\u3002options_scan 15:02 \u82f1\u56fd\u65f6\u95f4\u3001\u7f8e\u80a1\u5df2\u5f00\u76d8\uff1aGLD 1752 \u5408\u7ea6\u3001GDX 358 \u5408\u7ea6\uff0crr\u22652.0\uff08\u4ef7\u5dee\u4ecd\u6309 P2 2.0\uff0c\u2026"}},{"id":"20261125-13","sym":"GLD","last":"11-25 15:05","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u6b62\u635f\u4e0d\u8db3 1\u00d7ATR","why":"\u5426\u51b3\u9ec4\u91d1\u6b63\u80a1\u7a7a\u3002\u73b0\u8d27/\u671f\u8d27\u5df2\u8dcc\u7834 3500\uff1aGC=F yfinance 15:00 \u82f1\u56fd\u65f6\u95f4\u9644\u8fd1 3486\uff08\u4eca\u65e5\u4f4e 3481.10\uff09\uff0cCNBC \u62a5\u73b0\u8d27 3483.59\uff0c\u4e3a 202\u2026"}},{"id":"20261125-16","sym":"MU,AMD,DELL,MSTR","last":"11-25 15:05","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u540c\u5e01\u79cd/\u540c\u7ec4\u9650\u5236","why":"\u5426\u51b3\uff08\u590d\u8bc4\u4eca\u65e9 20261125-02\uff0c\u6309 trial B rr\u22651.5\u3001\u00a310\uff09\u300215:04 \u82f1\u56fd\u65f6\u95f4 Alpaca IEX\uff1aSPY \u4ecd\u7ea6 \u22122%\uff0c\u7981\u65b0\u7a7a\u672a\u89e6\u53d1\u3002MU \u6210\u4ea4 5\u2026"}},{"id":"20261125-17","sym":"SOXX","last":"11-25 15:05","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u4e0d\u53ef\u501f/ETB","why":"\u5426\u51b3 SOXX \u7834\u4f4d\u7a7a\u3002\u6838\u8fc7 Nova \u4ef7\uff1a121.81/132.95/102.42\uff0c\u7968\u9762 rr 1.74\uff0c\u6b62\u635f\u6b63\u597d 1.0\u00d7ATR14\uff0811.14\uff09\uff0ct1 \u4e0e first_st\u2026"}},{"id":"20261125-18","sym":"ROST","last":"11-25 15:05","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u4e0d\u53ef\u501f/ETB","why":"\u5426\u51b3 ROST \u53cd\u5f39\u5931\u8d25\u7a7a\u3002Nova \u5165\u573a/\u6b62\u635f 223.01/231.86\uff0ct1 \u6838\u4e3a 208.22\uff0c\u7968\u9762 rr 1.67\u3002\u6b62\u635f 231.86 \u6bd4 1\u00d7ATR14\uff088.8537\u2026"}},{"id":"20261125-19","sym":"MRK","last":"11-25 15:05","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u6743\u9650/\u5730\u533a\u9650\u5236","why":"\u5426\u51b3 MRK \u53cd\u5f39\u5931\u8d25\u7a7a\u3002Nova 139.89/144.33\uff0ct1 \u6838\u4e3a 131.36\uff0c\u7968\u9762 rr 1.92\u3002\u6b62\u635f\u8865\u5230 144.3347\uff08\u22651\u00d7ATR14=4.4447\uff09\u3002\u89e6\u53d1\u2026"}},{"id":"20261125-21","sym":"NTNX","last":"11-25 15:05","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u4e0d\u53ef\u501f/ETB","why":"\u5426\u51b3 NTNX \u6b63\u80a1\u7a7a\uff08\u4e0d\u56e0 chase \u672c\u8eab\u5426\u51b3\uff09\u300211/24 \u76d8\u540e\u8d22\u62a5\uff1a\u4e00\u5b63\u8425\u6536\u4e0e\u8c03\u6574\u540e EPS \u8d85\u9884\u671f\uff0c\u4f46\u5168\u5e74\u8425\u6536\u6307\u5f15\u4e2d\u503c\u4f4e\u4e8e\u5171\u8bc6\uff0c\u5e76\u5ba3\u5e03 CEO \u7ee7\u4efb\u5b89\u6392\uff08\u5b98\u7f51 http\u2026"}},{"id":"20261125-20","sym":"AMBA","last":"11-25 15:05","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u4e0d\u53ef\u501f/ETB","why":"\u5426\u51b3 AMBA \u6b63\u80a1\u7a7a\uff08\u4e0d\u56e0 chase \u672c\u8eab\u5426\u51b3\uff09\u300211/24 16:05 ET \u76d8\u540e\u8d22\u62a5\uff1a\u8425\u6536\u4e0e\u8c03\u6574\u540e EPS \u4f4e\u4e8e\u9884\u671f\uff0c\u56db\u5b63\u5ea6\u6307\u5f15 0.70\u20130.75 \u4ebf\u7f8e\u5143\uff0c\u8fdc\u4f4e\u4e8e\u7ea6 1\u2026"}},{"id":"20261125-01","sym":"ANT","last":"11-25 07:48","at":1,"status":"\u8fdb\u884c\u4e2d","stages":{"1":"\u76ef\u76d8"},"reject":null},{"id":"20261125-02","sym":"MU,AMD,DELL,MSTR","last":"11-25 07:48","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"SPY \u5927\u6da8\u7981\u7a7a","why":"\u5426\u51b3\uff08\u65e9\u62a5\u7b2c2\u6761\uff1a\u7a7a MU/AMD/DELL/MSTR\uff0c14:45 \u540e\u8dcc\u7834\u6628\u4f4e\uff09\u3002\u89c4\u683c\u672a\u5199\u5165\u300c\u770b\u7a7a\u5c31\u505a\u7a7a\u300d\u5168\u9762\u53d6\u6d88 rr\u22652.2\uff1b\u4e66\u9762\u53ea\u6709 discretionary_short\u2026"}},{"id":"20261125-03","sym":"DE","last":"11-25 07:48","at":1,"status":"\u8fdb\u884c\u4e2d","stages":{"1":"\u5f85\u5b9a"},"reject":null},{"id":"20261125-04","sym":"XLP,XLV,ITB","last":"11-25 07:48","at":1,"status":"\u5df2\u5426\u51b3","stages":{"1":"\u5426\u51b3"},"reject":{"stage":1,"rule":"\u6b62\u635f\u4e0d\u8db3 1\u00d7ATR","why":"\u5426\u51b3\uff08\u65e9\u62a5\u7b2c4\u6761\uff1a\u591a XLP/XLV/ITB\uff0c\u56de\u8e29 20 \u65e5\u5747\u7ebf\u4f01\u7a33\uff09\u3002\u4ef7\u683c\u4e3a 11/24 \u6536\u76d8\uff08Alpaca SIP\uff0c07:45 \u82f1\u56fd\u65f6\u95f4\u6838\uff0c\u7f8e\u80a1\u672a\u5f00\u76d8\uff09\u3002XLP \u6536 91.8\u2026"}}],"rej_today":[["\u6743\u9650/\u5730\u533a\u9650\u5236",5],["\u540c\u5e01\u79cd/\u540c\u7ec4\u9650\u5236",4],["\u4e0d\u53ef\u501f/ETB",3],["\u6760\u6746/\u53cd\u5411 ETF",2],["\u76c8\u4e8f\u6bd4 rr \u4e0d\u8db3",1]],"pass_n":4,"rej_n":15,"log":[{"t":"11-26 16:22","who":"\u770b\u56fe\u5458","sym":"SOL/USD","gate":"\u7b2c2\u5173","v":"\u5426\u51b3","txt":"t1 54.64\u4e0d\u662f\u56fe\u4e0a\u7ed3\u6784\uff1a\u4e00\u5e74\u5185\u6700\u4f4e60.18(2026-06-06)\uff0ct1\u5728\u5176\u4e0b9%\u3002\u53ef\u89c1\u652f\u649164.83(11/21\u4f4e)\u300165.67(11/25\u4f4e)\u30016\u2026"},{"t":"11-26 16:21","who":"\u4fa6\u5bdf\u5175","sym":"SOL/USD","gate":"\u7b2c1\u5173","v":"\u901a\u8fc7","txt":"\u901a\u8fc7\uff08\u53ea\u8bb0\u8d26\u5230 crypto-paper.csv \u6a21\u62df\u76d8\uff0c\u4e0d\u8d70 IBKR\uff0c\u672c\u884c\u4e0d\u4e0b\u5355\u3001\u4e0d\u53d1\u9001\uff09\u3002SOL/USD \u73b0\u8d27\u7a7a\u3002Nova 16:13 Europe/L\u2026"},{"t":"11-26 16:12","who":"Nova","sym":"\u52a0\u5bc6\u626b\u76d8","gate":"\u76ef\u76d8","v":"\u4fe1\u53f7","txt":"SOL\u7eb8\u9762\u505a\u7a7a RSI2 86.9 EMA200\u4e0b\u65b9 \u5165\u573a70.92 \u6b62\u635f76.35 \u76ee\u680754.64 \u6570\u91cf3.75 \u6700\u5927\u4e8f\u00a320 rr2.3 \u5df2\u4ea4\u4fa6\u5bdf\u5175"},{"t":"11-26 12:15","who":"Nova","sym":"\u52a0\u5bc6\u626b\u76d8","gate":"\u76ef\u76d8","v":"\u65e0\u4fe1\u53f7","txt":"\u65e0\u6301\u4ed3; BTC/ETH/SOL RSI2\u672a\u8fbe85 (75/78/77); \u5bbd\u626b\u65e0\u5408\u683csetup; AAVE\u91cfx2.14 S_rally\u672a\u56de\u6d4b\u4ec5\u89c2\u5bdf"},{"t":"11-26 08:12","who":"Nova","sym":"\u52a0\u5bc6\u626b\u76d8","gate":"\u76ef\u76d8","v":"\u65e0\u4fe1\u53f7","txt":"\u65e0\u6301\u4ed3; BTC/ETH/SOL RSI2\u672a\u8fbe85; \u5bbd\u626b\u65e0\u5408\u683csetup; SUSHI\u91cfx3.48\u4f46\u6d41\u52a8\u6027\u5c0f\u4ec5\u89c2\u5bdf"},{"t":"11-26 04:39","who":"\u4fa6\u5bdf\u5175","sym":"BSOL","gate":"\u590d\u76d8-\u7b2c1\u5173","v":"\u901a\u8fc7","txt":"\u590d\u76d8-\u7b2c1\u5173\uff08\u98ce\u63a7 04:24 / \u89c4\u683c\u7b2c496\u884c\u5468\u672b\u8df3\u7a7a\u4e0b\u9650\u5199\u5165\u540e\u91cd\u65b0\u5b9a\u91cf\uff1b\u4e0d\u6539\u6b63\u5348 00:43 \u901a\u8fc7\u884c\uff0c\u53ea\u8ffd\u52a0\uff09\u3002BSOL \u7a7a\uff0c\u7ed3\u6784\u4ef7\u4e0d\u53d8\uff1a9.79 / \u2026"},{"t":"11-26 04:39","who":"\u4fa6\u5bdf\u5175","sym":"ETHA","gate":"\u590d\u76d8-\u7b2c1\u5173","v":"\u901a\u8fc7","txt":"\u590d\u76d8-\u7b2c1\u5173\uff08\u98ce\u63a7 04:24 / \u89c4\u683c\u7b2c496\u884c\u5468\u672b\u8df3\u7a7a\u4e0b\u9650\u5199\u5165\u540e\u91cd\u65b0\u5b9a\u91cf\uff1b\u4e0d\u6539\u6b63\u5348 00:43 \u901a\u8fc7\u884c\uff0c\u53ea\u8ffd\u52a0\uff09\u3002ETHA \u7a7a\uff0c\u7ed3\u6784\u4ef7\u4e0d\u53d8\uff1a38.17 /\u2026"},{"t":"11-26 04:39","who":"\u4fa6\u5bdf\u5175","sym":"GBTC","gate":"\u7b2c1\u5173","v":"\u5426\u51b3","txt":"\u5426\u51b3\uff1a\u540c\u5e01\u79cd\uff08BTC\uff09\u53ea\u9009\u4e00\u53ea\uff0c\u9996\u9009 IBIT\uff08ADV \u66f4\u9ad8\uff09\uff0c\u672c\u884c\u4e0d\u4ea4\u5355\u3002GBTC \u672c\u8eab\u6d41\u52a8\u6027\u8fc7\u5173\uff1aIBKR 2026-11-25 \u6536 46.41\uff0c20 \u65e5\u2026"},{"t":"11-26 04:39","who":"\u4fa6\u5bdf\u5175","sym":"ARKB","gate":"\u7b2c1\u5173","v":"\u5426\u51b3","txt":"\u5426\u51b3\uff1a\u540c\u5e01\u79cd\uff08BTC\uff09\u53ea\u9009\u4e00\u53ea\uff0c\u9996\u9009 IBIT\uff08ADV \u66f4\u9ad8\uff09\uff0c\u672c\u884c\u4e0d\u4ea4\u5355\u3002ARKB \u672c\u8eab\u6d41\u52a8\u6027\u8fc7\u5173\uff1aIBKR 2026-11-25 \u6536 19.95\uff0c20 \u65e5\u2026"},{"t":"11-26 04:39","who":"\u4fa6\u5bdf\u5175","sym":"BITB","gate":"\u7b2c1\u5173","v":"\u5426\u51b3","txt":"\u5426\u51b3\uff1a\u540c\u5e01\u79cd\uff08BTC\uff09\u53ea\u9009\u4e00\u53ea\uff0c\u9996\u9009 IBIT\uff08ADV \u66f4\u9ad8\uff09\uff0c\u672c\u884c\u4e0d\u4ea4\u5355\u3002BITB \u672c\u8eab\u6d41\u52a8\u6027\u8fc7\u5173\uff1aIBKR 2026-11-25 \u6536 32.65\uff0c20 \u65e5\u2026"},{"t":"11-26 04:39","who":"\u4fa6\u5bdf\u5175","sym":"FBTC","gate":"\u7b2c1\u5173","v":"\u5426\u51b3","txt":"\u5426\u51b3\uff1a\u540c\u5e01\u79cd\uff08BTC\uff09\u53ea\u9009\u4e00\u53ea\uff0c\u9996\u9009 IBKR 20 \u65e5\u5747\u6210\u4ea4\u989d\u6700\u9ad8\u7684 IBIT\uff08$1,856.94M\uff09\uff0c\u672c\u884c\u4e0d\u4ea4\u5355\u3002FBTC \u672c\u8eab\u6d41\u52a8\u6027\u8fc7\u5173\uff1aIBKR 20\u2026"},{"t":"11-26 04:39","who":"\u4fa6\u5bdf\u5175","sym":"IBIT","gate":"\u7b2c1\u5173","v":"\u901a\u8fc7","txt":"\u901a\u8fc7\uff08\u6761\u4ef6\uff1a\u5468\u4e94 11/27 \u7f8e\u80a1\u534a\u5929\u5e38\u89c4\u65f6\u6bb5 14:30\u201318:00 Europe/London \u5f00\u76d8\u524d\u7528\u5b9e\u65f6\u62a5\u4ef7\u91cd\u6838\u70b9\u5dee/\u53ef\u501f\u540e\u518d\u4ea4\u5355\uff1b\u672c\u884c\u4e0d\u4e0b\u5355\u3001\u4e0d\u53d1\u9001\u2026"},{"t":"11-26 04:25","who":"Nova","sym":"BTC/ETH/SOL","gate":"\u76ef\u76d8","v":"\u4fe1\u53f7","txt":"4h RSI2>93 \u4e14\u4f4e\u4e8eEMA200 \u4e09\u5e01\u7eb8\u9762\u7a7a\u4fe1\u53f7 BTC\u516560884\u6b6264131\u680751142 ETH\u51651701\u6b621811\u68071371 SOL\u516571.09\u2026"},{"t":"11-26 00:43","who":"\u4fa6\u5bdf\u5175","sym":"SLOP,SLO","gate":"\u7b2c1\u5173","v":"\u5426\u51b3","txt":"\u5426\u51b3 SOL \u53cd\u5411/\u505a\u7a7a ETF \u591a\u8def\u5f84\u3002Alpaca \u67e5\u65e0 SLOP\u3001SLO\uff08404 asset not found\uff09\uff1bIBKR search_contra\u2026"},{"t":"11-26 00:43","who":"\u4fa6\u5bdf\u5175","sym":"SOEZ","gate":"\u7b2c1\u5173","v":"\u5426\u51b3","txt":"\u5426\u51b3 SOEZ \u7a7a\uff08Franklin Solana ETF\uff0c1 \u500d\uff09\u3002\u8d8b\u52bf\u6761\u4ef6\u6ee1\u8db3\u3002Alpaca shortable \u4e14 ETB\u3002 \u6d41\u52a8\u6027\uff1aIBKR 20\u65e5\u5747\u2026"}],"meme":{"gen":"2026-11-26 17:54 UTC","cycle":83,"A":{"equity":279.02,"closed":3,"wins":1,"losses":2,"realized":-0.98,"open":0},"B":{"equity":261.4,"closed":15,"wins":2,"losses":13,"realized":-18.6,"open":0}},"health":[{"name":"scan5 \u626b\u63cf\u5668","age":0,"ok":true},{"name":"\u52a0\u5bc6\u76ef\u76d8 monitor","age":22,"ok":true},{"name":"\u52a0\u5bc6\u5b88\u62a4 guard","age":2,"ok":true},{"name":"\u94fe\u4e0a\u5c0f\u5e01\u6a21\u62df\u76d8","age":1,"ok":true},{"name":"ledger.csv","age":93,"ok":true}],"scan5":{"ts":"2026-11-26 17:55 Europe/London","ok":true,"crypto":40,"sig":8,"tradable":0,"stocks":"NYSE closed 2026-11-26"},"spark":[{"t":"open","v":0.0},{"t":"11-18 15:37","v":-7.46},{"t":"11-22 05:08","v":-6.3},{"t":"11-23 14:26","v":107.38},{"t":"11-23 14:31","v":90.41},{"t":"11-23 15:26","v":118.95},{"t":"11-25 05:40","v":112.05},{"t":"11-25 17:35","v":97.59}],"ais":[{"name":"\u4fa6\u5bdf\u5175","state":"idle","item":"SOL/USD \u7b2c1\u5173 \u901a\u8fc7","age":94,"age_label":"1 \u5c0f\u65f6 34 \u5206\u524d"},{"name":"\u770b\u56fe\u5458","state":"waiting","item":"queue ETHA, BSOL, IBIT, DE","age":93,"age_label":"1 \u5c0f\u65f6 33 \u5206\u524d"},{"name":"\u519b\u5e08","state":"idle","item":"MSLZ6/SOL \u7b2c3\u5173 \u901a\u8fc7\uff08\u91cd\u5ba1\uff09","age":1160,"age_label":"19 \u5c0f\u65f6 20 \u5206\u524d"},{"name":"\u98ce\u63a7","state":"idle","item":"MSLZ6 \u7b2c4\u5173 \u901a\u8fc7","age":1160,"age_label":"19 \u5c0f\u65f6 20 \u5206\u524d"},{"name":"\u6267\u884c\u5458","state":"idle","item":"METX6\uff08MET Nov27'2\u2026 \u7b2c5\u5173 \u5426\u51b3","age":1048,"age_label":"17 \u5c0f\u65f6 28 \u5206\u524d"},{"name":"\u5c0f\u5e01A","state":"working","item":"JANTA OBSERVE-A would be VETOED (already_\u2026","age":1,"age_label":"1 \u5206\u949f\u524d"},{"name":"\u5c0f\u5e01B","state":"working","item":"\u8681\u5de2 OBSERVE-B would HARD SKIP","age":1,"age_label":"1 \u5206\u949f\u524d"}],"queue":[{"id":"20261126-02","sym":"ETHA","side":"short","stage":1,"v":"\u901a\u8fc7","next":"\u770b\u56fe\u5458","entry":"38.17","stop":"40.6446","target":"30.7462","rr":2.32,"last":"11-26 04:39","why":"\u590d\u76d8-\u7b2c1\u5173\uff08\u98ce\u63a7 04:24 / \u89c4\u683c\u7b2c496\u884c\u5468\u672b\u8df3\u7a7a\u4e0b\u9650\u5199\u5165\u540e\u91cd\u65b0\u5b9a\u91cf\uff1b\u4e0d\u6539\u6b63\u5348 00:43 \u901a\u8fc7\u884c\uff0c\u53ea\u8ffd\u52a0\uff09\u3002ETHA \u7a7a\uff0c\u7ed3\u6784\u4ef7\u4e0d\u53d8\uff1a38.17 /\u2026"},{"id":"20261126-03","sym":"BSOL","side":"short","stage":1,"v":"\u901a\u8fc7","next":"\u770b\u56fe\u5458","entry":"9.79","stop":"10.5678","target":"7.4951","rr":2.34,"last":"11-26 04:39","why":"\u590d\u76d8-\u7b2c1\u5173\uff08\u98ce\u63a7 04:24 / \u89c4\u683c\u7b2c496\u884c\u5468\u672b\u8df3\u7a7a\u4e0b\u9650\u5199\u5165\u540e\u91cd\u65b0\u5b9a\u91cf\uff1b\u4e0d\u6539\u6b63\u5348 00:43 \u901a\u8fc7\u884c\uff0c\u53ea\u8ffd\u52a0\uff09\u3002BSOL \u7a7a\uff0c\u7ed3\u6784\u4ef7\u4e0d\u53d8\uff1a9.79 / \u2026"},{"id":"20261126-10","sym":"IBIT","side":"short","stage":1,"v":"\u901a\u8fc7","next":"\u770b\u56fe\u5458","entry":"34.07","stop":"35.8870","target":"28.6185","rr":2.35,"last":"11-26 04:39","why":"\u901a\u8fc7\uff08\u6761\u4ef6\uff1a\u5468\u4e94 11/27 \u7f8e\u80a1\u534a\u5929\u5e38\u89c4\u65f6\u6bb5 14:30\u201318:00 Europe/London \u5f00\u76d8\u524d\u7528\u5b9e\u65f6\u62a5\u4ef7\u91cd\u6838\u70b9\u5dee/\u53ef\u501f\u540e\u518d\u4ea4\u5355\uff1b\u672c\u884c\u4e0d\u4e0b\u5355\u3001\u4e0d\u53d1\u9001\u2026"},{"id":"20261125-03","sym":"DE","side":"short","stage":1,"v":"\u5f85\u5b9a","next":"\u770b\u56fe\u5458","entry":null,"stop":null,"target":null,"rr":null,"last":"11-25 07:48","why":"\u5f85\u5b9a\uff08\u65e9\u62a5\u7b2c3\u6761\uff1aDE \u8d22\u62a5\uff0c\u5f00\u76d8 15 \u5206\u949f\u533a\u95f4\u7a81\u7834\uff09\u3002\u5b98\u65b9\uff1a\u8d22\u62a5\u76d8\u524d\u516c\u5e03\uff0c\u7535\u8bdd\u4f1a 11/25 09:00 CT=15:00 \u82f1\u56fd\u65f6\u95f4\u5f00\u59cb\uff08Deere 11\u2026"}],"handoffs":[{"src":"meme","kind":"debate","t":"11-26 17:54","frm":"Bear","to":"Analyst","sym":"\u8681\u5de2","side":"","book":"B","v":"OBSERVE-B would HARD SKIP","why":"24h volume 259678x liquidity","bear":"24h volume 259678x liquidity","analyst":"vol24/liq = 259677.7 (<=40 plausible organic)","rebutted":false},{"src":"meme","kind":"debate","t":"11-26 17:54","frm":"Bear","to":"Analyst","sym":"JANTA","side":"","book":"B","v":"OBSERVE-B would BUY","why":"already +1033% 1h / +1033% 6h","bear":"already +1033% 1h / +1033% 6h","analyst":"m5 buys/sells 9.01, 5m volume pace 1.1x the 1h average -> buyers stil\u2026","rebutted":false},{"src":"meme","kind":"debate","t":"11-26 17:54","frm":"Bear","to":"Analyst","sym":"JANTA","side":"","book":"A","v":"OBSERVE-A would be VETOED (already_pump\u2026","why":"already +1033% 1h / +1033% 6h","bear":"already +1033% 1h / +1033% 6h","analyst":"m5 buys/sells 9.01, 5m volume pace 1.1x the 1h average -> buyers stil\u2026","rebutted":false},{"src":"meme","kind":"debate","t":"11-26 17:54","frm":"Bear","to":"Analyst","sym":"PAIR","side":"","book":"B","v":"OBSERVE-B would BUY","why":"already -20% 1h / +1025% 6h","bear":"already -20% 1h / +1025% 6h","analyst":"m5 buys/sells 1.78, 5m volume pace 0.4x the 1h average -> buyers stil\u2026","rebutted":false},{"src":"meme","kind":"debate","t":"11-26 17:54","frm":"Bear","to":"Analyst","sym":"PAIR","side":"","book":"A","v":"OBSERVE-A would be VETOED (already_pump\u2026","why":"already -20% 1h / +1025% 6h","bear":"already -20% 1h / +1025% 6h","analyst":"m5 buys/sells 1.78, 5m volume pace 0.4x the 1h average -> buyers stil\u2026","rebutted":false},{"src":"meme","kind":"debate","t":"11-26 17:54","frm":"Bear","to":"Analyst","sym":"\u8001\u9f20","side":"","book":"B","v":"OBSERVE-B would HARD SKIP","why":"24h volume 410570x liquidity","bear":"24h volume 410570x liquidity","analyst":"vol24/liq = 410570.2 (<=40 plausible organic)","rebutted":false},{"src":"meme","kind":"debate","t":"11-26 17:54","frm":"Bear","to":"Analyst","sym":"Kuro","side":"","book":"B","v":"OBSERVE-B would BUY","why":"insider/sniper networks hold 86.1% of supply (41 accounts)","bear":"insider/sniper networks hold 86.1% of supply (41 accounts)","analyst":"insider holding 86.1% (<10% = no dump overhang)","rebutted":false},{"src":"meme","kind":"debate","t":"11-26 17:54","frm":"Bear","to":"Analyst","sym":"KURO","side":"","book":"B","v":"OBSERVE-B would BUY","why":"already +72% 1h / +953% 6h","bear":"already +72% 1h / +953% 6h","analyst":"m5 buys/sells 1.48, 5m volume pace 0.1x the 1h average -> buyers stil\u2026","rebutted":false},{"src":"desk","kind":"veto","t":"11-26 16:22","frm":"\u770b\u56fe\u5458","to":"","sym":"SOL/USD","side":"short","v":"\u5426\u51b3","why":"t1 54.64\u4e0d\u662f\u56fe\u4e0a\u7ed3\u6784\uff1a\u4e00\u5e74\u5185\u6700\u4f4e60.18(2026-06-06)\uff0ct1\u5728\u5176\u4e0b9%\u3002\u53ef\u89c1\u652f\u649164.83(11/21\u4f4e)\u300165.67(11/25\u4f4e)\u300160.18\u3002\u6309\u5165\u573a70\u2026"},{"src":"desk","kind":"pass","t":"11-26 16:21","frm":"\u4fa6\u5bdf\u5175","to":"\u770b\u56fe\u5458","sym":"SOL/USD","side":"short","v":"\u901a\u8fc7","why":"\u901a\u8fc7\uff08\u53ea\u8bb0\u8d26\u5230 crypto-paper.csv \u6a21\u62df\u76d8\uff0c\u4e0d\u8d70 IBKR\uff0c\u672c\u884c\u4e0d\u4e0b\u5355\u3001\u4e0d\u53d1\u9001\uff09\u3002SOL/USD \u73b0\u8d27\u7a7a\u3002Nova 16:13 Europe/London \u4fe1\u53f7\uff1ar\u2026"},{"src":"desk","kind":"veto","t":"11-26 04:39","frm":"\u4fa6\u5bdf\u5175","to":"","sym":"GBTC","side":"short","v":"\u5426\u51b3","why":"\u5426\u51b3\uff1a\u540c\u5e01\u79cd\uff08BTC\uff09\u53ea\u9009\u4e00\u53ea\uff0c\u9996\u9009 IBIT\uff08ADV \u66f4\u9ad8\uff09\uff0c\u672c\u884c\u4e0d\u4ea4\u5355\u3002GBTC \u672c\u8eab\u6d41\u52a8\u6027\u8fc7\u5173\uff1aIBKR 2026-11-25 \u6536 46.41\uff0c20 \u65e5\u5747\u6210\u4ea4\u989d $80.0\u2026"},{"src":"desk","kind":"veto","t":"11-26 04:39","frm":"\u4fa6\u5bdf\u5175","to":"","sym":"ARKB","side":"short","v":"\u5426\u51b3","why":"\u5426\u51b3\uff1a\u540c\u5e01\u79cd\uff08BTC\uff09\u53ea\u9009\u4e00\u53ea\uff0c\u9996\u9009 IBIT\uff08ADV \u66f4\u9ad8\uff09\uff0c\u672c\u884c\u4e0d\u4ea4\u5355\u3002ARKB \u672c\u8eab\u6d41\u52a8\u6027\u8fc7\u5173\uff1aIBKR 2026-11-25 \u6536 19.95\uff0c20 \u65e5\u5747\u6210\u4ea4\u989d $50.4\u2026"},{"src":"desk","kind":"veto","t":"11-26 04:39","frm":"\u4fa6\u5bdf\u5175","to":"","sym":"BITB","side":"short","v":"\u5426\u51b3","why":"\u5426\u51b3\uff1a\u540c\u5e01\u79cd\uff08BTC\uff09\u53ea\u9009\u4e00\u53ea\uff0c\u9996\u9009 IBIT\uff08ADV \u66f4\u9ad8\uff09\uff0c\u672c\u884c\u4e0d\u4ea4\u5355\u3002BITB \u672c\u8eab\u6d41\u52a8\u6027\u8fc7\u5173\uff1aIBKR 2026-11-25 \u6536 32.65\uff0c20 \u65e5\u5747\u6210\u4ea4\u989d $45.9\u2026"},{"src":"desk","kind":"veto","t":"11-26 04:39","frm":"\u4fa6\u5bdf\u5175","to":"","sym":"FBTC","side":"short","v":"\u5426\u51b3","why":"\u5426\u51b3\uff1a\u540c\u5e01\u79cd\uff08BTC\uff09\u53ea\u9009\u4e00\u53ea\uff0c\u9996\u9009 IBKR 20 \u65e5\u5747\u6210\u4ea4\u989d\u6700\u9ad8\u7684 IBIT\uff08$1,856.94M\uff09\uff0c\u672c\u884c\u4e0d\u4ea4\u5355\u3002FBTC \u672c\u8eab\u6d41\u52a8\u6027\u8fc7\u5173\uff1aIBKR 2026-11-25 \u6536\u2026"},{"src":"desk","kind":"pass","t":"11-26 04:39","frm":"\u4fa6\u5bdf\u5175","to":"\u770b\u56fe\u5458","sym":"IBIT","side":"short","v":"\u901a\u8fc7","why":"\u901a\u8fc7\uff08\u6761\u4ef6\uff1a\u5468\u4e94 11/27 \u7f8e\u80a1\u534a\u5929\u5e38\u89c4\u65f6\u6bb5 14:30\u201318:00 Europe/London \u5f00\u76d8\u524d\u7528\u5b9e\u65f6\u62a5\u4ef7\u91cd\u6838\u70b9\u5dee/\u53ef\u501f\u540e\u518d\u4ea4\u5355\uff1b\u672c\u884c\u4e0d\u4e0b\u5355\u3001\u4e0d\u53d1\u9001\uff09\u3002setup=di\u2026"},{"src":"desk","kind":"veto","t":"11-26 00:43","frm":"\u4fa6\u5bdf\u5175","to":"","sym":"SLOP,SLO","side":"short","v":"\u5426\u51b3","why":"\u5426\u51b3 SOL \u53cd\u5411/\u505a\u7a7a ETF \u591a\u8def\u5f84\u3002Alpaca \u67e5\u65e0 SLOP\u3001SLO\uff08404 asset not found\uff09\uff1bIBKR search_contracts \u65e0 US \u4e0a\u2026"},{"src":"desk","kind":"veto","t":"11-26 00:43","frm":"\u4fa6\u5bdf\u5175","to":"","sym":"SOEZ","side":"short","v":"\u5426\u51b3","why":"\u5426\u51b3 SOEZ \u7a7a\uff08Franklin Solana ETF\uff0c1 \u500d\uff09\u3002\u8d8b\u52bf\u6761\u4ef6\u6ee1\u8db3\u3002Alpaca shortable \u4e14 ETB\u3002 \u6d41\u52a8\u6027\uff1aIBKR 20\u65e5\u5747\u6210\u4ea4\u989d $0.18M\u2026"},{"src":"desk","kind":"veto","t":"11-26 00:43","frm":"\u4fa6\u5bdf\u5175","to":"","sym":"GSOL","side":"short","v":"\u5426\u51b3","why":"\u5426\u51b3 GSOL \u7a7a\uff08Grayscale Solana Staking ETF\uff0c1 \u500d\uff09\u3002\u8d8b\u52bf\u6761\u4ef6\u6ee1\u8db3\u3002Alpaca 2026-11-26 00:35 Europe/London\uff1a\u2026"},{"src":"desk","kind":"veto","t":"11-26 00:43","frm":"\u4fa6\u5bdf\u5175","to":"","sym":"FSOL","side":"short","v":"\u5426\u51b3","why":"\u5426\u51b3 FSOL \u7a7a\uff08Fidelity Solana Fund\uff0c1 \u500d\uff09\u3002\u8d8b\u52bf\u6761\u4ef6\u6ee1\u8db3\uff08SOL 4h \u4f4e\u4e8e EMA200\uff09\u3002Alpaca shortable \u4e14 ETB\u3002\u70b9\u5dee Al\u2026"},{"src":"desk","kind":"veto","t":"11-26 00:43","frm":"\u4fa6\u5bdf\u5175","to":"","sym":"SETH","side":"long","v":"\u5426\u51b3","why":"\u5426\u51b3 SETH \u591a\uff08\u22121x \u53cd\u5411\u4ee5\u592a ETF\uff09\u3002\u89c4\u683c\u7b2c493\u884c\u53ea\u505a\u591a\u3001\u6301\u6709\u22642\u65e5\u3001\u6b62\u635f\u22651\u00d7ATR14\u3002\u8d8b\u52bf\u6761\u4ef6\u6ee1\u8db3\uff08ETH 4h \u4f4e\u4e8e EMA200\uff09\u3002Alpaca trada\u2026"},{"src":"desk","kind":"veto","t":"11-26 00:43","frm":"\u4fa6\u5bdf\u5175","to":"","sym":"ETHD","side":"long","v":"\u5426\u51b3","why":"\u5426\u51b3 ETHD \u591a\uff08\u22122x \u53cd\u5411\u4ee5\u592a ETF\uff09\u3002\u89c4\u683c\u7b2c493\u884c\uff1a\u6760\u6746/\u53cd\u5411 ETF \u53ea\u505a\u591a\u3001\u6301\u6709\u22642\u4e2a\u4ea4\u6613\u65e5\u3001\u6b62\u635f\u8ddd\u79bb\u22651\u00d7ETF ATR14\u3002\u8d8b\u52bf\u6761\u4ef6\u6ee1\u8db3\uff08ETH 4h \u6536 1\u2026"},{"src":"desk","kind":"pass","t":"11-26 00:43","frm":"\u4fa6\u5bdf\u5175","to":"\u770b\u56fe\u5458","sym":"BSOL","side":"short","v":"\u901a\u8fc7","why":"\u901a\u8fc7\uff08\u6761\u4ef6\uff1a\u5468\u4e94 11/27 \u7f8e\u80a1\u534a\u5929\u5e38\u89c4\u65f6\u6bb5 14:30\u201318:00 Europe/London \u5f00\u76d8\u524d\u7528\u5b9e\u65f6\u62a5\u4ef7\u91cd\u6838\u70b9\u5dee/\u53ef\u501f\u540e\u518d\u4ea4\u5355\uff1b\u672c\u884c\u4e0d\u4e0b\u5355\u3001\u4e0d\u53d1\u9001\uff09\u3002setup=di\u2026"},{"src":"desk","kind":"pass","t":"11-26 00:43","frm":"\u4fa6\u5bdf\u5175","to":"\u770b\u56fe\u5458","sym":"ETHA","side":"short","v":"\u901a\u8fc7","why":"\u901a\u8fc7\uff08\u6761\u4ef6\uff1a\u5468\u4e94 11/27 \u7f8e\u80a1\u534a\u5929\u5e38\u89c4\u65f6\u6bb5 14:30\u201318:00 Europe/London \u5f00\u76d8\u524d\u7528\u5b9e\u65f6\u62a5\u4ef7\u91cd\u6838\u70b9\u5dee/\u53ef\u501f\u540e\u518d\u4ea4\u5355\uff1b\u672c\u884c\u4e0d\u4e0b\u5355\u3001\u4e0d\u53d1\u9001\uff09\u3002setup=di\u2026"},{"src":"desk","kind":"wait","t":"11-26 00:31","frm":"\u4fa6\u5bdf\u5175","to":"","sym":"METZ6","side":"","v":"\u590d\u76d8","why":"\u66f4\u6b63\uff08\u5f15\u7528 ledger.csv \u7b2c564\u884c / 20261126-01-METZ6\uff1b\u539f\u884c\u4e0d\u6539\uff09\uff1a\u6267\u884c\u5458 00:27 \u7b2c5\u5173\u884c\u5199\u660e\u6240\u770b\u5408\u7ea6\u662f MET Nov27'26\uff08METX6\u2026"}],"trades":[{"book":"meme-B","sym":"Snowball","side":"long","t":"11-26 17:54","pnl":-1.4,"ccy":"usd","note":"hard_stop_gap"},{"book":"meme-B","sym":"bolphante","side":"long","t":"11-26 17:49","pnl":-3.21,"ccy":"usd","note":"hard_stop_gap"},{"book":"meme-B","sym":"HYPER","side":"long","t":"11-26 16:35","pnl":-1.52,"ccy":"usd","note":"hard_stop_gap"},{"book":"meme-B","sym":"PAIR","side":"long","t":"11-26 16:11","pnl":-2.11,"ccy":"usd","note":"hard_stop"},{"book":"meme-B","sym":"Pnut","side":"long","t":"11-26 14:26","pnl":-2.41,"ccy":"usd","note":"hard_stop_gap"},{"book":"meme-B","sym":"duk","side":"long","t":"11-26 14:11","pnl":-1.07,"ccy":"usd","note":"hard_stop"},{"book":"meme-B","sym":"wizardcat","side":"long","t":"11-26 13:47","pnl":-1.07,"ccy":"usd","note":"hard_stop"},{"book":"meme-B","sym":"BIAO","side":"long","t":"11-26 13:37","pnl":0.28,"ccy":"usd","note":"trail_stop"},{"book":"meme-B","sym":"Hey","side":"long","t":"11-26 13:17","pnl":-1.08,"ccy":"usd","note":"hard_stop"},{"book":"meme-A","sym":"NORFEATH","side":"long","t":"11-26 13:02","pnl":2.76,"ccy":"usd","note":"trail_stop"},{"book":"meme-B","sym":"NORFEATH","side":"long","t":"11-26 13:02","pnl":2.72,"ccy":"usd","note":"trail_stop"},{"book":"meme-A","sym":"PUMPCHAN","side":"long","t":"11-26 12:42","pnl":-1.86,"ccy":"usd","note":"hard_stop"},{"book":"meme-A","sym":"JIMMY","side":"long","t":"11-26 12:07","pnl":-1.88,"ccy":"usd","note":"hard_stop"},{"book":"stocks","sym":"ANT","side":"\u7a7a","t":"11-25 17:35","pnl":-14.46,"ccy":"gbp","note":"\u5238\u5546\u6b62\u635f\u89e6\u53d1(CAT\u8d39\u5f85\u8865,\u6682\u5b9a\u51c0\u989d)"},{"book":"crypto","sym":"SOL/USD","side":"\u591a","t":"11-25 05:40","pnl":-6.9,"ccy":"gbp","note":"\u6b62\u635f\u6210\u4ea4"},{"book":"crypto","sym":"SHIB/USD","side":"\u591a","t":"11-23 15:26","pnl":28.54,"ccy":"gbp","note":"\u8ddf\u8e2a\u51fa\u573a"},{"book":"stocks","sym":"SOFI \u770b\u8dcc\u4ef7\u5dee","side":"\u7a7a","t":"11-23 14:31","pnl":-16.97,"ccy":"gbp","note":"\u5f00\u76d8\u8df3\u7a7a\u89e6\u53d1\u6b62\u635f"},{"book":"crypto","sym":"ETH/USD","side":"\u591a","t":"11-23 14:26","pnl":113.68,"ccy":"gbp","note":"\u6b62\u76c8\u5e73\u4ed3"},{"book":"crypto","sym":"BTC/USD","side":"\u591a","t":"11-22 05:08","pnl":1.16,"ccy":"gbp","note":"\u4fdd\u672c\u6b62\u635f"},{"book":"stocks","sym":"AS","side":"\u591a","t":"11-18 15:37","pnl":-7.46,"ccy":"gbp","note":"IBKR \u6a21\u62df(\u65e7\u8d26\u6237), \u89c4\u52191\u5f00\u76d8\u5e73\u4ed3"}]};
-const E=s=>String(s??"").replace(/[\x26\x3c\x3e\x22]/g,c=>({'\x26':'\x26amp;','\x3c':'\x26lt;','\x3e':'\x26gt;','\x22':'\x26quot;'}[c]));
-const usd=(n,s=1)=>{n=Number(n);if(!Number.isFinite(n))n=0;return (n<0?"\u2212":(s&&n>0?"+":""))+"$"+Math.abs(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})};
-const gbp=(n,s=1)=>{n=Number(n);if(!Number.isFinite(n))n=0;return (n<0?"\u2212":(s&&n>0?"+":""))+"\u00a3"+Math.abs(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})};
-const cl=n=>n>0.004?"g":n<-0.004?"r":"m";
-const money=(n,ccy,s=1)=>ccy==="usd"?usd(n,s):gbp(n,s);
-const clip=(s,n)=>{s=String(s??"").replace(/\s+/g," ").trim();return s.length<=n?s:s.slice(0,n-1)+"\u2026";}
-let D=null,live=false;
 
-function okData(j){return j && typeof j==="object" && j.alg!=="AES-GCM" && j.asof && (Array.isArray(j.ais)||Array.isArray(j.bots));}
+<canvas id="bgfx" class="bgfx" aria-hidden="true"></canvas>
+<div class="gridbg" aria-hidden="true"></div>
+<div class="scanlines" aria-hidden="true"></div>
+<div class="shell">
+  <header class="top">
+    <div class="brand">
+      <div class="title">交易台 <span class="pill">模拟盘</span></div>
+      <div class="sub" id="mkt"></div>
+    </div>
+    <div class="head-stats" id="headStats"></div>
+    <div class="head-right">
+      <div class="run snap" id="run"><i class="run-dot"></i><span id="runLab">同步中</span> · <span id="clock">--:--:-- 伦敦</span></div>
+      <div class="upd" id="upd">数据更新于 --</div>
+      <a class="nav" href="anim.html">动画台</a>
+    </div>
+  </header>
+  <div class="ticker" id="tickerWrap" aria-label="今日流水"><div class="ticker-track" id="tickerTrack"></div></div>
+  <section class="hero" id="hero"></section>
+  <aside class="agents" id="agents" aria-label="五个岗位"></aside>
+  <section class="flow-wrap">
+    <div class="sec-h">传递路径</div>
+    <div class="cands" id="cands"></div>
+    <div class="pipeline" id="pipeline">
+      <svg class="pipe-svg" id="pipeSvg" preserveAspectRatio="none">
+        <path id="pipeGlow"></path>
+        <path id="pipePath"></path>
+      </svg>
+      <div class="packets" id="packets"></div>
+      <div class="nodes" id="nodes"></div>
+    </div>
+    <div class="tiles" id="tiles"></div>
+    
+  </section>
+  <section class="logs">
+    <div class="term-panel">
+      <div class="sec-h">活动记录 <span class="term-cmd">tail -f</span></div>
+      <div class="term" id="term"></div>
+    </div>
+    <div class="table-panel">
+      <div class="sec-h">决策记录</div>
+      <div class="dlog" id="dlog"></div>
+    </div>
+  </section>
+  
+  <details class="more">
+    <summary>更多</summary>
+    <div class="wl" id="wl"></div>
+    <div class="grid" id="moreGrid"></div>
+  </details>
+
+  <p class="foot">全部为模拟盘，实盘不动。看这个页面不消耗 token，浏览器每 10 秒只读取数据文件。状态只根据账本和心跳文件点亮；没有数据就静止，不装忙。</p>
+  <footer class="bar" id="bar"></footer>
+</div>
+
+<script>
+const SNAP = {"asof":"2026-11-27 22:51:29","tz":"Europe/London","market":"美股休市 · 下次开盘 2026-11-30 09:30（美东）","alerts":[],"equity_usd":100136.22,"day_usd":0.0,"total_usd":136.22,"stocks_bal":961.11,"stocks_pnl":-38.89,"stocks_today":0,"crypto_bal":1136.48,"crypto_pnl":136.48,"crypto_today":0,"today_gbp":0,"total_gbp":97.59,"w":3,"l":4,"positions":[],"orders":[],"has_positions":false,"has_orders":false,"bots":[{"name":"侦察兵","t":"11-27 22:15","age":36,"age_label":"36 分钟前","stalled":false,"sym":"XRP/USD","gate":"第1关","v":"否决","txt":"15m_S_mom short @0.9434（okx_ws 22:15:01 UK）stop 1.00205 t1 0.9404；否决：rr_net 0.0…","n_today":80},{"name":"看图员","t":"11-27 20:14","age":157,"age_label":"2 小时 37 分前","stalled":false,"sym":"SKY/USD","gate":"第2关","v":"通过","txt":"tier=data影子账。补数：4h收0.04909<EMA200 0.05499，RSI2 89.7>85，成立。t1=入场−3.5ATR 0.04164，…","n_today":4},{"name":"军师","t":"11-25 22:35","age":2896,"age_label":"48 小时 16 分前","stalled":false,"sym":"MSLZ6/SOL","gate":"第3关","v":"通过（重审）","txt":"重审，覆盖第543行。依据规则：handoff-spec 第472–486行（风控11/25 20:35/20:45定稿，额度由风控按单裁定，引Ryan 20…","n_today":0},{"name":"风控","t":"11-25 22:35","age":2896,"age_label":"48 小时 16 分前","stalled":false,"sym":"MSLZ6","gate":"第4关","v":"通过","txt":"空1手CME Micro SOL 12月，只做IBKR模拟盘[acct]。按handoff-spec第472–486行，1手不可拆，单笔例外≤£65。入场限价…","n_today":0},{"name":"执行员","t":"11-27 21:38","age":73,"age_label":"1 小时 13 分前","stalled":false,"sym":"AEHL等28","gate":"复盘-总控","v":"复盘","txt":"更正（只追加；原行不改）：ledger.csv 第662–689行共28行全部作废，均为同一英国日期（20261127）下相同「标的+方向+信号类型」的重复写…","n_today":18}],"board":[{"id":"20261127-23","sym":"RENDER/USD","last":"11-27 20:14","at":2,"status":"进行中","stages":{"1":"通过-影子","2":"通过"},"reject":null},{"id":"20261127-24","sym":"SKY/USD","last":"11-27 20:14","at":2,"status":"进行中","stages":{"1":"通过-影子","2":"通过"},"reject":null},{"id":"20261124-31","sym":"SOL/USD","last":"11-27 17:33","at":5,"status":"已执行/完成","stages":{"5":"平仓"},"reject":null},{"id":"20261124-ANT-X1","sym":"ANT","last":"11-27 17:33","at":5,"status":"已执行/完成","stages":{"5":"平仓"},"reject":null},{"id":"20261127-16","sym":"GRAM/USD","last":"11-27 15:41","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"权限/地区限制","why":"Nova 15:29 多单 1h_L_break 入场1.0002/止损0.9284/t1 1.289/rr 4.02。Coinbase 无 GRAM-USD（产品404），实际…"}},{"id":"20261127-17","sym":"DOGE/USD","last":"11-27 15:41","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"其他","why":"Nova称已失效。Coinbase DOGE-USD 15:32:47 Europe/London last 0.05728（Nova 15:29参考价0.05719），买0.0…"}},{"id":"20261127-09","sym":"IBIT","last":"11-27 15:38","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"不可借/ETB","why":"15:06重核（替代15:13）。IBKR SMART实时 15:08:56 Europe/London last 33.39 买33.38/卖33.40 点差0.060%≤0.…"}},{"id":"20261127-10","sym":"ETHA","last":"11-27 15:38","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"不可借/ETB","why":"15:06重核（替代15:13）。IBKR SMART实时 15:08:52 Europe/London last 37.06 买37.06/卖37.08 点差0.054%≤0.…"}},{"id":"20261127-11","sym":"BSOL","last":"11-27 15:38","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"不可借/ETB","why":"15:06重核（替代15:13）。IBKR SMART实时 15:08:53 Europe/London last 9.77 买9.77/卖9.78 点差0.102%≤0.2%，…"}},{"id":"20261127-12","sym":"BA","last":"11-27 15:38","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"不可借/ETB","why":"试行B适用范围含个股BA：handoff-spec.md 第463行「只限美股正股空单」。IBKR SMART实时 15:08:42 Europe/London last 166…"}},{"id":"20261127-13","sym":"XLI","last":"11-27 15:38","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"杠杆/反向 ETF","why":"试行B适用范围含1倍美股行业ETF XLI（State Street Industrial Select Sector SPDR）：handoff-spec.md 第490行「美…"}},{"id":"20261127-14","sym":"BAC","last":"11-27 15:38","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"同币种/同组限制","why":"同一口径一行结论：拒。IBKR 15:09:58 Europe/London last 49.12 买49.11/卖49.12 点差0.020%，ETB，Yahoo 20日ADV…"}},{"id":"20261127-15","sym":"ROST","last":"11-27 15:38","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"同币种/同组限制","why":"同一口径一行结论：拒。IBKR 15:23:31 Europe/London last 223.26 买223.14/卖223.34 点差0.090%（IEX买卖曾宽至0.71%…"}},{"id":"20261127-19","sym":"AMD","last":"11-27 15:38","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"其他","why":"11/27条件：高开后1小时内跌破首30分钟低才做空。Yahoo 11/25收406.03，IEX开419.76为高开。首30低400.25，15:00已跌破（见399.22），…"}},{"id":"20261127-04","sym":"ETHA","last":"11-27 15:24","at":1,"status":"进行中","stages":{"1":"通过"},"reject":null},{"id":"20261127-05","sym":"IBIT","last":"11-27 15:24","at":1,"status":"进行中","stages":{"1":"通过"},"reject":null},{"id":"20261127-06","sym":"BSOL","last":"11-27 15:24","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"不可借/ETB","why":"BSOL空：按Nova 11/27指示 t1 改到SOL结构位≈64.8（映射BSOL 8.9831）后，扣费rr_net 周末0.64/周五1.01 <1.5，review.p…"}},{"id":"20261127-07","sym":"AMD","last":"11-27 15:24","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"缺数据","why":"AMD空条件单：高开(开420 vs 11/25收405.76)，IEX线显示约15:00–15:06跌破前30分钟低(约400.25)，触发技术上出现，但已反弹至406；催化剂…"}},{"id":"20261127-08","sym":"FXI,MU,LRCX,AMB…","last":"11-27 15:24","at":1,"status":"进行中","stages":{"1":"待定"},"reject":null},{"id":"20261127-03","sym":"BTC/USD","last":"11-27 12:24","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"盈亏比 rr 不足","why":"否决：把原 t1 53481（3R，低于一年低）改到图上结构位后，扣费 rr_net 仍 <2.2。只记账不发送、不下单。信号 20261127-S5（Nova 12:20）。 …"}},{"id":"20261127-01","sym":"BTC/USD","last":"11-27 04:27","at":2,"status":"已否决","stages":{"1":"通过","2":"否决"},"reject":{"stage":2,"rule":"盈亏比 rr 不足","why":"否决：t1 52897低于一年内最低55120.65（11/21），不是图上可见结构。按第14行口径：止损64205 stop%4.61→风险6.06%，到第一结构55121 r…"}},{"id":"20261127-02","sym":"SOL/USD","last":"11-27 04:27","at":2,"status":"已否决","stages":{"1":"通过","2":"否决"},"reject":{"stage":2,"rule":"盈亏比 rr 不足","why":"否决：t1 57.37低于一年低60.18（2026-06-06），无结构。第一结构60日低64.83（11/21）。止损77.66 stop%6.98→风险9.03%，rr≈1…"}},{"id":"20261126-15","sym":"SOL/USD","last":"11-26 16:22","at":2,"status":"已否决","stages":{"1":"通过","2":"否决"},"reject":{"stage":2,"rule":"盈亏比 rr 不足","why":"t1 54.64不是图上结构：一年内最低60.18(2026-06-06)，t1在其下9%。可见支撑64.83(11/21低)、65.67(11/25低)、60.18。按入场70…"}},{"id":"20261126-02","sym":"ETHA","last":"11-26 04:39","at":1,"status":"进行中","stages":{"1":"通过"},"reject":null},{"id":"20261126-03","sym":"BSOL","last":"11-26 04:39","at":1,"status":"进行中","stages":{"1":"通过"},"reject":null},{"id":"20261126-10","sym":"IBIT","last":"11-26 04:39","at":1,"status":"进行中","stages":{"1":"通过"},"reject":null},{"id":"20261126-11","sym":"FBTC","last":"11-26 04:39","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"同币种/同组限制","why":"否决：同币种（BTC）只选一只，首选 IBKR 20 日均成交额最高的 IBIT（$1,856.94M），本行不交单。FBTC 本身流动性过关：IBKR 2026-11-25 收…"}},{"id":"20261126-12","sym":"BITB","last":"11-26 04:39","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"同币种/同组限制","why":"否决：同币种（BTC）只选一只，首选 IBIT（ADV 更高），本行不交单。BITB 本身流动性过关：IBKR 2026-11-25 收 32.65，20 日均成交额 $45.9…"}},{"id":"20261126-13","sym":"ARKB","last":"11-26 04:39","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"同币种/同组限制","why":"否决：同币种（BTC）只选一只，首选 IBIT（ADV 更高），本行不交单。ARKB 本身流动性过关：IBKR 2026-11-25 收 19.95，20 日均成交额 $50.4…"}},{"id":"20261126-14","sym":"GBTC","last":"11-26 04:39","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"同币种/同组限制","why":"否决：同币种（BTC）只选一只，首选 IBIT（ADV 更高），本行不交单。GBTC 本身流动性过关：IBKR 2026-11-25 收 46.41，20 日均成交额 $80.0…"}},{"id":"20261126-04","sym":"ETHD","last":"11-26 00:43","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"杠杆/反向 ETF","why":"否决 ETHD 多（−2x 反向以太 ETF）。规格第493行：杠杆/反向 ETF 只做多、持有≤2个交易日、止损距离≥1×ETF ATR14。趋势条件满足（ETH 4h 收 1…"}},{"id":"20261126-05","sym":"SETH","last":"11-26 00:43","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"杠杆/反向 ETF","why":"否决 SETH 多（−1x 反向以太 ETF）。规格第493行只做多、持有≤2日、止损≥1×ATR14。趋势条件满足（ETH 4h 低于 EMA200）。Alpaca trada…"}},{"id":"20261126-06","sym":"FSOL","last":"11-26 00:43","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"不可借/ETB","why":"否决 FSOL 空（Fidelity Solana Fund，1 倍）。趋势条件满足（SOL 4h 低于 EMA200）。Alpaca shortable 且 ETB。点差 Al…"}},{"id":"20261126-07","sym":"GSOL","last":"11-26 00:43","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"不可借/ETB","why":"否决 GSOL 空（Grayscale Solana Staking ETF，1 倍）。趋势条件满足。Alpaca 2026-11-26 00:35 Europe/London：…"}},{"id":"20261126-08","sym":"SOEZ","last":"11-26 00:43","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"不可借/ETB","why":"否决 SOEZ 空（Franklin Solana ETF，1 倍）。趋势条件满足。Alpaca shortable 且 ETB。 流动性：IBKR 20日均成交额 $0.18M…"}},{"id":"20261126-09","sym":"SLOP,SLO","last":"11-26 00:43","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"权限/地区限制","why":"否决 SOL 反向/做空 ETF 多路径。Alpaca 查无 SLOP、SLO（404 asset not found）；IBKR search_contracts 无 US 上…"}},{"id":"20261126-01-METZ6","sym":"METZ6","last":"11-26 00:31","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"权限/地区限制","why":"否决信号 20261126-01 的 METZ6 路径。执行员 2026-11-26 00:27 Europe/London 报告：IBKR Client Portal 模拟盘 …"}},{"id":"20261125-29","sym":"MSLZ6","last":"11-26 00:30","at":5,"status":"已否决","stages":{"1":"否决","2":"通过","3":"通过（重审）","4":"通过","5":"否决"},"reject":{"stage":1,"rule":"权限/地区限制","why":"否决。执行员 2026-11-26 00:27 Europe/London 报告：IBKR Client Portal 模拟盘 [acct]，MSLZ6 下单票显示「Restri…"}},{"id":"20261125-22","sym":"MRK","last":"11-25 22:35","at":3,"status":"已否决","stages":{"1":"通过","2":"通过","3":"否决"},"reject":{"stage":3,"rule":"SPY 大涨禁空","why":"空，discretionary_short。否决理由：①扣费rr_net 1.51仅擦线，且t1 131.36正是11/24大阳线（+4.5%，量1467万）的反转起点，目标位支…"}},{"id":"20261125-28","sym":"BSOL,FSOL,GSOL,…","last":"11-25 20:32","at":1,"status":"已否决","stages":{"1":"否决"},"reject":{"stage":1,"rule":"同币种/同组限制","why":"否决现货 SOL ETF 空单路径（BSOL/FSOL/GSOL/SOEZ）。不交看图员。本行是 20261125-27 之后对可交易现货 SOL ETF 通道的第1关复核，不是…"}}],"rej_today":[["盈亏比 rr 不足",42],["其他",32],["不可借/ETB",5],["同币种/同组限制",2],["权限/地区限制",2],["缺数据",1],["杠杆/反向 ETF",1]],"pass_n":8,"rej_n":85,"log":[{"t":"11-27 22:15","who":"侦察兵","sym":"XRP/USD","gate":"第1关","v":"否决","txt":"15m_S_mom short @0.9434（okx_ws 22:15:01 UK）stop 1.00205 t1 0.9404；否决：rr_net 0.0…"},{"t":"11-27 22:15","who":"侦察兵","sym":"UNI/USD","gate":"第1关","v":"否决","txt":"15m_S_mom short @4.806（okx_ws 22:15:01 UK）stop 5.2867 t1 4.787；否决：rr_net 0.04 <…"},{"t":"11-27 22:15","who":"侦察兵","sym":"LINK/USD","gate":"第1关","v":"否决","txt":"15m_S_break short @9.27（okx_ws 22:15:01 UK）stop 9.875 t1 9.101；否决：rr_net 0.28 <…"},{"t":"11-27 22:15","who":"侦察兵","sym":"AVAX/USD","gate":"第1关","v":"否决","txt":"15m_S_break short @6.579（okx_ws 22:15:01 UK）stop 7.0894 t1 6.481；否决：rr_net 0.19…"},{"t":"11-27 22:15","who":"侦察兵","sym":"FIL/USD","gate":"第1关","v":"否决","txt":"15m_S_mom short @0.5282（okx_ws 22:15:01 UK）stop 0.580191 t1 0.5238；否决：rr_net 0.…"},{"t":"11-27 22:15","who":"侦察兵","sym":"ETH/USD","gate":"第1关","v":"否决","txt":"15m_S_mom short @1657.22（okx_ws 22:15:00 UK）stop 1761.9307 t1 1633.79；否决：rr_net…"},{"t":"11-27 22:15","who":"侦察兵","sym":"XNVDA/USD","gate":"第1关","v":"否决","txt":"15m_S_break short @148.33（okx_ws 22:15:00 UK）stop 160.8091 t1 145.54；否决：rr_net …"},{"t":"11-27 22:15","who":"侦察兵","sym":"BCH/USD","gate":"第1关","v":"否决","txt":"15m_S_mom short @205.5（okx_ws 22:15:00 UK）stop 219.86 t1 203.07；否决：rr_net 0.17 …"},{"t":"11-27 22:14","who":"Nova","sym":"全台","gate":"复盘-总控","v":"复盘","txt":"教训：1）雷达异动榜（无stop/t1、无催化剂）不再逐只记第1关否决行，只写一行汇总，并按 标的+方向+信号类型 每日去重（daemon重启后不重复入账）；…"},{"t":"11-27 22:14","who":"Nova","sym":"当日否决","gate":"复盘-总控","v":"复盘","txt":"否决想法收盘回测（yfinance 5m，自想法时间起至22:13 UK，按每笔1R=£20估）：错过的盈利≈£21（BTC空+0.7R、SOL空+0.2R、…"},{"t":"11-27 22:14","who":"Nova","sym":"全台","gate":"复盘-总控","v":"复盘","txt":"11/27 零成交（股票/加密主账本都无开平仓，持仓0挂单0，position_watch无FLAG）。对：美股半天市14只空单全挡（IBIT/ETHA/BS…"},{"t":"11-27 21:38","who":"执行员","sym":"AEHL等28","gate":"复盘-总控","v":"复盘","txt":"更正（只追加；原行不改）：ledger.csv 第662–689行共28行全部作废，均为同一英国日期（20261127）下相同「标的+方向+信号类型」的重复写…"},{"t":"11-27 20:51","who":"侦察兵","sym":"RBRK","gate":"第1关","v":"否决","txt":"财报事件 2026-11-30 AMC (nasdaq日历)；无价格/stop/t1，周一才有时效 → 暂不过关，待盘前复核"},{"t":"11-27 20:51","who":"侦察兵","sym":"BZQ","gate":"第1关","v":"否决","txt":"radar异动 -19.32% 价19.58(alpaca movers, 2026-11-27 20:51 UK; 美股已收盘/盘后数据)；无stop/t1…"},{"t":"11-27 20:51","who":"侦察兵","sym":"NCT","gate":"第1关","v":"否决","txt":"radar异动 -19.57% 价5.59(alpaca movers, 2026-11-27 20:51 UK; 美股已收盘/盘后数据)；无stop/t1、…"}],"meme":{"gen":"2026-11-27 22:49 UTC","cycle":353,"A":{"equity":272.89,"closed":6,"wins":1,"losses":5,"realized":-7.19,"open":2,"today":-6.22,"principal":280.0},"B":{"equity":235.96,"closed":51,"wins":8,"losses":43,"realized":-44.5,"open":1,"today":-11.34,"principal":280.0}},"health":[{"name":"scan5 扫描器","age":1,"ok":true},{"name":"加密盯盘 monitor","age":24,"ok":true},{"name":"加密守护 guard","age":3,"ok":true},{"name":"链上小币模拟盘","age":2,"ok":true},{"name":"ledger.csv","age":36,"ok":true}],"scan5":{"ts":"2026-11-27 22:50 Europe/London","ok":true,"crypto":40,"sig":6,"tradable":0,"stocks":"after close (closed 2026-11-27 18:00 Europe/London)"},"spark":[{"t":"open","v":0.0},{"t":"11-18 15:37","v":-7.46},{"t":"11-22 05:08","v":-6.3},{"t":"11-23 14:26","v":107.38},{"t":"11-23 14:31","v":90.41},{"t":"11-23 15:26","v":118.95},{"t":"11-25 05:40","v":112.05},{"t":"11-25 17:35","v":97.59}],"ais":[{"name":"侦察兵","state":"idle","item":"XRP/USD 第1关 否决","age":36,"age_label":"36 分钟前"},{"name":"看图员","state":"waiting","item":"queue ETHA, IBIT, FXI,MU,LRCX,AMB…, ETHA","age":157,"age_label":"2 小时 37 分前"},{"name":"军师","state":"waiting","item":"queue RENDER/USD, SKY/USD","age":2896,"age_label":"48 小时 16 分前"},{"name":"风控","state":"idle","item":"MSLZ6 第4关 通过","age":2896,"age_label":"48 小时 16 分前"},{"name":"执行员","state":"idle","item":"AEHL等28 复盘-总控 复盘","age":73,"age_label":"1 小时 13 分前"},{"name":"小币A","state":"working","item":"ZERO OBSERVE-A would be KILLED","age":2,"age_label":"2 分钟前"},{"name":"小币B","state":"working","item":"ZERO OBSERVE-B would BUY","age":2,"age_label":"2 分钟前"}],"queue":[{"id":"20261127-23","sym":"RENDER/USD","side":"","stage":2,"v":"通过","next":"军师","entry":"1.393","stop":"1.4807","target":"1.2701","rr":null,"last":"11-27 20:14","why":"tier=data影子账。补数：4h收1.395<EMA200 1.47846，RSI2 98.7>85，S_rally条件成立。t1按第503行⑤空单取较近…"},{"id":"20261127-24","sym":"SKY/USD","side":"","stage":2,"v":"通过","next":"军师","entry":"0.0492","stop":"0.0546","target":"0.04164","rr":null,"last":"11-27 20:14","why":"tier=data影子账。补数：4h收0.04909<EMA200 0.05499，RSI2 89.7>85，成立。t1=入场−3.5ATR 0.04164，…"},{"id":"20261127-04","sym":"ETHA","side":"","stage":1,"v":"通过","next":"看图员","entry":"37.53","stop":"40.6446","target":"30.7462","rr":1.51,"last":"11-27 15:24","why":"ETF试行B空ETHA（asset=etf）：实时买37.53/卖37.55点差0.053%，ETB，ETH 1660.95<S_rally止损1793.01…"},{"id":"20261127-05","sym":"IBIT","side":"","stage":1,"v":"通过","next":"看图员","entry":"33.64","stop":"35.8870","target":"28.6185","rr":1.76,"last":"11-27 15:24","why":"ETF试行B空IBIT（asset=etf）：实时买33.64/卖33.65点差0.030%，ETB，BTC 59515<S_rally止损63812.7，4…"},{"id":"20261127-08","sym":"FXI,MU,LRCX,AMB…","side":"","stage":1,"v":"待定","next":"看图员","entry":null,"stop":null,"target":null,"rr":null,"last":"11-27 15:24","why":"Nova 11/27条件单检查（15:25 UK，开盘后约55分钟），均未通过，记观察： - FXI多：国务院稳市场消息已核实（Caixin/gov.cn 1…"},{"id":"20261126-02","sym":"ETHA","side":"short","stage":1,"v":"通过","next":"看图员","entry":"38.17","stop":"40.6446","target":"30.7462","rr":2.32,"last":"11-26 04:39","why":"复盘-第1关（风控 04:24 / 规格第496行周末跳空下限写入后重新定量；不改正午 00:43 通过行，只追加）。ETHA 空，结构价不变：38.17 /…"},{"id":"20261126-03","sym":"BSOL","side":"short","stage":1,"v":"通过","next":"看图员","entry":"9.79","stop":"10.5678","target":"7.4951","rr":2.34,"last":"11-26 04:39","why":"复盘-第1关（风控 04:24 / 规格第496行周末跳空下限写入后重新定量；不改正午 00:43 通过行，只追加）。BSOL 空，结构价不变：9.79 / …"},{"id":"20261126-10","sym":"IBIT","side":"short","stage":1,"v":"通过","next":"看图员","entry":"34.07","stop":"35.8870","target":"28.6185","rr":2.35,"last":"11-26 04:39","why":"通过（条件：周五 11/27 美股半天常规时段 14:30–18:00 Europe/London 开盘前用实时报价重核点差/可借后再交单；本行不下单、不发送…"}],"handoffs":[{"src":"meme","kind":"debate","t":"11-27 22:49","frm":"Bear","to":"Analyst","sym":"ZERO","side":"","book":"B","v":"OBSERVE-B would BUY","why":"already -27% 1h / +1673% 6h","bear":"already -27% 1h / +1673% 6h","analyst":"m5 buys/sells 3.18, 5m volume pace 1.3x the 1h average -> buyers stil…","rebutted":false},{"src":"meme","kind":"debate","t":"11-27 22:49","frm":"Bear","to":"Analyst","sym":"ZERO","side":"","book":"A","v":"OBSERVE-A would be KILLED","why":"already -27% 1h / +1673% 6h","bear":"already -27% 1h / +1673% 6h","analyst":"m5 buys/sells 3.18, 5m volume pace 1.3x the 1h average -> buyers stil…","rebutted":false},{"src":"meme","kind":"debate","t":"11-27 22:49","frm":"Bear","to":"Analyst","sym":"Grok","side":"","book":"B","v":"OBSERVE-B would BUY","why":"already +191% 1h / +191% 6h","bear":"already +191% 1h / +191% 6h","analyst":"m5 buys/sells 0.67, 5m volume pace 1.8x the 1h average -> buyers stil…","rebutted":false},{"src":"meme","kind":"debate","t":"11-27 22:49","frm":"Bear","to":"Analyst","sym":"MAYA","side":"","book":"B","v":"OBSERVE-B would BUY","why":"already +187% 1h / +7190% 6h","bear":"already +187% 1h / +7190% 6h","analyst":"m5 buys/sells 4.26, 5m volume pace 1.5x the 1h average -> buyers stil…","rebutted":true},{"src":"meme","kind":"debate","t":"11-27 22:49","frm":"Bear","to":"Analyst","sym":"MAYA","side":"","book":"A","v":"OBSERVE-A would PASS","why":"already +187% 1h / +7190% 6h","bear":"already +187% 1h / +7190% 6h","analyst":"m5 buys/sells 4.26, 5m volume pace 1.5x the 1h average -> buyers stil…","rebutted":true},{"src":"meme","kind":"debate","t":"11-27 22:49","frm":"Bear","to":"Analyst","sym":"MoonBoy","side":"","book":"B","v":"OBSERVE-B would BUY","why":"already -51% 1h / +506% 6h","bear":"already -51% 1h / +506% 6h","analyst":"m5 buys/sells 1.34, 5m volume pace 0.4x the 1h average -> buyers stil…","rebutted":false},{"src":"meme","kind":"debate","t":"11-27 22:49","frm":"Bear","to":"Analyst","sym":"MoonBoy","side":"","book":"B","v":"OBSERVE-B would HARD SKIP","why":"24h volume 3569093x liquidity","bear":"24h volume 3569093x liquidity","analyst":"vol24/liq = 3569093.4 (<=40 plausible organic)","rebutted":false},{"src":"meme","kind":"debate","t":"11-27 22:49","frm":"Bear","to":"Analyst","sym":"Sol","side":"","book":"B","v":"OBSERVE-B would BUY","why":"top-10 holders own 19.3% of supply","bear":"top-10 holders own 19.3% of supply","analyst":"top-10 19.3% (pool/AMM accounts excluded) vs 25% limit","rebutted":true},{"src":"desk","kind":"veto","t":"11-27 22:15","frm":"侦察兵","to":"","sym":"XRP/USD","side":"short","v":"否决","why":"15m_S_mom short @0.9434（okx_ws 22:15:01 UK）stop 1.00205 t1 0.9404；否决：rr_net 0.05 < 1.5（第 …"},{"src":"desk","kind":"veto","t":"11-27 22:15","frm":"侦察兵","to":"","sym":"UNI/USD","side":"short","v":"否决","why":"15m_S_mom short @4.806（okx_ws 22:15:01 UK）stop 5.2867 t1 4.787；否决：rr_net 0.04 < 1.5（第 482…"},{"src":"desk","kind":"veto","t":"11-27 22:15","frm":"侦察兵","to":"","sym":"LINK/USD","side":"short","v":"否决","why":"15m_S_break short @9.27（okx_ws 22:15:01 UK）stop 9.875 t1 9.101；否决：rr_net 0.28 < 1.5（第 482…"},{"src":"desk","kind":"veto","t":"11-27 22:15","frm":"侦察兵","to":"","sym":"AVAX/USD","side":"short","v":"否决","why":"15m_S_break short @6.579（okx_ws 22:15:01 UK）stop 7.0894 t1 6.481；否决：rr_net 0.19 < 1.5（第 4…"},{"src":"desk","kind":"veto","t":"11-27 22:15","frm":"侦察兵","to":"","sym":"FIL/USD","side":"short","v":"否决","why":"15m_S_mom short @0.5282（okx_ws 22:15:01 UK）stop 0.580191 t1 0.5238；否决：rr_net 0.08 < 1.5（第…"},{"src":"desk","kind":"veto","t":"11-27 22:15","frm":"侦察兵","to":"","sym":"ETH/USD","side":"short","v":"否决","why":"15m_S_mom short @1657.22（okx_ws 22:15:00 UK）stop 1761.9307 t1 1633.79；否决：rr_net 0.22 < 1.…"},{"src":"desk","kind":"veto","t":"11-27 22:15","frm":"侦察兵","to":"","sym":"XNVDA/USD","side":"short","v":"否决","why":"15m_S_break short @148.33（okx_ws 22:15:00 UK）stop 160.8091 t1 145.54；否决：rr_net 0.22 < 1.5…"},{"src":"desk","kind":"veto","t":"11-27 22:15","frm":"侦察兵","to":"","sym":"BCH/USD","side":"short","v":"否决","why":"15m_S_mom short @205.5（okx_ws 22:15:00 UK）stop 219.86 t1 203.07；否决：rr_net 0.17 < 1.5（第 48…"},{"src":"desk","kind":"veto","t":"11-27 20:51","frm":"侦察兵","to":"","sym":"RBRK","side":"","v":"否决","why":"财报事件 2026-11-30 AMC (nasdaq日历)；无价格/stop/t1，周一才有时效 → 暂不过关，待盘前复核"},{"src":"desk","kind":"veto","t":"11-27 20:51","frm":"侦察兵","to":"","sym":"BZQ","side":"","v":"否决","why":"radar异动 -19.32% 价19.58(alpaca movers, 2026-11-27 20:51 UK; 美股已收盘/盘后数据)；无stop/t1、未核实催化剂 → …"},{"src":"desk","kind":"veto","t":"11-27 20:51","frm":"侦察兵","to":"","sym":"NCT","side":"","v":"否决","why":"radar异动 -19.57% 价5.59(alpaca movers, 2026-11-27 20:51 UK; 美股已收盘/盘后数据)；无stop/t1、未核实催化剂 → 不…"},{"src":"desk","kind":"veto","t":"11-27 20:51","frm":"侦察兵","to":"","sym":"STAK","side":"","v":"否决","why":"radar异动 -20.26% 价2.185(alpaca movers, 2026-11-27 20:51 UK; 美股已收盘/盘后数据)；无stop/t1、未核实催化剂 → …"},{"src":"desk","kind":"veto","t":"11-27 20:51","frm":"侦察兵","to":"","sym":"ANTD","side":"","v":"否决","why":"radar异动 -21.35% 价13.41(alpaca movers, 2026-11-27 20:51 UK; 美股已收盘/盘后数据)；无stop/t1、未核实催化剂 → …"},{"src":"desk","kind":"veto","t":"11-27 20:51","frm":"侦察兵","to":"","sym":"GDXD","side":"","v":"否决","why":"radar异动 -21.62% 价23.46(alpaca movers, 2026-11-27 20:51 UK; 美股已收盘/盘后数据)；无stop/t1、未核实催化剂 → …"},{"src":"desk","kind":"veto","t":"11-27 20:51","frm":"侦察兵","to":"","sym":"ANTZ","side":"","v":"否决","why":"radar异动 -22.18% 价22.24(alpaca movers, 2026-11-27 20:51 UK; 美股已收盘/盘后数据)；无stop/t1、未核实催化剂 → …"},{"src":"desk","kind":"veto","t":"11-27 20:51","frm":"侦察兵","to":"","sym":"ANDD","side":"","v":"否决","why":"radar异动 -22.27% 价13.37(alpaca movers, 2026-11-27 20:51 UK; 美股已收盘/盘后数据)；无stop/t1、未核实催化剂 → …"}],"trades":[{"book":"meme-A","sym":"NBA","side":"long","t":"11-27 19:44","pnl":-1.85,"ccy":"usd","note":"hard_stop"},{"book":"meme-A","sym":"Fireball","side":"long","t":"11-27 16:24","pnl":-2.49,"ccy":"usd","note":"hard_stop_gap"},{"book":"meme-B","sym":"Fireball","side":"long","t":"11-27 16:24","pnl":-2.14,"ccy":"usd","note":"hard_stop_gap"},{"book":"meme-B","sym":"HOLD","side":"long","t":"11-27 16:19","pnl":-1.56,"ccy":"usd","note":"hard_stop_gap"},{"book":"meme-B","sym":"FRGST","side":"long","t":"11-27 16:04","pnl":-0.9,"ccy":"usd","note":"trail_stop_gap"},{"book":"meme-B","sym":"BASKET","side":"long","t":"11-27 15:47","pnl":-1.91,"ccy":"usd","note":"hard_stop"},{"book":"meme-B","sym":"wizardcat","side":"long","t":"11-27 15:37","pnl":-0.96,"ccy":"usd","note":"hard_stop"},{"book":"meme-B","sym":"Kibo","side":"long","t":"11-27 15:37","pnl":-0.99,"ccy":"usd","note":"hard_stop_gap"},{"book":"meme-B","sym":"WINSTON","side":"long","t":"11-27 14:22","pnl":-0.96,"ccy":"usd","note":"hard_stop"},{"book":"meme-B","sym":"Snowball","side":"long","t":"11-27 13:55","pnl":-1.65,"ccy":"usd","note":"hard_stop"},{"book":"meme-B","sym":"TOGI","side":"long","t":"11-27 13:50","pnl":0.75,"ccy":"usd","note":"trail_stop_gap"},{"book":"meme-B","sym":"DEXDATA","side":"long","t":"11-27 13:50","pnl":-1.02,"ccy":"usd","note":"hard_stop_gap"},{"book":"meme-A","sym":"SpaceXCoin","side":"long","t":"11-27 05:38","pnl":-1.87,"ccy":"usd","note":"hard_stop"},{"book":"meme-A","sym":"NORFEATH","side":"long","t":"11-26 13:02","pnl":2.76,"ccy":"usd","note":"trail_stop"},{"book":"meme-A","sym":"PUMPCHAN","side":"long","t":"11-26 12:42","pnl":-1.86,"ccy":"usd","note":"hard_stop"},{"book":"meme-A","sym":"JIMMY","side":"long","t":"11-26 12:07","pnl":-1.88,"ccy":"usd","note":"hard_stop"},{"book":"stocks","sym":"ANT","side":"空","t":"11-25 17:35","pnl":-14.46,"ccy":"gbp","note":"券商止损触发(CAT费待补,暂定净额)"},{"book":"crypto","sym":"SOL/USD","side":"多","t":"11-25 05:40","pnl":-6.9,"ccy":"gbp","note":"止损成交"},{"book":"crypto","sym":"SHIB/USD","side":"多","t":"11-23 15:26","pnl":28.54,"ccy":"gbp","note":"跟踪出场"},{"book":"stocks","sym":"SOFI 看跌价差","side":"空","t":"11-23 14:31","pnl":-16.97,"ccy":"gbp","note":"开盘跳空触发止损"},{"book":"crypto","sym":"ETH/USD","side":"多","t":"11-23 14:26","pnl":113.68,"ccy":"gbp","note":"止盈平仓"},{"book":"crypto","sym":"BTC/USD","side":"多","t":"11-22 05:08","pnl":1.16,"ccy":"gbp","note":"保本止损"}],"totals":{"ccy":"gbp","principal":2427.52,"equity":2486.06,"today":-13.41,"total":58.13,"fx":{"gbpusd":1.309895,"usd_gbp":0.76342,"src":"yfinance:GBPUSD=X 2026-11-27收盘","ts":"2026-11-27 22:51","live":true,"fallback":false},"parts":[{"id":"stocks","name":"股票","principal":1000.0,"equity":961.11,"today":0.0,"total":-38.89},{"id":"crypto","name":"加密","principal":1000.0,"equity":1136.48,"today":0.0,"total":136.48},{"id":"meme-A","name":"小币A","principal":213.76,"equity":208.33,"today":-4.75,"total":-5.49},{"id":"meme-B","name":"小币B","principal":213.76,"equity":180.14,"today":-8.66,"total":-33.97}]},"fx":{"gbpusd":1.309895,"usd_gbp":0.76342,"src":"yfinance:GBPUSD=X 2026-11-27收盘","ts":"2026-11-27 22:51","live":true,"fallback":false},"books":[{"name":"股票","id":"stocks","ccy":"gbp","principal":1000,"equity":961.11,"today":0.0,"total":-38.89,"wins":0,"losses":3},{"name":"加密","id":"crypto","ccy":"gbp","principal":1000,"equity":1136.48,"today":0.0,"total":136.48,"wins":3,"losses":1},{"name":"小币A","id":"meme-A","ccy":"usd","principal":280.0,"equity":272.89,"today":-6.22,"total":-7.19,"wins":1,"losses":5},{"name":"小币B","id":"meme-B","ccy":"usd","principal":280.0,"equity":235.96,"today":-11.34,"total":-44.5,"wins":8,"losses":43}],"equity_hist":{"t":["22:29:55","22:30:59","22:31:56","22:32:53","22:33:41","22:33:58","22:34:59","22:35:58","22:36:54","22:37:58","22:38:58","22:39:56","22:40:53","22:41:58","22:42:59","22:43:57","22:44:55","22:45:53","22:46:58","22:47:57","22:48:56","22:49:04","22:49:54","22:50:58","22:51:31"],"equity":[2488.34,2488.34,2488.34,2488.34,2488.34,2487.13,2487.13,2487.13,2487.13,2487.13,2487.13,2486.92,2486.92,2486.92,2486.92,2486.92,2488.34,2488.34,2488.34,2488.34,2488.34,2488.34,2486.06,2486.06,2486.06],"books":{"stocks":[1000.0,992.54,975.57,961.11,961.11,961.11,961.11,961.11,961.11,961.11,961.11,961.11,961.11,961.11,961.11,961.11,961.11,961.11,961.11,961.11,961.11,961.11,961.11,961.11,961.11,961.11,961.11,961.11,961.11],"crypto":[1000.0,1001.16,1114.84,1143.38,1136.48,1136.48,1136.48,1136.48,1136.48,1136.48,1136.48,1136.48,1136.48,1136.48,1136.48,1136.48,1136.48,1136.48,1136.48,1136.48,1136.48,1136.48,1136.48,1136.48,1136.48,1136.48,1136.48,1136.48,1136.48,1136.48],"meme-A":[280.0,278.12,276.26,279.02,277.15,274.66,272.81,272.89,274.69,274.69,274.69,274.69,274.69,273.85,273.85,273.85,273.85,273.85,273.85,273.7,273.7,273.7,273.7,273.7,274.69,274.69,274.69,274.69,274.69,274.69,272.89,272.89,272.89],"meme-B":[280.0,280.75,279.73,278.08,277.12,276.16,275.17,273.26,272.36,270.8,268.66,235.96,237.15,237.15,237.15,237.15,237.15,236.41,236.41,236.41,236.41,236.41,236.41,236.28,236.28,236.28,236.28,236.28,237.15,237.15,237.15,237.15,237.15,237.15,235.96,235.96,235.96]},"curve":{"points":[{"t":"开账","v":2427.52},{"t":"11-18 15:37","v":2420.06},{"t":"11-22 05:08","v":2421.22},{"t":"11-23 14:26","v":2534.9},{"t":"11-23 14:31","v":2517.93},{"t":"11-23 15:26","v":2546.47},{"t":"11-25 05:40","v":2539.57},{"t":"11-25 17:35","v":2525.11},{"t":"11-26 12:07","v":2523.68},{"t":"11-26 12:42","v":2522.26},{"t":"11-26 13:02","v":2524.36},{"t":"11-27 05:38","v":2522.94},{"t":"11-27 13:50","v":2523.51},{"t":"11-27 13:50","v":2522.73},{"t":"11-27 13:55","v":2521.47},{"t":"11-27 14:22","v":2520.74},{"t":"11-27 15:37","v":2520.01},{"t":"11-27 15:37","v":2519.25},{"t":"11-27 15:47","v":2517.79},{"t":"11-27 16:04","v":2517.11},{"t":"11-27 16:19","v":2515.91},{"t":"11-27 16:24","v":2514.01},{"t":"11-27 16:24","v":2512.38},{"t":"11-27 19:44","v":2510.96},{"t":"11-27 22:51","v":2486.06}],"fx_note":"美元账按现汇率折算"}},"stats":{"trades":23,"wins":5,"losses":18},"anim":{"asof":"2026-11-27 22:51:32","tz":"Europe/London","market":"模拟盘，股票79只，加密40个，行情已连接，已发信号11个","paper":true,"scanner":{"name":"扫盘心跳","ok":true,"scanning":true,"age_sec":2,"ts":"2026-11-27 22:51:30","src":"monitors/live/status.json","detail":"模拟盘，股票79只，加密40个，行情已连接，已发信号11个","present":true,"src_short":"status.json"},"bots":[{"name":"侦察兵","state":"scanning","status":"正在扫盘","src":"monitors/live/status.json","src_short":"status.json","ts":"2026-11-27 22:51:30","age_sec":2,"age_label":"刚刚","detail":"模拟盘，股票79只，加密40个，行情已连接，已发信号11个。 账本上次：否决 XRP（22:15）","n_queue":0,"last_sym":"XRP","last_v":"否决"},{"name":"看图员","state":"idle","status":"空闲 · 2小时前","src":"ledger.csv 第627行","src_short":"ledger.csv 第627行","ts":"2026-11-27 20:14","age_sec":9452,"age_label":"2小时前","detail":"11-27 20:14 通过 SKY/USD：tier=data影子账。补数：4h收0.04909<EMA200 0.05499，RSI2 89.7>85，成立。t1=入场−3.5ATR 0.041…","n_queue":0,"last_sym":"SKY","last_v":"通过"},{"name":"军师","state":"on_duty","status":"待审 2 单","src":"ledger.csv（待审交接）","src_short":"账本交接","ts":"2026-11-27 20:14","age_sec":9452,"age_label":"2小时前","detail":"桌上待审：RENDER、SKY。上次自己写账：通过（重审） MSLZ6/SO（22:35）","n_queue":2,"last_sym":"MSLZ6/SO","last_v":"通过（重审）"},{"name":"风控","state":"idle","status":"空闲 · 2天前","src":"ledger.csv 第555行","src_short":"ledger.csv 第555行","ts":"2026-11-25 22:35","age_sec":173792,"age_label":"2天前","detail":"11-25 22:35 通过 MSLZ6：空1手CME Micro SOL 12月，只做IBKR模拟盘[acct]。按handoff-spec第472–486行，1手不可拆，单笔例外≤£65。入场限…","n_queue":0,"last_sym":"MSLZ6","last_v":"通过"},{"name":"执行员","state":"on_duty","status":"盯盘中","src":"monitors/crypto/crypto_monitor.status.json","src_short":"crypto_monitor.status.json","ts":"2026-11-27 22:51:21","age_sec":11,"age_label":"刚刚","detail":"监控在跑，当前无持仓。 账本上次：复盘 AEHL等28（21:38）","n_queue":0,"last_sym":"AEHL等28","last_v":"复盘"}],"tickets":[{"id":"20261127-23","sym":"RENDER/USD","sym_short":"RENDER","side":"short","shadow":true,"status":"进行中","stage":3,"waiting":"军师","verdict":"通过","reason":"tier=data影子账。补数：4h收1.395<EMA200 1.47846，RSI2 98.7>85，S_rally条件成立。t1按第503行⑤空单取较近…","t":"2026-11-27 20:14","who":"看图员","events":[{"t":"2026-11-27 20:13","who":"侦察兵","gate":"第1关","stage":1,"v":"通过-影子","txt":"入场1.393 止损1.4807 ATR4h0.0351 t1=1.2701(3.5ATR,⑤禁3R;原3R 1.1299作废) rr毛1.40 tier=d…","shadow":true},{"t":"2026-11-27 20:14","who":"看图员","gate":"第2关","stage":2,"v":"通过","txt":"tier=data影子账。补数：4h收1.395<EMA200 1.47846，RSI2 98.7>85，S_rally条件成立。t1按第503行⑤空单取较近…","shadow":true}]},{"id":"20261127-24","sym":"SKY/USD","sym_short":"SKY","side":"","shadow":true,"status":"进行中","stage":3,"waiting":"军师","verdict":"通过","reason":"tier=data影子账。补数：4h收0.04909<EMA200 0.05499，RSI2 89.7>85，成立。t1=入场−3.5ATR 0.04164，…","t":"2026-11-27 20:14","who":"看图员","events":[{"t":"2026-11-27 20:13","who":"侦察兵","gate":"第1关","stage":1,"v":"通过-影子","txt":"入场0.0492 止损0.0546 ATR4h0.00216 t1=0.04164(3.5ATR,⑤禁3R;原3R 0.0330作废) rr毛1.40 tie…","shadow":true},{"t":"2026-11-27 20:14","who":"看图员","gate":"第2关","stage":2,"v":"通过","txt":"tier=data影子账。补数：4h收0.04909<EMA200 0.05499，RSI2 89.7>85，成立。t1=入场−3.5ATR 0.04164，…","shadow":true}]},{"id":"20261127-04","sym":"ETHA","sym_short":"ETHA","side":"","shadow":false,"status":"进行中","stage":2,"waiting":"看图员","verdict":"通过","reason":"ETF试行B空ETHA（asset=etf）：实时买37.53/卖37.55点差0.053%，ETB，ETH 1660.95<S_rally止损1793.01…","t":"2026-11-27 15:24","who":"侦察兵","events":[{"t":"2026-11-27 15:24","who":"侦察兵","gate":"第1关","stage":1,"v":"通过","txt":"ETF试行B空ETHA（asset=etf）：实时买37.53/卖37.55点差0.053%，ETB，ETH 1660.95<S_rally止损1793.01…","shadow":false}]},{"id":"20261127-05","sym":"IBIT","sym_short":"IBIT","side":"","shadow":false,"status":"进行中","stage":2,"waiting":"看图员","verdict":"通过","reason":"ETF试行B空IBIT（asset=etf）：实时买33.64/卖33.65点差0.030%，ETB，BTC 59515<S_rally止损63812.7，4…","t":"2026-11-27 15:24","who":"侦察兵","events":[{"t":"2026-11-27 15:24","who":"侦察兵","gate":"第1关","stage":1,"v":"通过","txt":"ETF试行B空IBIT（asset=etf）：实时买33.64/卖33.65点差0.030%，ETB，BTC 59515<S_rally止损63812.7，4…","shadow":false}]},{"id":"20261126-10","sym":"IBIT","sym_short":"IBIT","side":"short","shadow":false,"status":"进行中","stage":2,"waiting":"看图员","verdict":"通过","reason":"通过（条件：周五 11/27 美股半天常规时段 14:30–18:00 Europe/London 开盘前用实时报价重核点差/可借后再交单；本行不下单、不发送…","t":"2026-11-26 04:39","who":"侦察兵","events":[{"t":"2026-11-26 04:39","who":"侦察兵","gate":"第1关","stage":1,"v":"通过","txt":"通过（条件：周五 11/27 美股半天常规时段 14:30–18:00 Europe/London 开盘前用实时报价重核点差/可借后再交单；本行不下单、不发送…","shadow":false}]},{"id":"20261126-12","sym":"BITB","sym_short":"BITB","side":"","shadow":false,"status":"已否决","stage":1,"waiting":"","verdict":"否决","reason":"否决：同币种（BTC）只选一只，首选 IBIT（ADV 更高），本行不交单。BITB 本身流动性过关：IBKR 2026-11-25 收 32.65，20 日…","t":"2026-11-26 04:39","who":"侦察兵","events":[{"t":"2026-11-26 04:39","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"否决：同币种（BTC）只选一只，首选 IBIT（ADV 更高），本行不交单。BITB 本身流动性过关：IBKR 2026-11-25 收 32.65，20 日…","shadow":false}]},{"id":"20261126-13","sym":"ARKB","sym_short":"ARKB","side":"","shadow":false,"status":"已否决","stage":1,"waiting":"","verdict":"否决","reason":"否决：同币种（BTC）只选一只，首选 IBIT（ADV 更高），本行不交单。ARKB 本身流动性过关：IBKR 2026-11-25 收 19.95，20 日…","t":"2026-11-26 04:39","who":"侦察兵","events":[{"t":"2026-11-26 04:39","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"否决：同币种（BTC）只选一只，首选 IBIT（ADV 更高），本行不交单。ARKB 本身流动性过关：IBKR 2026-11-25 收 19.95，20 日…","shadow":false}]},{"id":"20261126-14","sym":"GBTC","sym_short":"GBTC","side":"","shadow":false,"status":"已否决","stage":1,"waiting":"","verdict":"否决","reason":"否决：同币种（BTC）只选一只，首选 IBIT（ADV 更高），本行不交单。GBTC 本身流动性过关：IBKR 2026-11-25 收 46.41，20 日…","t":"2026-11-26 04:39","who":"侦察兵","events":[{"t":"2026-11-26 04:39","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"否决：同币种（BTC）只选一只，首选 IBIT（ADV 更高），本行不交单。GBTC 本身流动性过关：IBKR 2026-11-25 收 46.41，20 日…","shadow":false}]},{"id":"20261126-C1","sym":"BTC/ETH/SOL","sym_short":"BTC/ETH/","side":"","shadow":false,"status":"信号","stage":1,"waiting":"","verdict":"信号","reason":"4h RSI2>93 且低于EMA200 三币纸面空信号 BTC入60884止64131标51142 ETH入1701止1811标1371 SOL入71.09…","t":"2026-11-26 04:25","who":"Nova","events":[{"t":"2026-11-26 04:25","who":"Nova","gate":"盯盘","stage":0,"v":"信号","txt":"4h RSI2>93 且低于EMA200 三币纸面空信号 BTC入60884止64131标51142 ETH入1701止1811标1371 SOL入71.09…","shadow":false}]},{"id":"20261126-04","sym":"ETHD","sym_short":"ETHD","side":"long","shadow":false,"status":"已否决","stage":1,"waiting":"","verdict":"否决","reason":"否决 ETHD 多（−2x 反向以太 ETF）。规格第493行：杠杆/反向 ETF 只做多、持有≤2个交易日、止损距离≥1×ETF ATR14。趋势条件满足（…","t":"2026-11-26 00:43","who":"侦察兵","events":[{"t":"2026-11-26 00:43","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"否决 ETHD 多（−2x 反向以太 ETF）。规格第493行：杠杆/反向 ETF 只做多、持有≤2个交易日、止损距离≥1×ETF ATR14。趋势条件满足（…","shadow":false}]},{"id":"20261126-05","sym":"SETH","sym_short":"SETH","side":"long","shadow":false,"status":"已否决","stage":1,"waiting":"","verdict":"否决","reason":"否决 SETH 多（−1x 反向以太 ETF）。规格第493行只做多、持有≤2日、止损≥1×ATR14。趋势条件满足（ETH 4h 低于 EMA200）。Al…","t":"2026-11-26 00:43","who":"侦察兵","events":[{"t":"2026-11-26 00:43","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"否决 SETH 多（−1x 反向以太 ETF）。规格第493行只做多、持有≤2日、止损≥1×ATR14。趋势条件满足（ETH 4h 低于 EMA200）。Al…","shadow":false}]},{"id":"20261126-06","sym":"FSOL","sym_short":"FSOL","side":"","shadow":false,"status":"已否决","stage":1,"waiting":"","verdict":"否决","reason":"否决 FSOL 空（Fidelity Solana Fund，1 倍）。趋势条件满足（SOL 4h 低于 EMA200）。Alpaca shortable 且…","t":"2026-11-26 00:43","who":"侦察兵","events":[{"t":"2026-11-26 00:43","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"否决 FSOL 空（Fidelity Solana Fund，1 倍）。趋势条件满足（SOL 4h 低于 EMA200）。Alpaca shortable 且…","shadow":false}]},{"id":"20261126-07","sym":"GSOL","sym_short":"GSOL","side":"short","shadow":false,"status":"已否决","stage":1,"waiting":"","verdict":"否决","reason":"否决 GSOL 空（Grayscale Solana Staking ETF，1 倍）。趋势条件满足。Alpaca 2026-11-26 00:35 Euro…","t":"2026-11-26 00:43","who":"侦察兵","events":[{"t":"2026-11-26 00:43","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"否决 GSOL 空（Grayscale Solana Staking ETF，1 倍）。趋势条件满足。Alpaca 2026-11-26 00:35 Euro…","shadow":false}]},{"id":"20261126-08","sym":"SOEZ","sym_short":"SOEZ","side":"","shadow":false,"status":"已否决","stage":1,"waiting":"","verdict":"否决","reason":"否决 SOEZ 空（Franklin Solana ETF，1 倍）。趋势条件满足。Alpaca shortable 且 ETB。 流动性：IBKR 20日均…","t":"2026-11-26 00:43","who":"侦察兵","events":[{"t":"2026-11-26 00:43","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"否决 SOEZ 空（Franklin Solana ETF，1 倍）。趋势条件满足。Alpaca shortable 且 ETB。 流动性：IBKR 20日均…","shadow":false}]},{"id":"20261126-09","sym":"SLOP,SLO","sym_short":"SLOP","side":"short","shadow":false,"status":"已否决","stage":1,"waiting":"","verdict":"否决","reason":"否决 SOL 反向/做空 ETF 多路径。Alpaca 查无 SLOP、SLO（404 asset not found）；IBKR search_contra…","t":"2026-11-26 00:43","who":"侦察兵","events":[{"t":"2026-11-26 00:43","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"否决 SOL 反向/做空 ETF 多路径。Alpaca 查无 SLOP、SLO（404 asset not found）；IBKR search_contra…","shadow":false}]},{"id":"20261126-01-METZ6","sym":"METZ6","sym_short":"METZ6","side":"","shadow":false,"status":"已结束","stage":1,"waiting":"","verdict":"复盘","reason":"更正（引用 ledger.csv 第564行 / 20261126-01-METZ6；原行不改）：执行员 00:27 第5关行写明所看合约是 MET Nov2…","t":"2026-11-26 00:31","who":"侦察兵","events":[{"t":"2026-11-26 00:30","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"否决信号 20261126-01 的 METZ6 路径。执行员 2026-11-26 00:27 Europe/London 报告：IBKR Client P…","shadow":false},{"t":"2026-11-26 00:31","who":"侦察兵","gate":"第1关","stage":1,"v":"复盘","txt":"更正（引用 ledger.csv 第564行 / 20261126-01-METZ6；原行不改）：执行员 00:27 第5关行写明所看合约是 MET Nov2…","shadow":false}]},{"id":"20261125-29","sym":"MSLZ6","sym_short":"MSLZ6","side":"long","shadow":false,"status":"已否决","stage":1,"waiting":"","verdict":"否决","reason":"否决。执行员 2026-11-26 00:27 Europe/London 报告：IBKR Client Portal 模拟盘 [acct]，MSLZ6 下单…","t":"2026-11-26 00:30","who":"侦察兵","events":[{"t":"2026-11-26 00:27","who":"执行员","gate":"第5关","stage":5,"v":"否决","txt":"预览（不是成交）：IBKR Client Portal 模拟盘 [acct]，2026-11-26 约00:27 UK，MSL Dec24'26（CME，1点…","shadow":false},{"t":"2026-11-26 00:27","who":"执行员","gate":"第5关","stage":5,"v":"否决","txt":"预览（不是成交）：IBKR Client Portal 模拟盘 [acct]，2026-11-26 约00:27 UK，MET Nov27'26（CME，1点…","shadow":false},{"t":"2026-11-26 00:30","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"否决。执行员 2026-11-26 00:27 Europe/London 报告：IBKR Client Portal 模拟盘 [acct]，MSLZ6 下单…","shadow":false}]}],"today_events":[{"t":"2026-11-27 20:51","id":"S20261127T205115-AEHL-long-radar_mover","sym":"AEHL","sym_short":"AEHL","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"radar异动 80.67% 价12.9(alpaca movers, 2026-11-27 20:51 UK; 美股已收盘/盘后数据)；无stop/t1、未…","shadow":false,"side":"","desk":true},{"t":"2026-11-27 20:51","id":"S20261127T205115-RETO-long-radar_mover","sym":"RETO","sym_short":"RETO","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"radar异动 43.46% 价5.48(alpaca movers, 2026-11-27 20:51 UK; 美股已收盘/盘后数据)；无stop/t1、未…","shadow":false,"side":"","desk":true},{"t":"2026-11-27 20:51","id":"S20261127T205115-MPU-long-radar_mover","sym":"MPU","sym_short":"MPU","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"radar异动 42.74% 价7.18(alpaca movers, 2026-11-27 20:51 UK; 美股已收盘/盘后数据)；无stop/t1、未…","shadow":false,"side":"","desk":true},{"t":"2026-11-27 20:51","id":"S20261127T205115-AIIO-long-radar_mover","sym":"AIIO","sym_short":"AIIO","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"radar异动 41.78% 价7.33(alpaca movers, 2026-11-27 20:51 UK; 美股已收盘/盘后数据)；无stop/t1、未…","shadow":false,"side":"","desk":true},{"t":"2026-11-27 20:51","id":"S20261127T205115-RIBBU-long-radar_mover","sym":"RIBBU","sym_short":"RIBBU","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"radar异动 41.41% 价133.7(alpaca movers, 2026-11-27 20:51 UK; 美股已收盘/盘后数据)；无stop/t1、…","shadow":false,"side":"","desk":true},{"t":"2026-11-27 20:51","id":"S20261127T205115-UFG-long-radar_mover","sym":"UFG","sym_short":"UFG","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"radar异动 40.12% 价2.41(alpaca movers, 2026-11-27 20:51 UK; 美股已收盘/盘后数据)；无stop/t1、未…","shadow":false,"side":"","desk":true},{"t":"2026-11-27 20:51","id":"S20261127T205115-FOFO-long-radar_mover","sym":"FOFO","sym_short":"FOFO","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"radar异动 37.63% 价2.56(alpaca movers, 2026-11-27 20:51 UK; 美股已收盘/盘后数据)；无stop/t1、未…","shadow":false,"side":"","desk":true},{"t":"2026-11-27 20:51","id":"S20261127T205115-BBCI-long-radar_mover","sym":"BBCI","sym_short":"BBCI","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"radar异动 37.56% 价3.04(alpaca movers, 2026-11-27 20:51 UK; 美股已收盘/盘后数据)；无stop/t1、未…","shadow":false,"side":"","desk":true},{"t":"2026-11-27 20:51","id":"S20261127T205115-FISN-long-radar_mover","sym":"FISN","sym_short":"FISN","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"radar异动 34.28% 价3.8(alpaca movers, 2026-11-27 20:51 UK; 美股已收盘/盘后数据)；无stop/t1、未核…","shadow":false,"side":"","desk":true},{"t":"2026-11-27 20:51","id":"S20261127T205115-FVNNU-long-radar_mover","sym":"FVNNU","sym_short":"FVNNU","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"radar异动 32.01% 价132.0(alpaca movers, 2026-11-27 20:51 UK; 美股已收盘/盘后数据)；无stop/t1、…","shadow":false,"side":"","desk":true},{"t":"2026-11-27 20:51","id":"S20261127T205115-ZYN-short-radar_mover","sym":"ZYN","sym_short":"ZYN","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"radar异动 -75.94% 价2.43(alpaca movers, 2026-11-27 20:51 UK; 美股已收盘/盘后数据)；无stop/t1、…","shadow":false,"side":"","desk":true},{"t":"2026-11-27 20:51","id":"S20261127T205115-AIOK-short-radar_mover","sym":"AIOK","sym_short":"AIOK","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"radar异动 -48.75% 价4.52(alpaca movers, 2026-11-27 20:51 UK; 美股已收盘/盘后数据)；无stop/t1、…","shadow":false,"side":"","desk":true},{"t":"2026-11-27 20:51","id":"S20261127T205115-SNDQ-short-radar_mover","sym":"SNDQ","sym_short":"SNDQ","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"radar异动 -30.7% 价35.15(alpaca movers, 2026-11-27 20:51 UK; 美股已收盘/盘后数据)；无stop/t1、…","shadow":false,"side":"","desk":true},{"t":"2026-11-27 20:51","id":"S20261127T205115-BRZD-short-radar_mover","sym":"BRZD","sym_short":"BRZD","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"radar异动 -28.89% 价34.23(alpaca movers, 2026-11-27 20:51 UK; 美股已收盘/盘后数据)；无stop/t1…","shadow":false,"side":"","desk":true},{"t":"2026-11-27 20:51","id":"S20261127T205115-COHQ-short-radar_mover","sym":"COHQ","sym_short":"COHQ","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"radar异动 -28.61% 价23.23(alpaca movers, 2026-11-27 20:51 UK; 美股已收盘/盘后数据)；无stop/t1…","shadow":false,"side":"","desk":true},{"t":"2026-11-27 20:51","id":"S20261127T205115-AXTQ-short-radar_mover","sym":"AXTQ","sym_short":"AXTQ","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"radar异动 -26.56% 价32.32(alpaca movers, 2026-11-27 20:51 UK; 美股已收盘/盘后数据)；无stop/t1…","shadow":false,"side":"","desk":true},{"t":"2026-11-27 20:51","id":"S20261127T205115-FBYDP-short-radar_mover","sym":"FBYDP","sym_short":"FBYDP","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"radar异动 -23.02% 价5.05(alpaca movers, 2026-11-27 20:51 UK; 美股已收盘/盘后数据)；无stop/t1、…","shadow":false,"side":"","desk":true},{"t":"2026-11-27 20:51","id":"S20261127T205115-ANTY-short-radar_mover","sym":"ANTY","sym_short":"ANTY","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"radar异动 -22.55% 价22.1176(alpaca movers, 2026-11-27 20:51 UK; 美股已收盘/盘后数据)；无stop/…","shadow":false,"side":"","desk":true},{"t":"2026-11-27 20:51","id":"S20261127T205115-ANTQ-short-radar_mover","sym":"ANTQ","sym_short":"ANTQ","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"radar异动 -22.53% 价17.6894(alpaca movers, 2026-11-27 20:51 UK; 美股已收盘/盘后数据)；无stop/…","shadow":false,"side":"","desk":true},{"t":"2026-11-27 20:51","id":"S20261127T205115-ANS-short-radar_mover","sym":"ANS","sym_short":"ANS","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"radar异动 -22.27% 价22.0664(alpaca movers, 2026-11-27 20:51 UK; 美股已收盘/盘后数据)；无stop/…","shadow":false,"side":"","desk":true},{"t":"2026-11-27 20:51","id":"S20261127T205115-ANDD-short-radar_mover","sym":"ANDD","sym_short":"ANDD","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"radar异动 -22.27% 价13.37(alpaca movers, 2026-11-27 20:51 UK; 美股已收盘/盘后数据)；无stop/t1…","shadow":false,"side":"","desk":true},{"t":"2026-11-27 20:51","id":"S20261127T205115-ANTZ-short-radar_mover","sym":"ANTZ","sym_short":"ANTZ","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"radar异动 -22.18% 价22.24(alpaca movers, 2026-11-27 20:51 UK; 美股已收盘/盘后数据)；无stop/t1…","shadow":false,"side":"","desk":true},{"t":"2026-11-27 20:51","id":"S20261127T205115-GDXD-short-radar_mover","sym":"GDXD","sym_short":"GDXD","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"radar异动 -21.62% 价23.46(alpaca movers, 2026-11-27 20:51 UK; 美股已收盘/盘后数据)；无stop/t1…","shadow":false,"side":"","desk":true},{"t":"2026-11-27 20:51","id":"S20261127T205115-ANTD-short-radar_mover","sym":"ANTD","sym_short":"ANTD","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"radar异动 -21.35% 价13.41(alpaca movers, 2026-11-27 20:51 UK; 美股已收盘/盘后数据)；无stop/t1…","shadow":false,"side":"","desk":true},{"t":"2026-11-27 20:51","id":"S20261127T205115-STAK-short-radar_mover","sym":"STAK","sym_short":"STAK","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"radar异动 -20.26% 价2.185(alpaca movers, 2026-11-27 20:51 UK; 美股已收盘/盘后数据)；无stop/t1…","shadow":false,"side":"","desk":true},{"t":"2026-11-27 20:51","id":"S20261127T205115-NCT-short-radar_mover","sym":"NCT","sym_short":"NCT","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"radar异动 -19.57% 价5.59(alpaca movers, 2026-11-27 20:51 UK; 美股已收盘/盘后数据)；无stop/t1、…","shadow":false,"side":"","desk":true},{"t":"2026-11-27 20:51","id":"S20261127T205115-BZQ-short-radar_mover","sym":"BZQ","sym_short":"BZQ","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"radar异动 -19.32% 价19.58(alpaca movers, 2026-11-27 20:51 UK; 美股已收盘/盘后数据)；无stop/t1…","shadow":false,"side":"","desk":true},{"t":"2026-11-27 20:51","id":"S20261127T205116-RBRK-long-event_earnings","sym":"RBRK","sym_short":"RBRK","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"财报事件 2026-11-30 AMC (nasdaq日历)；无价格/stop/t1，周一才有时效 → 暂不过关，待盘前复核","shadow":false,"side":"","desk":true},{"t":"2026-11-27 21:38","id":"更正索引-20261127-live-dup","sym":"AEHL等28","sym_short":"AEHL等28","who":"执行员","gate":"复盘-总控","stage":0,"v":"复盘","txt":"更正（只追加；原行不改）：ledger.csv 第662–689行共28行全部作废，均为同一英国日期（20261127）下相同「标的+方向+信号类型」的重复写…","shadow":false,"side":"","desk":true},{"t":"2026-11-27 22:14","id":"20261127-复盘-Nova","sym":"全台","sym_short":"全台","who":"Nova","gate":"复盘-总控","stage":0,"v":"复盘","txt":"11/27 零成交（股票/加密主账本都无开平仓，持仓0挂单0，position_watch无FLAG）。对：美股半天市14只空单全挡（IBIT/ETHA/BS…","shadow":false,"side":"short","desk":false},{"t":"2026-11-27 22:14","id":"20261127-学习","sym":"当日否决","sym_short":"当日否决","who":"Nova","gate":"复盘-总控","stage":0,"v":"复盘","txt":"否决想法收盘回测（yfinance 5m，自想法时间起至22:13 UK，按每笔1R=£20估）：错过的盈利≈£21（BTC空+0.7R、SOL空+0.2R、…","shadow":false,"side":"","desk":false},{"t":"2026-11-27 22:14","id":"20261127-教训","sym":"全台","sym_short":"全台","who":"Nova","gate":"复盘-总控","stage":0,"v":"复盘","txt":"教训：1）雷达异动榜（无stop/t1、无催化剂）不再逐只记第1关否决行，只写一行汇总，并按 标的+方向+信号类型 每日去重（daemon重启后不重复入账）；…","shadow":false,"side":"short","desk":false},{"t":"2026-11-27 22:15","id":"20261127T2215-BCHUSD-short-15m_S_mom","sym":"BCH/USD","sym_short":"BCH","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"15m_S_mom short @205.5（okx_ws 22:15:00 UK）stop 219.86 t1 203.07；否决：rr_net 0.17 …","shadow":false,"side":"short","desk":true},{"t":"2026-11-27 22:15","id":"20261127T2215-XNVDAUSD-short-15m_S_break","sym":"XNVDA/USD","sym_short":"XNVDA","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"15m_S_break short @148.33（okx_ws 22:15:00 UK）stop 160.8091 t1 145.54；否决：rr_net …","shadow":false,"side":"short","desk":true},{"t":"2026-11-27 22:15","id":"20261127T2215-ETHUSD-short-15m_S_mom","sym":"ETH/USD","sym_short":"ETH","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"15m_S_mom short @1657.22（okx_ws 22:15:00 UK）stop 1761.9307 t1 1633.79；否决：rr_net…","shadow":false,"side":"short","desk":true},{"t":"2026-11-27 22:15","id":"20261127T2215-FILUSD-short-15m_S_mom","sym":"FIL/USD","sym_short":"FIL","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"15m_S_mom short @0.5282（okx_ws 22:15:01 UK）stop 0.580191 t1 0.5238；否决：rr_net 0.…","shadow":false,"side":"short","desk":true},{"t":"2026-11-27 22:15","id":"20261127T2215-AVAXUSD-short-15m_S_break","sym":"AVAX/USD","sym_short":"AVAX","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"15m_S_break short @6.579（okx_ws 22:15:01 UK）stop 7.0894 t1 6.481；否决：rr_net 0.19…","shadow":false,"side":"short","desk":true},{"t":"2026-11-27 22:15","id":"20261127T2215-LINKUSD-short-15m_S_break","sym":"LINK/USD","sym_short":"LINK","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"15m_S_break short @9.27（okx_ws 22:15:01 UK）stop 9.875 t1 9.101；否决：rr_net 0.28 <…","shadow":false,"side":"short","desk":true},{"t":"2026-11-27 22:15","id":"20261127T2215-UNIUSD-short-15m_S_mom","sym":"UNI/USD","sym_short":"UNI","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"15m_S_mom short @4.806（okx_ws 22:15:01 UK）stop 5.2867 t1 4.787；否决：rr_net 0.04 <…","shadow":false,"side":"short","desk":true},{"t":"2026-11-27 22:15","id":"20261127T2215-XRPUSD-short-15m_S_mom","sym":"XRP/USD","sym_short":"XRP","who":"侦察兵","gate":"第1关","stage":1,"v":"否决","txt":"15m_S_mom short @0.9434（okx_ws 22:15:01 UK）stop 1.00205 t1 0.9404；否决：rr_net 0.0…","shadow":false,"side":"short","desk":true}],"n_today":102}};
+const FACE={
+"侦察兵":`<svg viewBox="0 0 92 92" aria-hidden="true"><circle cx="46" cy="46" r="44" fill="#1c2736"/><circle cx="46" cy="38" r="18" fill="#f0d2b0"/><rect x="20" y="28" width="52" height="10" rx="5" fill="#2a3d2f"/><circle cx="32" cy="33" r="8" fill="none" stroke="#9aff9a" stroke-width="2"/><circle cx="60" cy="33" r="8" fill="none" stroke="#9aff9a" stroke-width="2"/><path d="M40 33h12" stroke="#9aff9a" stroke-width="2"/><path d="M28 56h36c2 14-8 24-18 24s-20-10-18-24z" fill="#2f4a3a"/><circle cx="74" cy="18" r="4" fill="#6aa9ff"/></svg>`,
+"看图员":`<svg viewBox="0 0 92 92" aria-hidden="true"><circle cx="46" cy="46" r="44" fill="#1a2433"/><circle cx="46" cy="38" r="18" fill="#f0d2b0"/><circle cx="38" cy="37" r="7" fill="none" stroke="#7ee7ff" stroke-width="2"/><circle cx="54" cy="37" r="7" fill="none" stroke="#7ee7ff" stroke-width="2"/><path d="M45 37h2" stroke="#7ee7ff" stroke-width="2"/><rect x="22" y="62" width="48" height="16" rx="3" fill="#173047"/><path d="M28 74l8-8 8 5 10-9 10 6" fill="none" stroke="#7ee7ff" stroke-width="2"/><path d="M28 56h36c2 12-8 20-18 20s-20-8-18-20z" fill="#24405a"/></svg>`,
+"军师":`<svg viewBox="0 0 92 92" aria-hidden="true"><circle cx="46" cy="46" r="44" fill="#241c16"/><circle cx="46" cy="40" r="18" fill="#f0d2b0"/><path d="M28 28c8-8 28-8 36 0-6 6-12 6-18 2-6 4-12 4-18-2z" fill="#c43c3c"/><path d="M44 52c2 8 8 10 12 8" stroke="#7a5a3a" stroke-width="2" fill="none"/><path d="M26 58h40c2 14-8 24-20 24s-22-10-20-24z" fill="#4a2c1a"/><circle cx="70" cy="66" r="8" fill="#e8d5a3"/><circle cx="70" cy="66" r="2" fill="#333"/></svg>`,
+"风控":`<svg viewBox="0 0 92 92" aria-hidden="true"><circle cx="46" cy="46" r="44" fill="#1b2030"/><circle cx="46" cy="38" r="18" fill="#f0d2b0"/><path d="M46 14l22 8v14c0 14-10 24-22 28-12-4-22-14-22-28V22z" fill="none" stroke="#f5b94a" stroke-width="2.5"/><path d="M28 56h36c1 14-8 24-18 24s-19-10-18-24z" fill="#3d3a28"/><rect x="38" y="60" width="16" height="12" rx="2" fill="#f5b94a"/></svg>`,
+"执行员":`<svg viewBox="0 0 92 92" aria-hidden="true"><circle cx="46" cy="46" r="44" fill="#162018"/><circle cx="46" cy="38" r="18" fill="#f0d2b0"/><path d="M24 40c8 0 10-10 14-10" stroke="#3ecf8e" stroke-width="2" fill="none"/><circle cx="24" cy="40" r="4" fill="#3ecf8e"/><path d="M28 56h36c2 14-8 24-18 24s-20-10-18-24z" fill="#1f4a34"/><rect x="34" y="62" width="24" height="14" rx="2" fill="#0e1c14" stroke="#3ecf8e"/><path d="M38 66h16M38 70h10" stroke="#3ecf8e" stroke-width="1.5"/></svg>`
+};
+
+const REDUCE = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const E=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+const $=id=>document.getElementById(id);
+const gbp=(n,s=1)=>{n=Number(n);if(!Number.isFinite(n))n=0;return (n<0?"−":(s&&n>0?"+":""))+"£"+Math.abs(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})};
+const usd=(n,s=1)=>{n=Number(n);if(!Number.isFinite(n))n=0;return (n<0?"−":(s&&n>0?"+":""))+"$"+Math.abs(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})};
+const money=(n,ccy,s=1)=>ccy==="usd"?usd(n,s):gbp(n,s);
+const cl=n=>n==null||!Number.isFinite(+n)?"m":(+n>0.004?"g":(+n<-0.004?"r":"m"));
+const BOTS=["侦察兵","看图员","军师","风控","执行员"];
+const COLOR={"侦察兵":"#00e8ff","看图员":"#4d8dff","军师":"#ff2bd6","风控":"#ffcc44","执行员":"#3effa8"};
+const ROLE={"侦察兵":"扫描行情，寻找候选","看图员":"看图评估形态","军师":"权衡是否出手","风控":"把关交易风险","执行员":"下单并盯盘"};
+const prevNum={};
+let D=null, live=false, mode="live", timer=null, replayIdx=0, openBot=null, lastHomes={};
+
+function okAnim(j){return j && typeof j==="object" && j.asof && Array.isArray(j.bots) && Array.isArray(j.tickets);}
+function okBoard(j){return j && typeof j==="object" && j.alg!=="AES-GCM" && j.asof && (Array.isArray(j.ais)||Array.isArray(j.bots)||okAnim(j.anim));}
 function parseAsOf(s){
   const m=String(s||"").match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?/);
   if(!m) return null;
   return Date.UTC(+m[1],+m[2]-1,+m[3],+m[4],+m[5],+(m[6]||0));
 }
-function ageTxt(mins){
-  if(mins==null||!Number.isFinite(+mins)) return "--";
-  mins=+mins;
-  if(mins<1) return "<1m";
-  if(mins<60) return mins+"m";
-  return Math.floor(mins/60)+"h"+((mins%60)?String(mins%60).padStart(2,"0"):"");
+function shortTs(t){
+  const s=String(t||"");
+  const m=s.match(/(\d{2}:\d{2})(?::\d{2})?$/);
+  return m?m[1]:(s.slice(11,16)||s);
 }
+function fxLine(fx){
+  if(!fx||fx.gbpusd==null) return "";
+  const rate=Number(fx.gbpusd);
+  const r=Number.isFinite(rate)?rate.toFixed(4):"—";
+  return "汇率 GBPUSD "+r+(fx.ts?" · "+fx.ts:"")+(fx.src?" · "+fx.src:"")+(fx.fallback?"（备用）":"");
+}
+function badge(b){
+  if(!b||b.state==="unknown") return {lab:"无数据",cls:"off"};
+  if(b.state==="scanning") return {lab:"扫盘",cls:"scan"};
+  if(/盯盘/.test(b.status||"")) return {lab:"盯盘",cls:"live"};
+  if(b.state==="on_duty") return {lab:"值班",cls:"live"};
+  if(b.state==="idle") return {lab:"空闲",cls:"idle"};
+  return {lab:"无数据",cls:"off"};
+}
+function isActive(b){return b&&(b.state==="scanning"||b.state==="on_duty");}
+function botsOf(d){
+  const ok=arr=>Array.isArray(arr)&&arr.some(b=>BOTS.includes(b.name)&&(b.state||b.status));
+  if(d&&d.anim&&ok(d.anim.bots)) return d.anim.bots;
+  if(ok(d&&d.bots)) return d.bots;
+  return BOTS.map(name=>({name,state:"unknown",status:"无数据"}));
+}
+function eventsOf(d){
+  if(d&&Array.isArray(d.today_events)&&d.today_events.length) return d.today_events;
+  if(d&&d.anim&&Array.isArray(d.anim.today_events)) return d.anim.today_events;
+  if(d&&Array.isArray(d.log)) return d.log.map(e=>({t:e.t,who:e.who,sym:e.sym,sym_short:e.sym,v:e.v,txt:e.txt,desk:true,shadow:false}));
+  return [];
+}
+function ticketsOf(d){
+  if(d&&Array.isArray(d.tickets)) return d.tickets;
+  if(d&&d.anim&&Array.isArray(d.anim.tickets)) return d.anim.tickets;
+  return [];
+}
+function histOf(d){return (d&&d.equity_hist)||(d&&d.anim&&d.anim.equity_hist)||{};}
+function statsOf(d){
+  const s=(d&&d.stats)||(d&&d.anim&&d.anim.stats)||{};
+  const trades=s.trades!=null?s.trades:(Array.isArray(d&&d.trades)?d.trades.length:null);
+  const wins=s.wins!=null?s.wins:(d&&d.w);
+  const losses=s.losses!=null?s.losses:(d&&d.l);
+  return {trades,wins,losses};
+}
+function tagOf(e){
+  const v=e.v||e.verdict||e.status||"";
+  if(/否决|SKIP|REJECT|VETO|KILL/.test(v)) return {lab:"否决",cls:"skip"};
+  if(e.shadow||/影子|FILTER/.test(v)) return {lab:"影子",cls:"shadow"};
+  if(/通过|ENTER|PASS|BUY/.test(v)) return {lab:"通过",cls:"enter"};
+  if(/待定|待审/.test(v)) return {lab:"待定",cls:"wait"};
+  const lab=String(v).slice(0,4)||"记录";
+  return {lab,cls:"misc"};
+}
+function markCls(v){
+  if(/否决/.test(v||"")) return "r";
+  if(/影子/.test(v||"")) return "p";
+  if(/通过/.test(v||"")) return "g";
+  return "a";
+}
+
+function setCount(el, key, value, fmt){
+  if(!el) return;
+  const from=prevNum[key];
+  prevNum[key]=value;
+  if(!Number.isFinite(+value)){ el.textContent=fmt(value); return; }
+  if(REDUCE || from==null || from===value || !Number.isFinite(+from)){ el.textContent=fmt(value); return; }
+  const t0=performance.now(), dur=700;
+  const step=t=>{
+    const p=Math.min(1,(t-t0)/dur);
+    const e=1-Math.pow(1-p,3);
+    el.textContent=fmt(from+(value-from)*e);
+    if(p<1) requestAnimationFrame(step);
+    else el.textContent=fmt(value);
+  };
+  requestAnimationFrame(step);
+}
+
+function sparkSVG(vals, color, id){
+  if(!vals||!vals.length) return "";
+  const w=84,h=22,p=2;
+  const c=color||"#3effa8";
+  if(vals.length===1) return `<svg class="spark" viewBox="0 0 ${w} ${h}" aria-hidden="true"><path d="M${p} ${h/2} H${w-p}" stroke="${c}" fill="none" stroke-width="1.2"/></svg>`;
+  const min=Math.min(...vals), max=Math.max(...vals), span=(max-min)||1;
+  const pts=vals.map((v,i)=>{
+    const x=p+i*(w-2*p)/(vals.length-1);
+    const y=h-p-((v-min)/span)*(h-2*p);
+    return x.toFixed(1)+","+y.toFixed(1);
+  }).join(" ");
+  return `<svg class="spark" viewBox="0 0 ${w} ${h}" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="${c}" stroke-width="1.4"/></svg>`;
+}
+
+function areaSVG(curve, w, h, gid){
+  const pts=(curve&&curve.points)||[];
+  if(!pts.length){
+    return `<svg class="chart" viewBox="0 0 ${w} ${h}" aria-hidden="true"></svg>`;
+  }
+  const vals=pts.map(p=>Number(p.v));
+  const min=Math.min(...vals), max=Math.max(...vals), span=(max-min)||1;
+  const padL=2,padR=2,padT=8,padB=4;
+  const n=vals.length;
+  const xy=(i,v)=>{
+    const x=padL+(n===1?(w-padL-padR)/2:i*(w-padL-padR)/(n-1));
+    const y=padT+(h-padT-padB)*(1-(v-min)/span);
+    return [x,y];
+  };
+  const line=vals.map((v,i)=>{const [x,y]=xy(i,v);return (i?"L":"M")+x.toFixed(1)+","+y.toFixed(1);}).join(" ");
+  const last=xy(n-1,vals[n-1]), first=xy(0,vals[0]);
+  const fill=line+` L${last[0].toFixed(1)},${h-padB} L${first[0].toFixed(1)},${h-padB} Z`;
+  return `<svg class="chart" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">
+    <defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3effa8" stop-opacity=".42"/>
+      <stop offset="100%" stop-color="#3effa8" stop-opacity="0"/>
+    </linearGradient></defs>
+    <path d="${fill}" fill="url(#${gid})"/>
+    <path d="${line}" fill="none" stroke="#3effa8" stroke-width="1.7" class="chart-stroke"/>
+  </svg>`;
+}
+
+function startBg(){
+  if(REDUCE || /[?&]shot=1\b/.test(location.search)) return;
+  const c=$("bgfx"); if(!c) return;
+  const ctx=c.getContext("2d",{alpha:true});
+  let w=0,h=0,pts=[];
+  const resize=()=>{
+    const dpr=Math.min(2,window.devicePixelRatio||1);
+    w=c.clientWidth||window.innerWidth;
+    h=c.clientHeight||window.innerHeight;
+    c.width=Math.floor(w*dpr); c.height=Math.floor(h*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    if(!pts.length) pts=Array.from({length:40},()=>({x:Math.random()*w,y:Math.random()*h,vx:(.12+Math.random()*.28)*(Math.random()<.5?-1:1),vy:-.08-Math.random()*.22}));
+  };
+  resize();
+  addEventListener("resize",resize,{passive:true});
+  const tick=()=>{
+    if(!document.hidden){
+      ctx.clearRect(0,0,w,h);
+      ctx.fillStyle="rgba(0,232,255,.4)";
+      pts.forEach(p=>{
+        p.x+=p.vx; p.y+=p.vy;
+        if(p.y<0) p.y=h; if(p.y>h) p.y=0;
+        if(p.x<0) p.x=w; if(p.x>w) p.x=0;
+        ctx.beginPath(); ctx.arc(p.x,p.y,1.05,0,6.28); ctx.fill();
+      });
+    }
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+
 function clockTick(){
   try{
-    const fmt=new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/London",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});
-    const now=new Date();
-    const mkt=D&&D.market?(" · "+String(D.market).split("·")[0].trim()):"";
-    document.getElementById("clock").textContent=fmt.format(now)+mkt;
+    const fmt=new Intl.DateTimeFormat("zh-Hans-GB",{timeZone:"Europe/London",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});
+    const el=$("clock");
+    if(el) el.textContent=fmt.format(new Date())+" 伦敦";
+    const upd=$("upd"), run=$("run"), lab=$("runLab");
     if(D&&D.asof){
       const t=parseAsOf(D.asof);
-      const sec=t?Math.max(0,Math.round((now-t)/1000)):null;
+      const sec=t?Math.max(0,Math.round((Date.now()-t)/1000)):null;
       let a="数据更新于 --";
       if(sec!=null){
         if(sec<60) a="数据更新于 "+sec+" 秒前";
         else if(sec<3600) a="数据更新于 "+Math.floor(sec/60)+" 分钟前";
         else a="数据更新于 "+Math.floor(sec/3600)+" 小时前";
       }
-      document.getElementById("upd").textContent=a;
+      if(upd) upd.textContent=a;
+      if(run){
+        run.classList.remove("on","stale","snap");
+        if(!live){ run.classList.add("snap"); if(lab) lab.textContent="本地快照"; }
+        else if(sec!=null && sec>180){ run.classList.add("stale"); if(lab) lab.textContent="数据已过时"; }
+        else { run.classList.add("on"); if(lab) lab.textContent="运行中"; }
+      }
     }
   }catch(e){}
 }
-function stCol(s){return s==="working"?"g":s==="waiting"?"a":"m";}
-function stLab(s){return s==="working"?"WORK":s==="waiting"?"WAIT":"IDLE";}
 
-function render(){
-  const d=D; if(!d) return;
-  document.getElementById("mkt").textContent=d.market||"";
-  const ais=d.ais&&d.ais.length?d.ais:(d.bots||[]).map(b=>({name:b.name,state:b.stalled?"idle":(b.age!=null&&b.age<30?"working":"idle"),item:[b.sym,b.v].filter(Boolean).join(" "),age:b.age}));
-  document.getElementById("ais").innerHTML=ais.map(a=>`<div class="ln"><span class="dot ${stCol(a.state)}">\u25cf</span><span class="nm">${E(a.name)}</span><span class="st ${stCol(a.state)}">${stLab(a.state)}</span><span class="it">${E(clip(a.item,18))}</span><span class="ag">${E(ageTxt(a.age))}</span></div>`).join("");
-
-  const qs=d.queue||[];
-  document.getElementById("queue").innerHTML=qs.length?qs.map(q=>{
-    const rr=q.rr!=null?("rr "+q.rr):"";
-    const line=[q.sym,q.side||"",("st"+(q.stage||""))+" "+(q.v||""),rr].filter(Boolean).join("  ");
-    return `<div class="ln"><span class="it hi">${E(clip(line,34))}</span></div>`;
-  }).join(""):`<div class="ln m">none</div>`;
-
-  const hs=(d.handoffs||[]).slice(0,6);
-  document.getElementById("handoff").innerHTML=hs.length?hs.map(h=>{
-    const t=(h.t||"").slice(-5);
-    let line="";
-    if(h.src==="meme"||h.kind==="debate"){
-      const mark=/VETO|KILL|SKIP|REJECT|\u5426\u51b3/i.test(h.v||"")?"\u2717":(/BUY|PASS|\u901a\u8fc7/i.test(h.v||"")?"\u2713":"\u00b7");
-      const verd=clip((h.v||"").replace(/^OBSERVE-[AB]\s*would\s*(be\s*)?/i,""),16);
-      line=`${t}  Bear ${mark} ${E(clip(h.sym,8))}  ${verd}`;
-      // reason short, no E on whole line twice — build safely
-      const why=clip(h.bear||h.why||"",18);
-      return `<div class="ln"><span class="it">${E(t)}  Bear ${mark} ${E(clip(h.sym,8))}  ${E(verd)}  ${E(why)}</span></div>`;
-    }
-    if(h.kind==="veto"){
-      return `<div class="ln r"><span class="it">${E(t)}  ${E(clip(h.frm,4))} \u2717 ${E(clip(h.sym,8))}  ${E(clip(h.why,18))}</span></div>`;
-    }
-    if(h.kind==="pass"){
-      return `<div class="ln g"><span class="it">${E(t)}  ${E(clip(h.frm,4))} \u2192 ${E(clip(h.to,4))}  ${E(clip(h.sym,8))} ${E(h.side||"")}</span></div>`;
-    }
-    return `<div class="ln m"><span class="it">${E(t)}  ${E(clip(h.frm,6))}  ${E(clip(h.sym,8))}  ${E(clip(h.v,12))}</span></div>`;
-  }).join(""):`<div class="ln m">none</div>`;
-
-  const A=d.meme&&d.meme.A, B=d.meme&&d.meme.B;
-  const T=d.totals, fx=(T&&T.fx)||d.fx||{};
-  if(T){
-    const fxTxt=fx.gbpusd!=null?("汇率 GBPUSD "+Number(fx.gbpusd).toFixed(4)+(fx.ts?" · "+fx.ts:"")+(fx.src?" · "+fx.src:"")+(fx.fallback?"（备用）":"")):"";
-    document.getElementById("tot").innerHTML=`<div class="totlab">总计</div><span class="${cl((T.equity||0)-(T.principal||0))}">${gbp(T.equity,0)}</span>
-      <div class="totsm">本金 ${gbp(T.principal,0)} · 今日 <span class="${cl(T.today)}">${gbp(T.today)}</span> · 累计 <span class="${cl(T.total)}">${gbp(T.total)}</span></div>
-      <div class="totsm m">${E(fxTxt)}</div>`;
-  } else {
-    document.getElementById("tot").innerHTML=`<span class="${cl(d.total_gbp)}">${gbp(d.total_gbp)}</span>`;
+function renderTicker(d){
+  const track=$("tickerTrack"); if(!track) return;
+  const ev=eventsOf(d).slice().reverse();
+  if(!ev.length){
+    track.classList.add("still");
+    track.textContent="今天还没有流水";
+    track.dataset.sig="empty";
+    return;
   }
-  document.getElementById("wl").textContent=`${d.w||0}W / ${d.l||0}L`;
-  const memeLine=(lab,book,id)=>{
-    const b=(d.books||[]).find(x=>x.id===id);
-    const eq=b?b.equity:(book&&book.equity);
-    const cum=b?b.total:(book&&book.realized);
-    const td=b?b.today:(book&&book.today);
-    const today=td==null?"":(" 今日 "+usd(td));
-    return `<div class="ln"><span class="nm">${lab}</span><span class="it">${usd(eq,0)}</span><span class="ag ${cl(td)}">${today}</span><span class="ag ${cl(cum)}">${usd(cum)}</span></div>`;
+  const bits=ev.slice(0,40).map(e=>{
+    const mk=markCls(e.v);
+    return `<span><span class="t">${E(shortTs(e.t))}</span> ${E(e.who||"")} · ${E(e.sym_short||e.sym||"")} <span class="${mk}">${E(e.v||"")}</span></span>`;
+  });
+  const sig=bits.join("|");
+  if(track.dataset.sig===sig) return;
+  track.dataset.sig=sig;
+  track.classList.remove("still");
+  track.innerHTML=bits.join("")+bits.join("");
+}
+
+function renderHead(d){
+  const T=d.totals||(d.anim&&d.anim.totals);
+  const st=statsOf(d);
+  const eq=T?T.equity:(d.total_gbp!=null?d.total_gbp+2000:null);
+  const today=T?T.today:d.today_gbp;
+  const tot=T?T.total:d.total_gbp;
+  const box=$("headStats"); if(!box) return;
+  const cell=(k,id,extra)=>`<div class="hstat ${extra||""}"><span class="k">${k}</span><span class="v" id="${id}">—</span></div>`;
+  if(!box.dataset.ready){
+    box.innerHTML=cell("净值","hsEq","eq")+cell("累计","hsTot")+cell("今日","hsDay")+cell("成交","hsN")+cell("胜","hsW")+cell("负","hsL");
+    box.dataset.ready="1";
+  }
+  const eqEl=$("hsEq"); if(eqEl){ eqEl.className="v "+cl((T&&T.equity||0)-(T&&T.principal||0)); setCount(eqEl,"hsEq",eq||0,v=>gbp(v,0)); }
+  const totEl=$("hsTot"); if(totEl){ totEl.className="v "+cl(tot); setCount(totEl,"hsTot",tot||0,gbp); }
+  const dayEl=$("hsDay"); if(dayEl){ dayEl.className="v "+cl(today); setCount(dayEl,"hsDay",today||0,gbp); }
+  if($("hsN")) $("hsN").textContent=st.trades!=null?String(st.trades):"—";
+  if($("hsW")){ $("hsW").textContent=st.wins!=null?String(st.wins):"—"; $("hsW").className="v g"; }
+  if($("hsL")){ $("hsL").textContent=st.losses!=null?String(st.losses):"—"; $("hsL").className="v r"; }
+  const mkt=$("mkt"); if(mkt) mkt.textContent=d.market||(d.anim&&d.anim.market)||"";
+}
+
+function renderHero(d){
+  const T=d.totals||(d.anim&&d.anim.totals);
+  const books=d.books||(d.anim&&d.anim.books)||[];
+  const fx=(T&&T.fx)||d.fx||{};
+  const hist=histOf(d);
+  const hero=$("hero"); if(!hero) return;
+  let pnl=T?T.total:d.total_gbp;
+  const eq=T?T.equity:null;
+  const prin=T?T.principal:null;
+  const today=T?T.today:d.today_gbp;
+  hero.innerHTML=`<div class="hero-left">
+      <h2>总计</h2>
+      <div class="hero-pnl ${cl(pnl)}" id="heroPnl">${T?gbp(pnl):"—"}</div>
+      <div class="hero-grid">
+        <div><span class="k">本金</span><b id="heroPrin">${T?gbp(prin,0):"—"}</b></div>
+        <div><span class="k">净值</span><b id="heroEq" class="${cl((eq||0)-(prin||0))}">${T?gbp(eq,0):"—"}</b></div>
+        <div><span class="k">今日</span><b id="heroDay" class="${cl(today)}">${T?gbp(today):"—"}</b></div>
+        <div><span class="k">累计</span><b id="heroTot" class="${cl(pnl)}">${T?gbp(pnl):"—"}</b></div>
+      </div>
+      <div class="fx">${E(fxLine(fx))}${hist.curve&&hist.curve.fx_note?" · "+E(hist.curve.fx_note):""}</div>
+    </div>
+    <div class="chart-wrap">
+      <div class="lab">净值走势</div>
+      ${areaSVG(hist.curve, 560, 120, "eqFill")}
+    </div>
+    <div class="books" id="books"></div>`;
+  if(T){
+    setCount($("heroPnl"),"heroPnl",pnl,gbp);
+    $("heroPnl").className="hero-pnl "+cl(pnl);
+    setCount($("heroEq"),"heroEq",eq,v=>gbp(v,0));
+    setCount($("heroDay"),"heroDay",today,gbp);
+    setCount($("heroTot"),"heroTot",pnl,gbp);
+    setCount($("heroPrin"),"heroPrin",prin,v=>gbp(v,0));
+  }
+  const bh=hist.books||{};
+  const html=books.map(b=>{
+    const todayVal=b.today==null?`<b class="m">—</b>`:`<b class="${cl(b.today)}">${money(b.today,b.ccy)}</b>`;
+    const col=cl(b.total)==="g"?"#3effa8":(cl(b.total)==="r"?"#ff5b73":"#8b93a7");
+    return `<div class="book">
+      <h3>${E(b.name)}<span>本金 ${money(b.principal,b.ccy,0)}</span></h3>
+      <div class="row"><span>净值</span><b>${money(b.equity,b.ccy,0)}</b></div>
+      <div class="row"><span>今日</span>${todayVal}</div>
+      <div class="row"><span>累计</span><b class="${cl(b.total)}">${money(b.total,b.ccy)}</b></div>
+      ${sparkSVG(bh[b.id], col)}
+    </div>`;
+  }).join("");
+  const box=$("books"); if(box) box.innerHTML=html;
+}
+
+function ruleLine(b){
+  if(b&&(b.last_v||b.last_sym)) return "上次 "+(b.last_v||"")+(b.last_sym?" "+b.last_sym:"");
+  return "暂无记录";
+}
+
+function renderAgents(d){
+  const box=$("agents"); if(!box) return;
+  const list=botsOf(d);
+  const by={}; list.forEach(b=>by[b.name]=b);
+  box.innerHTML=BOTS.map(name=>{
+    const b=by[name]||{name,state:"unknown",status:"无数据"};
+    const bd=badge(b);
+    const active=isActive(b)?" active":"";
+    const col=COLOR[name];
+    const face=(typeof FACE!=="undefined"&&FACE[name])?FACE[name]:"";
+    const title=E((b.detail||"")+" 来源 "+(b.src||"")+" 时间 "+(b.ts||""));
+    return `<article class="acard${active}" style="--ac:${col}" data-bot="${E(name)}" title="${title}">
+      <div class="tile">${face}</div>
+      <div class="nm">${E(name)}</div>
+      <div class="badge ${bd.cls}">${bd.lab}</div>
+      <div class="role">${E(ROLE[name]||"")}</div>
+      <div class="rule">${E(ruleLine(b))}</div>
+      <div class="act">${E(b.status||"无数据")}${b.ts?" · "+E(shortTs(b.ts)):""}</div>
+    </article>`;
+  }).join("");
+}
+
+function renderBar(d){
+  const bar=$("bar"); if(!bar) return;
+  const list=botsOf(d);
+  const by={}; list.forEach(b=>by[b.name]=b);
+  bar.innerHTML=BOTS.map(name=>{
+    const b=by[name]||{name,state:"unknown",status:"无数据"};
+    const active=isActive(b)?" active":"";
+    return `<div class="cell${active}" style="--ac:${COLOR[name]}">
+      <i></i><span class="who">${E(name)}</span><span class="tagline">${E(b.status||"无数据")}</span>
+    </div>`;
+  }).join("");
+}
+
+function ticketsAt(d, name){
+  const open=[], done=[];
+  ticketsOf(d).forEach(t=>{
+    if(t.status==="进行中"){
+      if(t.waiting===name) open.push(t);
+      return;
+    }
+    const last=(t.events&&t.events[t.events.length-1])||{};
+    const lastWho=last.who||t.who;
+    if(lastWho===name) done.push(t);
+  });
+  return open.concat(done).slice(0,4);
+}
+
+function chipHTML(t){
+  const side=t.side==="short"?"空":t.side==="long"?"多":"";
+  return `<span class="chip${t.shadow?" shadow":""}" title="${E(t.reason||"")}">${E(t.sym_short||t.sym||t.id)} ${E(side)}${t.waiting?" → "+E(t.waiting):""}</span>`;
+}
+
+function renderCands(d, ticketMap){
+  const box=$("cands"); if(!box) return;
+  let open;
+  if(ticketMap){
+    open=[];
+    Object.keys(ticketMap).forEach(n=>ticketMap[n].forEach(t=>{
+      if(t.status==="进行中"||t.waiting) open.push(t);
+    }));
+  } else {
+    open=ticketsOf(d).filter(t=>t.status==="进行中");
+  }
+  if(!open.length){ box.innerHTML=`<span class="chip muted">暂无待审候选</span>`; return; }
+  box.innerHTML=open.slice(0,12).map(chipHTML).join("");
+}
+
+function renderNodes(d, ticketMap){
+  const box=$("nodes"); if(!box) return;
+  const list=botsOf(d);
+  const by={}; list.forEach(b=>by[b.name]=b);
+  box.innerHTML=BOTS.map(name=>{
+    const b=by[name]||{name,state:"unknown",status:"无数据"};
+    const col=COLOR[name];
+    const active=isActive(b)?" active":"";
+    const scan=b.state==="scanning"?" scanning":"";
+    const face=(typeof FACE!=="undefined"&&FACE[name])?FACE[name]:"";
+    const hold=ticketMap?(ticketMap[name]||[]):ticketsAt(d,name);
+    const chips=hold.slice(0,2).map(t=>`<span class="chip${t.shadow?" shadow":""}">${E(t.sym_short||t.sym||"")}</span>`).join("");
+    return `<div class="node${active}${scan}" style="--ac:${col}" data-bot="${E(name)}">
+      <div class="orb">${face}<i class="radar"></i></div>
+      <div class="nm">${E(name)}</div>
+      <div class="stt">${E(b.status||"无数据")}</div>
+      <div class="hold">${chips}</div>
+    </div>`;
+  }).join("");
+  requestAnimationFrame(()=>{ layoutPipe(); holdEdgeDots(d, ticketMap); });
+}
+
+function layoutPipe(){
+  const svg=$("pipeSvg"), path=$("pipePath"), glow=$("pipeGlow");
+  const nodes=[...document.querySelectorAll(".node .orb")];
+  if(!svg||!path||nodes.length<2) return;
+  const wr=svg.getBoundingClientRect();
+  if(!wr.width||!wr.height) return;
+  svg.setAttribute("viewBox","0 0 "+wr.width+" "+wr.height);
+  const pts=nodes.map(el=>{
+    const r=el.getBoundingClientRect();
+    return {x:r.left+r.width/2-wr.left, y:r.top+r.height/2-wr.top};
+  });
+  let d=`M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
+  for(let i=1;i<pts.length;i++) d+=` L ${pts[i].x.toFixed(1)} ${pts[i].y.toFixed(1)}`;
+  path.setAttribute("d",d);
+  if(glow) glow.setAttribute("d",d);
+  svg._pts=pts;
+}
+
+function spawnPacket(fromName, toName){
+  if(REDUCE) return;
+  const fi=BOTS.indexOf(fromName), ti=BOTS.indexOf(toName);
+  if(fi<0||ti<0||fi===ti) return;
+  layoutPipe();
+  const path=$("pipePath"), layer=$("packets");
+  if(!path||!layer||!path.getTotalLength) return;
+  const len=path.getTotalLength(); if(!len) return;
+  const n=BOTS.length-1;
+  const start=fi/n, end=ti/n;
+  const dot=document.createElement("div");
+  dot.className="pkt";
+  dot.style.background=COLOR[fromName];
+  dot.style.color=COLOR[fromName];
+  layer.appendChild(dot);
+  const t0=performance.now(), dur=900;
+  const step=t=>{
+    const p=Math.min(1,(t-t0)/dur);
+    const e=1-Math.pow(1-p,3);
+    const pt=path.getPointAtLength((start+(end-start)*e)*len);
+    dot.style.transform=`translate(${pt.x}px,${pt.y}px)`;
+    if(p<1) requestAnimationFrame(step);
+    else dot.remove();
   };
-  document.getElementById("books").innerHTML=`
-    <div class="ln"><span class="nm">股票</span><span class="it">${gbp(d.stocks_bal,0)}</span><span class="ag ${cl(d.stocks_today)}">今日 ${gbp(d.stocks_today)}</span><span class="ag ${cl(d.stocks_pnl)}">${gbp(d.stocks_pnl)}</span></div>
-    <div class="ln"><span class="nm">加密</span><span class="it">${gbp(d.crypto_bal,0)}</span><span class="ag ${cl(d.crypto_today)}">今日 ${gbp(d.crypto_today)}</span><span class="ag ${cl(d.crypto_pnl)}">${gbp(d.crypto_pnl)}</span></div>
-    ${memeLine("小币A",A,"meme-A")}${memeLine("小币B",B,"meme-B")}`;
-  const trs=(d.trades||[]).slice(0,5);
-  document.getElementById("trades").innerHTML=trs.map(t=>`<div class="ln"><span class="m">${E((t.t||"").slice(-5))}</span><span class="it">${E(clip(t.sym,10))}  ${E(t.book||"")}</span><span class="ag ${cl(t.pnl)}">${money(t.pnl,t.ccy)}</span></div>`).join("");
+  requestAnimationFrame(step);
+}
 
-  const rr=d.rej_today||[], mx=Math.max(1,...rr.map(x=>x[1]));
-  document.getElementById("rej").innerHTML=(rr.length?rr.map(x=>{
-    const n=Math.max(1,Math.round(x[1]/mx*10));
-    return `<div class="ln"><span class="it m">${E(clip(x[0],14))}</span><span class="a">${"#".repeat(n)}</span><span class="ag hi">${x[1]}</span></div>`;
-  }).join(""):`<div class="ln m">none</div>`)+`<div class="ln m">pass ${d.pass_n||0}  reject ${d.rej_n||0}</div>`;
+function holdEdgeDots(d, ticketMap){
+  const layer=$("packets"); if(!layer) return;
+  [...layer.querySelectorAll(".pkt.hold")].forEach(x=>x.remove());
+  if(REDUCE || /[?&]shot=1\b/.test(location.search)) return;
+  const path=$("pipePath"); if(!path||!path.getTotalLength) return;
+  const len=path.getTotalLength(); if(!len) return;
+  const waiting=new Set();
+  if(ticketMap){
+    BOTS.forEach(n=>(ticketMap[n]||[]).forEach(t=>{ if(t.waiting) waiting.add(t.waiting); }));
+  } else {
+    ticketsOf(d).forEach(t=>{ if(t.status==="进行中"&&t.waiting) waiting.add(t.waiting); });
+  }
+  const n=BOTS.length-1;
+  waiting.forEach(name=>{
+    const ti=BOTS.indexOf(name);
+    if(ti<=0) return;
+    const src=BOTS[ti-1];
+    const f=(ti-0.5)/n;
+    const pt=path.getPointAtLength(f*len);
+    const dot=document.createElement("div");
+    dot.className="pkt hold";
+    dot.style.background=COLOR[src];
+    dot.style.color=COLOR[src];
+    dot.style.transform=`translate(${pt.x}px,${pt.y}px)`;
+    layer.appendChild(dot);
+    if(!REDUCE){
+      const t0=performance.now();
+      const anim=t=>{
+        if(!dot.isConnected) return;
+        const p=(Math.sin((t-t0)/700)+1)/2;
+        const ff=((ti-1)+p)/n;
+        const q=path.getPointAtLength(ff*len);
+        dot.style.transform=`translate(${q.x}px,${q.y}px)`;
+        requestAnimationFrame(anim);
+      };
+      requestAnimationFrame(anim);
+    }
+  });
+}
 
-  const hb=d.health||[];
-  document.getElementById("hb").innerHTML=hb.length?hb.map(h=>`<div class="ln"><span class="dot ${h.ok?"g":"r"}">\u25cf</span><span class="it">${E(clip(h.name,16))}</span><span class="ag">${h.ok?"on":"off"} ${E(ageTxt(h.age))}</span></div>`).join(""):`<div class="ln m">none</div>`;
+function ticketHomes(d){
+  const m={};
+  ticketsOf(d).forEach(t=>{
+    let h=null;
+    if(t.status==="进行中") h=t.waiting;
+    else {
+      const last=(t.events&&t.events[t.events.length-1])||{};
+      h=last.who||t.who;
+    }
+    if(h) m[t.id]=h;
+  });
+  return m;
+}
+function diffPackets(prev, next){
+  Object.keys(next).forEach(id=>{
+    if(prev[id] && prev[id]!==next[id]) spawnPacket(prev[id], next[id]);
+  });
+}
 
-  const pos=d.positions||[], ord=d.orders||[];
-  let po="";
-  if(pos.length) po+=pos.map(p=>`<div class="ln"><span class="it">${E(p.sym)} ${E(p.side)} ${E(p.qty)}</span><span class="ag ${cl(p.upl)}">${usd(p.upl)}</span></div>`).join("");
-  if(ord.length) po+=ord.map(o=>`<div class="ln"><span class="it">${E(o.sym)} ${E(o.side)} ${E(o.type)}</span><span class="ag">${E(o.status)}</span></div>`).join("");
-  if(!po) po=`<div class="ln m">no positions / orders</div>`;
-  document.getElementById("pos").innerHTML=po;
+function renderTiles(d){
+  const box=$("tiles"); if(!box) return;
+  const ev=eventsOf(d);
+  const desk=ev.filter(e=>e.desk!==false);
+  const pass=desk.filter(e=>/通过/.test(e.v||"")).length;
+  const rej=desk.filter(e=>/否决/.test(e.v||"")).length;
+  const pending=ticketsOf(d).filter(t=>t.status==="进行中").length;
+  const sc=(d.scanner)||(d.anim&&d.anim.scanner)||{};
+  const hb=sc.present===false?"无数据":(sc.scanning?"正在扫盘":(sc.ok?"正常":(sc.ts?"已超过3分钟":"—")));
+  const cells=[
+    ["今日记录", String((d.n_today!=null?d.n_today:desk.length)||ev.length||0)],
+    ["待审", String(pending)],
+    ["通过 / 否决", pass+" / "+rej],
+    ["心跳", hb]
+  ];
+  box.innerHTML=cells.map(([k,v])=>`<div class="tile-s"><span class="k">${k}</span><span class="v">${E(v)}</span></div>`).join("");
+}
 
-  const logs=(d.log||[]).slice(0,8);
-  document.getElementById("log").innerHTML=logs.length?logs.map(r=>`<div class="ln"><span class="it m">${E((r.t||"").slice(-5))}  ${E(clip(r.who,4))}  ${E(clip(r.sym,8))}  ${E(clip(r.v,8))}</span></div>`).join(""):`<div class="ln m">none</div>`;
+function renderTerm(d, highlight){
+  const box=$("term"); if(!box) return;
+  const ev=eventsOf(d).slice().reverse();
+  if(!ev.length){ box.innerHTML=`<div class="ln m">今天还没有流水 <span class="cur"></span></div>`; return; }
+  const lines=ev.slice(0,80).map((e,i)=>{
+    const on=highlight!=null && (eventsOf(d).length-1-i)===highlight?" style=\"background:rgba(62,255,168,.08)\"":"";
+    const sent=`${shortTs(e.t)}  ${e.who||""}  ${e.v||""}  ${e.sym_short||e.sym||""}  ${(e.txt||"").slice(0,42)}`;
+    return `<div class="ln ${markCls(e.v)}"${on}><span class="t"></span>${E(sent)}</div>`;
+  }).join("");
+  box.innerHTML=lines+`<div class="ln"><span class="cur"></span></div>`;
+  box.scrollTop=0;
+}
+
+function renderDlog(d, highlight){
+  const box=$("dlog"); if(!box) return;
+  const ev=eventsOf(d).filter(e=>e.desk!==false).slice().reverse();
+  if(!ev.length){ box.innerHTML=`<div class="m">今天还没有决策记录</div>`; return; }
+  box.innerHTML=ev.slice(0,60).map((e,i)=>{
+    const tg=tagOf(e);
+    const on=highlight!=null && (eventsOf(d).filter(x=>x.desk!==false).length-1-i)===highlight?" style=\"background:rgba(0,232,255,.06)\"":"";
+    return `<div class="drow"${on}><span class="tm">${E(shortTs(e.t))}</span><span class="tag ${tg.cls}">${E(tg.lab)}</span><span class="sym">${E(e.sym_short||e.sym||"")}</span><div class="why">原因：${E(e.txt||e.reason||"—")}</div></div>`;
+  }).join("");
+}
+
+function renderFlow(d, ticketMap, hi){
+  renderCands(d, ticketMap);
+  renderNodes(d, ticketMap);
+  renderTiles(d);
+}
+
+function renderAll(d, ticketMap, hi){
+  if(!d) return;
+  renderHead(d);
+  renderHero(d);
+  renderAgents(d);
+  renderBar(d);
+  renderTicker(d);
+  renderFlow(d, ticketMap, hi);
+  renderTerm(d, hi);
+  renderDlog(d, hi);
+  renderMore(d);
   clockTick();
 }
 
-async function getJson(url, ms){
+function snapshotAt(idx, src){
+  const base=src||D;
+  const map={}; BOTS.forEach(n=>map[n]=[]);
+  const evs=eventsOf(base).slice(0, idx+1);
+  const cur={};
+  evs.forEach(e=>{
+    if(!e.desk || !BOTS.includes(e.who)) return;
+    cur[e.id]={id:e.id,sym:e.sym,sym_short:e.sym_short,side:e.side,shadow:e.shadow,status:/否决/.test(e.v)?"已否决":(/通过/.test(e.v)?"已通过":e.v),verdict:e.v,reason:e.txt,who:e.who,stage:e.stage,waiting:e.who};
+  });
+  Object.values(cur).forEach(t=>{
+    const home=t.waiting||t.who;
+    if(map[home]) map[home].push(t);
+  });
+  BOTS.forEach(n=>{ map[n]=map[n].slice(-6); });
+  return map;
+}
+function stopReplay(){
+  if(timer){clearTimeout(timer);timer=null;}
+  mode="live";
+  if($("btnReplay")) $("btnReplay").hidden=false;
+  if($("btnPause")) $("btnPause").hidden=true;
+  if($("btnLive")) $("btnLive").hidden=true;
+  if($("replayLab")) $("replayLab").textContent="";
+  if($("liveNote")) $("liveNote").textContent="状态只根据账本和心跳文件点亮；没有数据就静止，不装忙。";
+  if(D) renderAll(D);
+}
+function playReplay(){
+  if(!D) return;
+  mode="replay";
+  if($("btnReplay")) $("btnReplay").hidden=true;
+  if($("btnPause")){ $("btnPause").hidden=false; $("btnPause").textContent="暂停"; }
+  if($("btnLive")) $("btnLive").hidden=false;
+  const evs=eventsOf(D);
+  if(replayIdx>=evs.length) replayIdx=0;
+  let prevWho=null;
+  const step=()=>{
+    if(mode!=="replay") return;
+    const ev=evs[replayIdx];
+    renderCands(D, snapshotAt(replayIdx));
+    renderNodes(D, snapshotAt(replayIdx));
+    renderTerm(D, replayIdx);
+    renderDlog(D, replayIdx);
+    if($("replayLab")) $("replayLab").textContent = ev ? `回放 ${shortTs(ev.t)} · ${replayIdx+1}/${evs.length}` : "";
+    if(ev && ev.desk && BOTS.includes(ev.who) && prevWho && prevWho!==ev.who) spawnPacket(prevWho, ev.who);
+    if(ev && ev.desk && BOTS.includes(ev.who)) prevWho=ev.who;
+    replayIdx++;
+    if(replayIdx>=evs.length){ if($("replayLab")) $("replayLab").textContent="回放结束"; if($("btnPause")) $("btnPause").hidden=true; return; }
+    const ms=Number(($("speed")||{}).value)||500;
+    timer=setTimeout(step, ms);
+  };
+  if($("liveNote")) $("liveNote").textContent="回放的是今天账本里的真实记录；左侧五个状态仍显示此刻的实时状态。";
+  step();
+}
+
+async function getJsonRaw(url, ms){
   const c=new AbortController();
   const t=setTimeout(()=>c.abort(), ms);
   try{
     const r=await fetch(url,{cache:"no-store",mode:"cors",signal:c.signal});
     if(!r.ok) throw new Error("status "+r.status);
     const j=JSON.parse(new TextDecoder("utf-8").decode(await r.arrayBuffer()));
-    if(!okData(j)) throw new Error("bad format");
+    if(!j||typeof j!=="object"||j.alg==="AES-GCM") throw new Error("bad format");
     return j;
   } finally { clearTimeout(t); }
 }
-function dataUrls(){
-  const t=Date.now();
-  return [
-    "https://jsonstorage.com/fFQXPk3yYOC9Z9?t="+t,
-    "https://raw.githubusercontent.com/R1each/desk-board/data/data.json?t="+t,
-    "https://raw.githubusercontent.com/R1each/desk-board/main/data.json?t="+t,
-    "https://cdn.jsdelivr.net/gh/R1each/desk-board@main/data.json?t="+t,
-    "https://rawcdn.githack.com/R1each/desk-board/main/data.json?t="+t,
-    "data.json?t="+t
-  ];
+
+function extractPayload(j, wantAnim){
+  if(!j||typeof j!=="object") return null;
+  if(wantAnim){
+    let a=null;
+    if(okAnim(j)) a=j;
+    else if(okAnim(j.anim)) a=Object.assign({}, j.anim);
+    if(!a) return null;
+    if(j.anim===a || (j.anim && a.asof===j.anim.asof)){
+      a.w=a.w??j.w; a.l=a.l??j.l; a.trades=a.trades||j.trades;
+      a.stats=a.stats||j.stats; a.equity_hist=a.equity_hist||j.equity_hist;
+      a.totals=a.totals||j.totals; a.fx=a.fx||j.fx; a.books=a.books||j.books;
+      a.log=a.log||j.log; a.market=a.market||j.market;
+    }
+    return a;
+  }
+  if(okBoard(j)||okAnim(j)) return j;
+  return null;
 }
-let lastSha="", lastShaAt=0;
-async function latestSha(){
-  const now=Date.now();
-  if(lastSha && now-lastShaAt<300000) return lastSha;
-  const c=new AbortController();
-  const t=setTimeout(()=>c.abort(), 4000);
-  try{
-    const r=await fetch("https://api.github.com/repos/R1each/desk-board/commits/data?per_page=1",{cache:"no-store",mode:"cors",signal:c.signal,headers:{Accept:"application/vnd.github+json"}});
-    if(!r.ok) throw new Error("sha "+r.status);
-    const j=await r.json();
-    const sha=j && j.sha;
-    if(!sha) throw new Error("no sha");
-    lastSha=sha; lastShaAt=now;
-    return sha;
-  } finally { clearTimeout(t); }
-}
+
 function applyData(j){
-  if(!okData(j)) return false;
+  if(!j||!j.asof) return false;
   if(D){
     const a=parseAsOf(D.asof), b=parseAsOf(j.asof);
     if(a && b && b<a) return false;
-    ["spark","ais","queue","handoffs","trades"].forEach(k=>{
-      if(Array.isArray(D[k])&&!Array.isArray(j[k])) j[k]=D[k];
-    });
+    // Keep last good pipeline if a publish raced before anim was embedded.
+    if(D.anim && !(j.anim && Array.isArray(j.anim.bots) && j.anim.bots.length)) j.anim=D.anim;
+    const prev=lastHomes;
+    const next=ticketHomes(j);
+    if(mode==="live") diffPackets(prev,next);
+    lastHomes=next;
+  } else {
+    lastHomes=ticketHomes(j);
   }
-  D=j; live=true; render(); return true;
+  D=j; live=true;
+  if(mode==="live") renderAll(j);
+  else { renderHead(j); renderHero(j); renderAgents(j); renderBar(j); }
+  return true;
+}
+
+addEventListener("resize",()=>{ layoutPipe(); },{passive:true});
+document.addEventListener("click",e=>{
+  const b=e.target.closest(".acard");
+  if(b){
+    const name=b.getAttribute("data-bot");
+    openBot=openBot===name?null:name;
+  }
+});
+
+function clip(s,n){s=String(s??"").replace(/\s+/g," ").trim();return s.length<=n?s:s.slice(0,n-1)+"…";}
+function renderMore(d){
+  const box=$("moreGrid"); if(!box) return;
+  const qs=d.queue||[];
+  const qh=qs.length?qs.map(q=>{
+    const line=[q.sym,q.side||"",q.v||"",q.next?("→ "+q.next):""].filter(Boolean).join("  ");
+    return `<div class="ln">${E(clip(line,40))}</div>`;
+  }).join(""):`<div class="ln m">暂无排队</div>`;
+  const hs=(d.handoffs||[]).slice(0,8);
+  const hh=hs.length?hs.map(h=>{
+    const t=(h.t||"").slice(-5);
+    return `<div class="ln">${E(clip(t+"  "+(h.frm||h.who||"")+"  "+(h.sym||"")+"  "+(h.v||""),46))}</div>`;
+  }).join(""):`<div class="ln m">暂无交接</div>`;
+  const rr=d.rej_today||[];
+  const rh=(rr.length?rr.map(x=>`<div class="ln">${E(clip(x[0],16))}  ${x[1]}</div>`).join(""):`<div class="ln m">暂无</div>`)+`<div class="ln m">通过 ${d.pass_n||0}  否决 ${d.rej_n||0}</div>`;
+  const hb=d.health||[];
+  const hbh=hb.length?hb.map(h=>`<div class="ln"><span class="${h.ok?"g":"r"}">●</span> ${E(clip(h.name,16))}  ${h.ok?"在线":"离线"}</div>`).join(""):`<div class="ln m">暂无</div>`;
+  const pos=d.positions||[], ord=d.orders||[];
+  let po="";
+  if(pos.length) po+=pos.map(p=>`<div class="ln">${E(p.sym)} ${E(p.side)} ${E(p.qty)}  ${usd(p.upl)}</div>`).join("");
+  if(ord.length) po+=ord.map(o=>`<div class="ln">${E(o.sym)} ${E(o.side)} ${E(o.type)}  ${E(o.status)}</div>`).join("");
+  if(!po) po=`<div class="ln m">暂无持仓或委托</div>`;
+  const wl=$("wl");
+  if(wl){
+    const st=statsOf(d);
+    wl.textContent=(st.wins!=null?st.wins:(d.w||0))+" 胜 / "+(st.losses!=null?st.losses:(d.l||0))+" 负";
+  }
+  box.innerHTML=`<div><div class="sec-h">排队</div>${qh}</div>
+    <div><div class="sec-h">交接</div>${hh}</div>
+    <div><div class="sec-h">否决规则</div>${rh}</div>
+    <div><div class="sec-h">心跳</div>${hbh}</div>
+    <div style="grid-column:1/-1"><div class="sec-h">持仓</div>${po}</div>`;
+}
+
+
+
+clockTick(); setInterval(clockTick, 1000);
+startBg();
+if($("btnReplay")) $("btnReplay").addEventListener("click",()=>{replayIdx=0;playReplay();});
+if($("btnPause")) $("btnPause").addEventListener("click",()=>{
+  if(timer){clearTimeout(timer);timer=null;$("btnPause").textContent="继续";}
+  else{$("btnPause").textContent="暂停";playReplay();}
+});
+if($("btnLive")) $("btnLive").addEventListener("click", stopReplay);
+
+function showSnap(){
+  try{
+    const a=extractPayload(SNAP, false) || (SNAP && SNAP.asof ? SNAP : null);
+    if(!a) return false;
+    D=a; live=false; lastHomes=ticketHomes(a); renderAll(a); return true;
+  }catch(e){ return false; }
 }
 async function load(){
   const t=Date.now();
-  // Prefer the public relay (max-age 5s). raw.githubusercontent.com caches branch URLs for 5 minutes,
-  // so ?t= alone cannot be trusted; SHA urls are used only as a rare fallback.
+  
   const urls=[
     "https://jsonstorage.com/fFQXPk3yYOC9Z9?t="+t,
-    "https://raw.githubusercontent.com/R1each/desk-board/data/data.json?t="+t,
-    "data.json?t="+t
+    "data.json?t="+t,
+    "https://raw.githubusercontent.com/R1each/desk-board/data/data.json?t="+t
   ];
-  for (const u of urls){
-    try{ if(applyData(await getJson(u, 4000))) return; }catch(e){}
-  }
-  try{
-    const sha=await latestSha();
-    if(sha && applyData(await getJson("https://raw.githubusercontent.com/R1each/desk-board/"+sha+"/data.json?t="+t, 4000))) return;
-  }catch(e){}
-  for (const u of dataUrls()){
-    try{ if(applyData(await getJson(u, 4000))) return; }catch(e){}
+
+  for(const u of urls){
+    try{
+      const j=await getJsonRaw(u, 4000);
+      const a=extractPayload(j, false);
+      if(a && applyData(a)) return;
+    }catch(e){}
   }
   throw new Error("fetch failed");
 }
-function showSnap(){
-  try{ if(!okData(SNAP)) throw new Error("snap"); D=SNAP; live=false; render(); return true; }
-  catch(e){ return false; }
-}
 showSnap();
-setInterval(clockTick,1000);
 (async()=>{
-  try{await load()}catch(e){ if(!D) document.getElementById("mkt").textContent="NO DATA"; else { live=false; render(); } }
-  setInterval(async()=>{try{await load()}catch(e){}},10000);
+  try{ await load(); }catch(e){ if(!D) { const n=$("mkt"); if(n) n.textContent="还没有读到数据文件"; } }
+  setInterval(async()=>{ try{ await load(); }catch(e){} }, 10000);
 })();
+
 </script>
 </body>
 </html>

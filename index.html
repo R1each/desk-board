@@ -114,13 +114,13 @@ function clockTick(){
     if(D&&D.asof){
       const t=parseAsOf(D.asof);
       const sec=t?Math.max(0,Math.round((now-t)/1000)):null;
-      let a="UPD --";
+      let a="数据更新于 --";
       if(sec!=null){
-        if(sec<60) a="UPD "+sec+"s";
-        else if(sec<3600) a="UPD "+Math.floor(sec/60)+"m";
-        else a="UPD "+Math.floor(sec/3600)+"h";
+        if(sec<60) a="数据更新于 "+sec+" 秒前";
+        else if(sec<3600) a="数据更新于 "+Math.floor(sec/60)+" 分钟前";
+        else a="数据更新于 "+Math.floor(sec/3600)+" 小时前";
       }
-      document.getElementById("upd").textContent=a+(live?" \u00b7 NET":" \u00b7 SNAP");
+      document.getElementById("upd").textContent=a;
     }
   }catch(e){}
 }
@@ -218,7 +218,7 @@ function dataUrls(){
 let lastSha="", lastShaAt=0;
 async function latestSha(){
   const now=Date.now();
-  if(lastSha && now-lastShaAt<60000) return lastSha;
+  if(lastSha && now-lastShaAt<300000) return lastSha;
   const c=new AbortController();
   const t=setTimeout(()=>c.abort(), 4000);
   try{
@@ -244,17 +244,22 @@ function applyData(j){
 }
 async function load(){
   const t=Date.now();
-  try{
-    if(applyData(await getJson("https://jsonstorage.com/fFQXPk3yYOC9Z9?t="+t, 4000))) return;
-  }catch(e){}
+  // Prefer the public relay (max-age 5s). raw.githubusercontent.com caches branch URLs for 5 minutes,
+  // so ?t= alone cannot be trusted; SHA urls are used only as a rare fallback.
+  const urls=[
+    "https://jsonstorage.com/fFQXPk3yYOC9Z9?t="+t,
+    "https://raw.githubusercontent.com/R1each/desk-board/data/data.json?t="+t,
+    "data.json?t="+t
+  ];
+  for (const u of urls){
+    try{ if(applyData(await getJson(u, 4000))) return; }catch(e){}
+  }
   try{
     const sha=await latestSha();
-    if(applyData(await getJson("https://raw.githubusercontent.com/R1each/desk-board/"+sha+"/data.json", 4000))) return;
+    if(sha && applyData(await getJson("https://raw.githubusercontent.com/R1each/desk-board/"+sha+"/data.json?t="+t, 4000))) return;
   }catch(e){}
   for (const u of dataUrls()){
-    try{
-      if(applyData(await getJson(u, 4000))) return;
-    }catch(e){}
+    try{ if(applyData(await getJson(u, 4000))) return; }catch(e){}
   }
   throw new Error("fetch failed");
 }
@@ -266,7 +271,7 @@ showSnap();
 setInterval(clockTick,1000);
 (async()=>{
   try{await load()}catch(e){ if(!D) document.getElementById("mkt").textContent="NO DATA"; else { live=false; render(); } }
-  setInterval(async()=>{try{await load()}catch(e){}},20000);
+  setInterval(async()=>{try{await load()}catch(e){}},10000);
 })();
 </script>
 </body>

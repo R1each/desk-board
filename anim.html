@@ -29,6 +29,15 @@ h1{font-size:18px;margin:0;font-weight:700}
 .dot.ok{background:var(--g);box-shadow:0 0 8px var(--g)}
 .dot.bad{background:var(--r);box-shadow:0 0 8px var(--r)}
 .books{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:0 0 14px;width:100%}
+.book.total{grid-column:1/-1;padding:14px 16px;border-color:#3a4a66;background:linear-gradient(180deg,#1a2230,#151a23)}
+.book.total h2{font-size:15px;color:var(--tx);letter-spacing:.12em;font-weight:700}
+.total-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 14px;align-items:baseline;margin-bottom:8px}
+.total-head .fx{font-size:12px;color:var(--mut)}
+.total-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px 16px}
+@media(max-width:700px){.total-grid{grid-template-columns:1fr 1fr}}
+.total-grid .k{display:block;font-size:12px;color:var(--mut);margin-bottom:2px}
+.total-grid b{font-variant-numeric:tabular-nums;font-size:20px}
+.total-grid b.big{font-size:32px;line-height:1.1;font-weight:700}
 @media(max-width:900px){.books{grid-template-columns:1fr 1fr}}
 .book{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:9px 11px;min-width:0}
 .book h2{margin:0 0 4px;font-size:12px;color:var(--mut);font-weight:500;letter-spacing:.04em}
@@ -175,14 +184,35 @@ function cardHTML(t){
     <div class="why">${E(t.reason||"")}</div>
   </div>`;
 }
+function fxLine(fx){
+  if(!fx||fx.gbpusd==null) return "";
+  const rate=Number(fx.gbpusd);
+  const r=Number.isFinite(rate)?rate.toFixed(4):"—";
+  const src=fx.src||"";
+  const ts=fx.ts||"";
+  const tag=fx.fallback?"（备用）":"";
+  return "汇率 GBPUSD "+r+(ts?" · "+ts:"")+(src?" · "+src:"")+tag;
+}
 function renderBooks(d){
-  $("books").innerHTML=(d.books||[]).map(b=>{
+  const T=d.totals, fx=(T&&T.fx)||d.fx||{};
+  let html="";
+  if(T){
+    html+=`<div class="book total"><div class="total-head"><h2>总计</h2><div class="fx">${E(fxLine(fx))}</div></div>
+      <div class="total-grid">
+        <div><span class="k">本金</span><b>${gbp(T.principal,0)}</b></div>
+        <div><span class="k">净值</span><b class="${cl((T.equity||0)-(T.principal||0))} big">${gbp(T.equity,0)}</b></div>
+        <div><span class="k">今日</span><b class="${cl(T.today)}">${gbp(T.today)}</b></div>
+        <div><span class="k">累计</span><b class="${cl(T.total)}">${gbp(T.total)}</b></div>
+      </div></div>`;
+  }
+  html+=(d.books||[]).map(b=>{
     const today=b.today==null?`<span class="m">今日 —</span>`:`<span class="${cl(b.today)}">今日 ${money(b.today,b.ccy)}</span>`;
     return `<div class="book"><h2>${E(b.name)} · 本金 ${money(b.principal,b.ccy,0)}</h2>
       <div class="kv"><span>净值</span><b>${money(b.equity,b.ccy,0)}</b></div>
       <div class="kv">${today}<b class="${cl(b.total)}">累计 ${money(b.total,b.ccy)}</b></div>
     </div>`;
   }).join("");
+  $("books").innerHTML=html;
 }
 function renderHB(d){
   const s=d.scanner||{};

@@ -33,6 +33,9 @@ html,body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.3 ui-monospa
 .dot{flex:0 0 auto}
 .g{color:var(--fg)}.a{color:var(--amb)}.r{color:var(--red)}.m{color:var(--mut)}.c{color:var(--cyan)}.hi{color:var(--hi)}
 .tot{font-size:30px;font-weight:700;letter-spacing:-.03em;line-height:1.05;margin:0}
+.totlab{color:var(--hi);font-size:12px;letter-spacing:.14em;margin:0 0 2px}
+.totsm{font-size:13px;font-weight:400;letter-spacing:0;margin-top:3px;white-space:normal}
+.totbox{padding:2px 0 8px;border-bottom:1px dashed var(--line);margin-bottom:6px}
 .wl{color:var(--hi);font-size:13px;margin:0 0 2px}
 .more{border-top:1px dashed var(--line);padding:4px 12px 10px}
 .more summary{color:var(--mut);font-size:15px;cursor:pointer;list-style:none}
@@ -52,6 +55,13 @@ html,body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.3 ui-monospa
     <div class="mkt" id="mkt" hidden></div>
   </div>
   <div class="sec">
+    <div class="lab">总计 · P&amp;L</div>
+    <div class="totbox"><div class="tot" id="tot"></div></div>
+    <div class="wl" id="wl"></div>
+    <div id="books"></div>
+    <div id="trades"></div>
+  </div>
+  <div class="sec">
     <div class="lab">AI STATUS</div>
     <div id="ais"></div>
   </div>
@@ -62,13 +72,6 @@ html,body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.3 ui-monospa
   <div class="sec">
     <div class="lab">DECISION HANDOFF</div>
     <div id="handoff"></div>
-  </div>
-  <div class="sec">
-    <div class="lab">P&amp;L</div>
-    <div class="tot" id="tot"></div>
-    <div class="wl" id="wl"></div>
-    <div id="books"></div>
-    <div id="trades"></div>
   </div>
   <details class="more">
     <summary>&#x66F4;&#x591A;</summary>
@@ -162,13 +165,28 @@ function render(){
   }).join(""):`<div class="ln m">none</div>`;
 
   const A=d.meme&&d.meme.A, B=d.meme&&d.meme.B;
-  document.getElementById("tot").innerHTML=`<span class="${cl(d.total_gbp)}">${gbp(d.total_gbp)}</span>`;
+  const T=d.totals, fx=(T&&T.fx)||d.fx||{};
+  if(T){
+    const fxTxt=fx.gbpusd!=null?("汇率 GBPUSD "+Number(fx.gbpusd).toFixed(4)+(fx.ts?" · "+fx.ts:"")+(fx.src?" · "+fx.src:"")+(fx.fallback?"（备用）":"")):"";
+    document.getElementById("tot").innerHTML=`<div class="totlab">总计</div><span class="${cl((T.equity||0)-(T.principal||0))}">${gbp(T.equity,0)}</span>
+      <div class="totsm">本金 ${gbp(T.principal,0)} · 今日 <span class="${cl(T.today)}">${gbp(T.today)}</span> · 累计 <span class="${cl(T.total)}">${gbp(T.total)}</span></div>
+      <div class="totsm m">${E(fxTxt)}</div>`;
+  } else {
+    document.getElementById("tot").innerHTML=`<span class="${cl(d.total_gbp)}">${gbp(d.total_gbp)}</span>`;
+  }
   document.getElementById("wl").textContent=`${d.w||0}W / ${d.l||0}L`;
+  const memeLine=(lab,book,id)=>{
+    const b=(d.books||[]).find(x=>x.id===id);
+    const eq=b?b.equity:(book&&book.equity);
+    const cum=b?b.total:(book&&book.realized);
+    const td=b?b.today:(book&&book.today);
+    const today=td==null?"":(" 今日 "+usd(td));
+    return `<div class="ln"><span class="nm">${lab}</span><span class="it">${usd(eq,0)}</span><span class="ag ${cl(td)}">${today}</span><span class="ag ${cl(cum)}">${usd(cum)}</span></div>`;
+  };
   document.getElementById("books").innerHTML=`
-    <div class="ln"><span class="nm">STOCKS</span><span class="it">${gbp(d.stocks_bal,0)}</span><span class="ag ${cl(d.stocks_pnl)}">${gbp(d.stocks_pnl)}</span></div>
-    <div class="ln"><span class="nm">CRYPTO</span><span class="it">${gbp(d.crypto_bal,0)}</span><span class="ag ${cl(d.crypto_pnl)}">${gbp(d.crypto_pnl)}</span></div>
-    <div class="ln"><span class="nm">MEME A</span><span class="it">${usd(A&&A.equity,0)}</span><span class="ag ${cl(A&&A.realized)}">${usd(A&&A.realized)}</span></div>
-    <div class="ln"><span class="nm">MEME B</span><span class="it">${usd(B&&B.equity,0)}</span><span class="ag ${cl(B&&B.realized)}">${usd(B&&B.realized)}</span></div>`;
+    <div class="ln"><span class="nm">股票</span><span class="it">${gbp(d.stocks_bal,0)}</span><span class="ag ${cl(d.stocks_today)}">今日 ${gbp(d.stocks_today)}</span><span class="ag ${cl(d.stocks_pnl)}">${gbp(d.stocks_pnl)}</span></div>
+    <div class="ln"><span class="nm">加密</span><span class="it">${gbp(d.crypto_bal,0)}</span><span class="ag ${cl(d.crypto_today)}">今日 ${gbp(d.crypto_today)}</span><span class="ag ${cl(d.crypto_pnl)}">${gbp(d.crypto_pnl)}</span></div>
+    ${memeLine("小币A",A,"meme-A")}${memeLine("小币B",B,"meme-B")}`;
   const trs=(d.trades||[]).slice(0,5);
   document.getElementById("trades").innerHTML=trs.map(t=>`<div class="ln"><span class="m">${E((t.t||"").slice(-5))}</span><span class="it">${E(clip(t.sym,10))}  ${E(t.book||"")}</span><span class="ag ${cl(t.pnl)}">${money(t.pnl,t.ccy)}</span></div>`).join("");
 

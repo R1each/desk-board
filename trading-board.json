@@ -1,1 +1,184 @@
-{"equity_history":[{"date":"2026-11-24","equity_gbp":1014.37},{"date":"2026-11-25","equity_gbp":1010.54},{"date":"2026-11-27","equity_gbp":1019.19}],"floating_gbp":19.19,"log":[{"text":"EXP-004 Memeball 已批待触发（入场 $0.0007291，仓位 £4.47）","time":"2026-11-28 01:46"},{"text":"EXP-003 MoonBoy 过期作废","time":"2026-11-28 01:46"},{"text":"侦察兵扫了 21 个新币，1 候选 Memeball 通过复核","time":"2026-11-28 01:40"},{"text":"EXP-003 MoonBoy 已批待触发（入场 $0.0005511，仓位 £4.40）","time":"2026-11-27 21:30"},{"text":"侦察兵扫了 6 个新币，2 候选；MAYA 看图员否决","time":"2026-11-27 21:23"},{"text":"周五收盘：SN $236.98，NVDA $150.49，浮盈 +£19.19","time":"2026-11-27 18:30"}],"members":[{"name":"Muse","role":"组长·调度","status":"正在调度全队"},{"name":"侦察兵","role":"扫描","status":"本轮 21 新币 1 候选"},{"name":"看图员","role":"看图","status":"通过 Memeball"},{"name":"军师","role":"起草","status":"已起草 EXP-004"},{"name":"风控","role":"审批","status":"已批 EXP-004（改仓位 £4.47）"},{"name":"执行员","role":"记账","status":"已记 EXP-004 待触发"}],"pending_orders":[{"direction":"short","entry_high":3580,"entry_low":3550,"note":"周五冲破区间，周一风控复核","size":0.26,"status":"not_triggered","stop":3650,"symbol":"GOLD","target":3400,"unit":"oz"},{"direction":"long","entry_high":0.0007291,"entry_low":0.0007291,"note":"EXP-004 待触发，有效期至 05:44 UTC","size":7437,"status":"pending_trigger","stop":0.00058328,"symbol":"Memeball","target":0.00102074,"unit":"tokens"}],"positions":[{"close":236.98,"close_date":"2026-11-27","direction":"long","entry":224.0,"floating_gbp":19.82,"name":"SharkNinja","size":2,"stop":212,"symbol":"SN","target":243.6,"unit":"shares"},{"close":150.49,"close_date":"2026-11-27","direction":"long","entry":150.9,"floating_gbp":-0.63,"name":"Nvidia","size":2,"stop":139.5,"symbol":"NVDA","target":168,"unit":"shares"}],"principal_gbp":1000,"realised_gbp":0,"sleeve":{"last_round":"2026-11-28T01:40:20Z","last_round_candidates":1,"last_round_new":21,"principal_gbp":100,"trial":"0/5"},"source":"trading-team ledger","updated_at":"2026-11-28T01:46:00Z","verdicts":{"passed":[],"pending":["EXP-004 Memeball 做多 $0.0007291（已批待触发，仓位 £4.47，有效期至 05:44 UTC）","黄金反弹空单 $3,550–3,580（触发单，等周一复核）"],"rejected":["MAYA 多单（m5 暴跌 -44%，看图员否决）","ANT 多单（等收盘站上 $83 再复核）","RYCEY 多单（等伦敦站上 1300p 再复核）","黄金市价空单（追涨，否决）","铜空单（盈亏比不够）"],"voided":["EXP-003 MoonBoy（过期未触发，作废）","EXP-001 NBA（跌破止损，作废）","EXP-002 Fireball（涨超目标，作废）"]},"version":1}
+{
+  "equity_history": [
+    {
+      "date": "2026-11-24",
+      "equity_gbp": 1014.37
+    },
+    {
+      "date": "2026-11-25",
+      "equity_gbp": 1010.54
+    },
+    {
+      "date": "2026-11-27",
+      "equity_gbp": 1019.19
+    }
+  ],
+  "floating_gbp": 19.19,
+  "log": [
+    {
+      "text": "EXP-004 Memeball 60 分钟时间止损离场 $0.0006233，实亏 −£1.82（试跑 1/5 完成）",
+      "time": "2026-11-28 04:15"
+    },
+    {
+      "text": "EXP-004 Memeball 已成交 $0.0007356（7,370 个，£4.47），试跑 1/5",
+      "time": "2026-11-28 03:15"
+    },
+    {
+      "text": "EXP-004 Memeball 已批待触发（入场 $0.0007291，仓位 £4.47）",
+      "time": "2026-11-28 01:46"
+    },
+    {
+      "text": "EXP-003 MoonBoy 过期作废",
+      "time": "2026-11-28 01:46"
+    },
+    {
+      "text": "侦察兵扫了 21 个新币，1 候选 Memeball 通过复核",
+      "time": "2026-11-28 01:40"
+    },
+    {
+      "text": "EXP-003 MoonBoy 已批待触发（入场 $0.0005511，仓位 £4.40）",
+      "time": "2026-11-27 21:30"
+    },
+    {
+      "text": "侦察兵扫了 6 个新币，2 候选；MAYA 看图员否决",
+      "time": "2026-11-27 21:23"
+    },
+    {
+      "text": "周五收盘：SN $236.98，NVDA $150.49，浮盈 +£19.19",
+      "time": "2026-11-27 18:30"
+    }
+  ],
+  "members": [
+    {
+      "name": "Muse",
+      "role": "组长·调度",
+      "status": "正在调度全队"
+    },
+    {
+      "name": "侦察兵",
+      "role": "扫描",
+      "status": "本轮 21 新币 1 候选"
+    },
+    {
+      "name": "看图员",
+      "role": "看图",
+      "status": "通过 Memeball"
+    },
+    {
+      "name": "军师",
+      "role": "起草",
+      "status": "已起草 EXP-004"
+    },
+    {
+      "name": "风控",
+      "role": "审批",
+      "status": "已批 EXP-004（改仓位 £4.47）"
+    },
+    {
+      "name": "执行员",
+      "role": "记账",
+      "status": "已记 EXP-004 平仓 −£1.82"
+    }
+  ],
+  "pending_orders": [
+    {
+      "direction": "short",
+      "entry_high": 3580,
+      "entry_low": 3550,
+      "note": "周五冲破区间，周一风控复核",
+      "size": 0.26,
+      "status": "not_triggered",
+      "stop": 3650,
+      "symbol": "GOLD",
+      "target": 3400,
+      "unit": "oz"
+    }
+  ],
+  "positions": [
+    {
+      "close": 236.98,
+      "close_date": "2026-11-27",
+      "direction": "long",
+      "entry": 224.0,
+      "floating_gbp": 19.82,
+      "name": "SharkNinja",
+      "size": 2,
+      "stop": 212,
+      "symbol": "SN",
+      "target": 243.6,
+      "unit": "shares"
+    },
+    {
+      "close": 150.49,
+      "close_date": "2026-11-27",
+      "direction": "long",
+      "entry": 150.9,
+      "floating_gbp": -0.63,
+      "name": "Nvidia",
+      "size": 2,
+      "stop": 139.5,
+      "symbol": "NVDA",
+      "target": 168,
+      "unit": "shares"
+    }
+  ],
+  "principal_gbp": 1000,
+  "realised_gbp": 0,
+  "sleeve": {
+    "last_round": "2026-11-28T07:11:12Z",
+    "last_round_candidates": 0,
+    "last_round_new": 8,
+    "principal_gbp": 100,
+    "trial": "1/5",
+    "realised_gbp": -1.82,
+    "equity_gbp": 98.18
+  },
+  "source": "trading-team ledger",
+  "updated_at": "2026-11-28T06:56:57Z",
+  "verdicts": {
+    "passed": [
+      "EXP-004 Memeball 做多，已平仓：60 分钟时间止损离场 $0.0006233，实亏 −£1.82（成交 $0.0007356，7,370 个，£4.47）"
+    ],
+    "pending": [
+      "黄金反弹空单 $3,550–3,580（触发单，等周一复核）"
+    ],
+    "rejected": [
+      "MAYA 多单（m5 暴跌 -44%，看图员否决）",
+      "ANT 多单（等收盘站上 $83 再复核）",
+      "RYCEY 多单（等伦敦站上 1300p 再复核）",
+      "黄金市价空单（追涨，否决）",
+      "铜空单（盈亏比不够）"
+    ],
+    "voided": [
+      "EXP-003 MoonBoy（过期未触发，作废）",
+      "EXP-001 NBA（跌破止损，作废）",
+      "EXP-002 Fireball（涨超目标，作废）"
+    ]
+  },
+  "version": 1,
+  "closed_positions": [
+    {
+      "symbol": "Memeball",
+      "exp_id": "EXP-004",
+      "name": "Memeball",
+      "direction": "long",
+      "entry": 0.0007356,
+      "entry_time": "2026-11-28T03:15:27Z",
+      "size": 7370,
+      "unit": "tokens",
+      "position_gbp": 4.47,
+      "stop": 0.00058328,
+      "target": 0.00102074,
+      "pair": "Br6X4CcmyiJ3Sfi5p66Arx5P1euPQrG9wGt7RknjLq83",
+      "time_stop_at": "2026-11-28T04:15:27Z",
+      "time_stop_threshold": 0.0008092,
+      "max_hold_until": "2026-11-28T07:15:27Z",
+      "exit_price": 0.0006233,
+      "exit_time": "2026-11-28T04:15:27Z",
+      "booked_at": "2026-11-28T05:28:11Z",
+      "exit_reason": "60-min time stop (T0+60 gain -15.27% < +10%)",
+      "exit_source": "GeckoTerminal 1-min bar 04:15 close (reconstructed; evaluation missed in real time, booked late — see report)",
+      "realised_gbp": -1.82
+    }
+  ]
+}

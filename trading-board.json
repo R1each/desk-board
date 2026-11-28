@@ -16,6 +16,18 @@
   "floating_gbp": 19.19,
   "log": [
     {
+      "text": "EXP-005 WLFI 作废：价 $0.0002875（+31.1%），超入场价 10% 上限，不得追价",
+      "time": "2026-11-28 08:44"
+    },
+    {
+      "text": "EXP-005 WLFI 已批待触发（入场 $0.0002193，仓位 £4.35，止损 $0.00017544，目标 $0.00030702）",
+      "time": "2026-11-28 08:19"
+    },
+    {
+      "text": "侦察兵扫了 7 个新币，1 候选 WLFI 通过复核",
+      "time": "2026-11-28 08:11"
+    },
+    {
       "text": "EXP-004 Memeball 60 分钟时间止损离场 $0.0006233，实亏 −£1.82（试跑 1/5 完成）",
       "time": "2026-11-28 04:15"
     },
@@ -57,27 +69,27 @@
     {
       "name": "侦察兵",
       "role": "扫描",
-      "status": "本轮 21 新币 1 候选"
+      "status": "本轮 7 新币 1 候选"
     },
     {
       "name": "看图员",
       "role": "看图",
-      "status": "通过 Memeball"
+      "status": "通过 WLFI"
     },
     {
       "name": "军师",
       "role": "起草",
-      "status": "已起草 EXP-004"
+      "status": "EXP-005 已作废（价超 +10%）"
     },
     {
       "name": "风控",
       "role": "审批",
-      "status": "已批 EXP-004（改仓位 £4.47）"
+      "status": "EXP-005 已作废（价超 +10%）"
     },
     {
       "name": "执行员",
       "role": "记账",
-      "status": "已记 EXP-004 平仓 −£1.82"
+      "status": "EXP-005 已作废记账"
     }
   ],
   "pending_orders": [
@@ -125,16 +137,16 @@
   "principal_gbp": 1000,
   "realised_gbp": 0,
   "sleeve": {
-    "last_round": "2026-11-28T07:11:12Z",
+    "last_round": "2026-11-28T10:11:14Z",
     "last_round_candidates": 0,
-    "last_round_new": 8,
+    "last_round_new": 4,
     "principal_gbp": 100,
     "trial": "1/5",
     "realised_gbp": -1.82,
     "equity_gbp": 98.18
   },
   "source": "trading-team ledger",
-  "updated_at": "2026-11-28T06:56:57Z",
+  "updated_at": "2026-11-28T10:11:14Z",
   "verdicts": {
     "passed": [
       "EXP-004 Memeball 做多，已平仓：60 分钟时间止损离场 $0.0006233，实亏 −£1.82（成交 $0.0007356，7,370 个，£4.47）"
@@ -152,7 +164,8 @@
     "voided": [
       "EXP-003 MoonBoy（过期未触发，作废）",
       "EXP-001 NBA（跌破止损，作废）",
-      "EXP-002 Fireball（涨超目标，作废）"
+      "EXP-002 Fireball（涨超目标，作废）",
+      "EXP-005 WLFI（价 $0.0002875，+31.1%，超入场价 10% 上限，不得追价，作废）"
     ]
   },
   "version": 1,

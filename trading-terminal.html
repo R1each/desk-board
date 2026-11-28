@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>模拟盘终端</title>
+<style>
+:root{
+  --bg:#070b12; --panel:#0b1220; --panel2:#0d1526;
+  --line:rgba(120,200,255,.16); --acc:rgba(87,200,255,.55);
+  --tx:#dbe7f3; --mut:#7d8ea3; --dim:#55677c;
+  --g:#2fe6a8; --r:#ff5d6c; --a:#ffb454; --c:#57c8ff;
+  --mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--tx);
+  font:15px/1.5 -apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei",sans-serif;
+  min-height:100vh}
+/* faint drifting grid + radial glow */
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(90,160,255,.055) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(90,160,255,.055) 1px,transparent 1px);
+  background-size:44px 44px;
+  animation:grid-drift 38s linear infinite}
+body::after{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(640px 300px at 50% -8%,rgba(60,220,180,.13),transparent 62%)}
+@keyframes grid-drift{from{background-position:0 0}to{background-position:44px 44px}}
+.wrap{max-width:720px;margin:0 auto;padding:12px 12px 36px;position:relative;z-index:1}
+.sec{margin-top:14px;animation:rise-in .55s ease both}
+.sec:nth-child(2){animation-delay:.06s}.sec:nth-child(3){animation-delay:.12s}
+.sec:nth-child(4){animation-delay:.18s}.sec:nth-child(5){animation-delay:.24s}
+.sec:nth-child(6){animation-delay:.30s}.sec:nth-child(7){animation-delay:.36s}
+@keyframes rise-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.sec-t{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);
+  margin:0 2px 6px;font-weight:600}
+.panel{position:relative;background:linear-gradient(180deg,var(--panel2),var(--panel));
+  border:1px solid var(--line);border-radius:10px;padding:12px;
+  background-image:
+    linear-gradient(var(--acc),var(--acc)),linear-gradient(var(--acc),var(--acc)),
+    linear-gradient(var(--acc),var(--acc)),linear-gradient(var(--acc),var(--acc)),
+    linear-gradient(var(--acc),var(--acc)),linear-gradient(var(--acc),var(--acc)),
+    linear-gradient(var(--acc),var(--acc)),linear-gradient(var(--acc),var(--acc));
+  background-size:14px 1px,1px 14px,14px 1px,1px 14px,14px 1px,1px 14px,14px 1px,1px 14px;
+  background-position:0 0,0 0,100% 0,100% 0,0 100%,0 100%,100% 100%,100% 100%;
+  background-repeat:no-repeat}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.g{color:var(--g)}.r{color:var(--r)}.a{color:var(--a)}.m{color:var(--mut)}
+/* ---------- status bar ---------- */
+.statusbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:10px 12px;font-size:13px}
+.hb{display:flex;align-items:center;gap:7px;white-space:nowrap}
+.hb-dot{width:9px;height:9px;border-radius:50%;background:var(--g);
+  box-shadow:0 0 10px var(--g);animation:hb-pulse 1.6s ease-out infinite}
+@keyframes hb-pulse{0%{box-shadow:0 0 0 0 rgba(47,230,168,.55)}70%{box-shadow:0 0 0 9px rgba(47,230,168,0)}100%{box-shadow:0 0 0 0 rgba(47,230,168,0)}}
+.statusbar .spacer{flex:1}
+.clock{font-family:var(--mono);font-size:13px;color:var(--tx)}
+.run{font-family:var(--mono);font-size:12px;color:var(--mut);white-space:nowrap}
+.run b{color:var(--c);font-weight:600}
+.updated{font-size:11px;color:var(--dim);white-space:nowrap}
+/* ---------- summary strip ---------- */
+.summary{overflow:hidden}
+.summary::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(100deg,transparent 42%,rgba(87,200,255,.10) 50%,transparent 58%);
+  background-size:220% 100%;animation:scan 9.5s linear infinite}
+@keyframes scan{from{background-position:180% 0}to{background-position:-120% 0}}
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+@media(max-width:560px){.kpis{grid-template-columns:repeat(3,1fr)}}
+.kpi .k{font-size:11px;color:var(--mut);letter-spacing:.08em}
+.kpi .v{font-size:19px;font-weight:700;margin-top:1px}
+.kpi .v small{font-size:12px;color:var(--mut);font-weight:400}
+.kpi .v.glow-g{text-shadow:0 0 12px rgba(47,230,168,.45)}
+.kpi .v.glow-r{text-shadow:0 0 12px rgba(255,93,108,.45)}
+.spark{margin-top:8px;display:flex;align-items:flex-end;gap:8px}
+.spark svg{flex:1;height:34px;width:100%;display:block}
+.spark .lbl{font-size:11px;color:var(--dim);white-space:nowrap}
+/* ---------- members ---------- */
+.mrow{display:flex;align-items:center;gap:10px;padding:9px 4px;
+  border-bottom:1px solid rgba(120,200,255,.08)}
+.mrow:last-child{border-bottom:0}
+.sdot{position:relative;width:11px;height:11px;border-radius:50%;flex:none}
+.sdot.st-active{background:var(--g);box-shadow:0 0 10px var(--g);transition:background .6s,box-shadow .6s}
+.sdot.st-active::after{content:"";position:absolute;inset:-5px;border-radius:50%;
+  border:1px solid rgba(47,230,168,.7);animation:radar 1.8s ease-out infinite}
+@keyframes radar{from{transform:scale(.5);opacity:1}to{transform:scale(1.5);opacity:0}}
+.sdot.st-wait{background:var(--a);box-shadow:0 0 8px rgba(255,180,84,.55);
+  animation:breathe 2.6s ease-in-out infinite;transition:background .6s,box-shadow .6s}
+@keyframes breathe{0%,100%{opacity:1}50%{opacity:.45}}
+.sdot.st-idle{background:#3a4757;box-shadow:0 0 4px rgba(90,110,130,.35);transition:background .6s,box-shadow .6s}
+.mname{font-weight:700;white-space:nowrap}
+.mduty{color:var(--mut);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mstat{font-size:12px;color:var(--tx);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;text-align:right}
+.badge{font-family:var(--mono);font-size:10px;letter-spacing:.08em;padding:2px 7px;border-radius:99px;
+  border:1px solid var(--line);color:var(--c);background:rgba(87,200,255,.08);flex:none}
+.badge.b-lead{color:#ffd479;border-color:rgba(255,212,121,.4);background:rgba(255,212,121,.08)}
+.badge.b-active{color:var(--g);border-color:rgba(47,230,168,.4);background:rgba(47,230,168,.08)}
+.badge.b-wait{color:var(--a);border-color:rgba(255,180,84,.4);background:rgba(255,180,84,.08)}
+/* ---------- pipeline ---------- */
+.pipe{padding:10px 6px 4px}
+.pipe-line{position:relative;height:2px;margin:4px 6px 8px;
+  background:linear-gradient(90deg,transparent,rgba(87,200,255,.35),transparent)}
+.p-dot{position:absolute;top:-3px;left:0;width:8px;height:8px;border-radius:50%;
+  background:var(--c);box-shadow:0 0 8px var(--c);
+  animation:flow var(--dur,4.4s) linear infinite;opacity:var(--op,.35)}
+.p-dot:nth-child(2){animation-delay:1.5s}
+.p-dot:nth-child(3){animation-delay:3s}
+.pipe-busy{--dur:1.6s;--op:1}
+.pipe-idle{--dur:4.4s;--op:.35}
+@keyframes flow{0%{left:0;opacity:0}12%{opacity:var(--op,1)}88%{opacity:var(--op,1)}100%{left:calc(100% - 8px);opacity:0}}
+.pipe-nodes{display:flex;justify-content:space-between;font-size:11px;color:var(--mut);letter-spacing:.06em}
+.pipe-nodes b{color:var(--tx);font-weight:600}
+/* ---------- trade cards ---------- */
+.trade{padding:12px;margin-bottom:10px}
+.trade:last-child{margin-bottom:0}
+.tc-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tc-sym{font-size:18px;font-weight:800}
+.tc-dir{font-size:11px;font-weight:700;padding:2px 7px;border-radius:99px}
+.tc-dir.long{color:var(--g);background:rgba(47,230,168,.12)}
+.tc-dir.short{color:var(--r);background:rgba(255,93,108,.12)}
+.tc-open{font-size:10px;letter-spacing:.12em;color:var(--c);border:1px solid rgba(87,200,255,.4);
+  border-radius:99px;padding:2px 7px}
+.tc-pnl{margin-left:auto;font-size:16px;font-weight:700}
+.tc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+@media(max-width:560px){.tc-grid{grid-template-columns:repeat(2,1fr)}}
+.tc-grid .k{font-size:11px;color:var(--mut)}
+.tc-grid .v{font-size:14px;margin-top:1px}
+.tc-note{font-size:12px;color:var(--mut);margin-top:8px}
+.pend{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 2px;
+  border-bottom:1px solid rgba(120,200,255,.08);font-size:13px}
+.pend:last-child{border-bottom:0}
+.pend .psym{font-weight:800}
+.pend .pdet{color:var(--mut);font-size:12px}
+.pend .pnote{font-size:12px;color:var(--a)}
+.pill{font-size:11px;padding:2px 8px;border-radius:99px;border:1px solid var(--line);white-space:nowrap}
+.pill.wait{color:var(--a);border-color:rgba(255,180,84,.4);background:rgba(255,180,84,.08)}
+/* ---------- verdicts ---------- */
+.vgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media(max-width:560px){.vgrid{grid-template-columns:repeat(2,1fr)}}
+.vcol h3{margin:0 0 6px;font-size:11px;letter-spacing:.18em;text-transform:uppercase}
+.vcol.pass h3{color:var(--g)}.vcol.pend h3{color:var(--a)}
+.vcol.rej h3{color:var(--r)}.vcol.void h3{color:var(--mut)}
+.vitem{font-size:12px;line-height:1.45;padding:5px 0;border-bottom:1px solid rgba(120,200,255,.07)}
+.vitem:last-child{border-bottom:0}
+.vitem.enter{animation:slide-in .5s ease both}
+.vempty{font-size:12px;color:var(--dim)}
+@keyframes slide-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+/* ---------- log ---------- */
+.logbox{background:#05080e;border:1px solid var(--line);border-radius:10px;padding:12px;
+  font-family:var(--mono);font-size:12.5px;line-height:1.7}
+.logrow{display:flex;gap:8px;align-items:baseline}
+.logrow.enter{animation:slide-in .5s ease both}
+.logrow .lt{color:var(--dim);flex:none}
+.logtag{flex:none;font-size:10px;padding:1px 6px;border-radius:4px;letter-spacing:.06em}
+.logtag.g{color:var(--g);background:rgba(47,230,168,.12)}
+.logtag.r{color:var(--r);background:rgba(255,93,108,.12)}
+.logtag.b{color:var(--c);background:rgba(87,200,255,.12)}
+.logtag.m{color:var(--mut);background:rgba(125,142,163,.12)}
+.logrow .lx{color:#c6d6e6;overflow-wrap:anywhere}
+.cursor{display:inline-block;width:8px;height:14px;background:var(--g);vertical-align:-2px;
+  animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.foot{margin-top:18px;font-size:11.5px;color:var(--dim);text-align:center;line-height:1.7}
+/* flash on value change */
+.flash-up{animation:flash-up .7s ease}
+.flash-down{animation:flash-down .7s ease}
+@keyframes flash-up{0%{color:var(--g);text-shadow:0 0 14px rgba(47,230,168,.7)}100%{}}
+@keyframes flash-down{0%{color:var(--r);text-shadow:0 0 14px rgba(255,93,108,.7)}100%{}}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none !important;transition:none !important}
+  .sec{animation:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+  <div class="panel statusbar sec">
+    <span class="hb"><span class="hb-dot"></span>实时更新中，每 30 秒检查一次</span>
+    <span class="spacer"></span>
+    <span class="updated" id="updated">数据更新于 —</span>
+    <span class="clock" id="clock">--:--:--</span>
+    <span class="run">running · <b id="run">00:00:00</b></span>
+  </div>
+
+  <div class="sec">
+    <p class="sec-t">Summary · 账户汇总</p>
+    <div class="panel summary">
+      <div class="kpis">
+        <div class="kpi"><div class="k">本金</div><div class="v num" id="k-principal">—</div></div>
+        <div class="kpi"><div class="k">权益</div><div class="v num glow-g" id="k-equity">—</div></div>
+        <div class="kpi"><div class="k">浮动</div><div class="v num" id="k-floating">—</div></div>
+        <div class="kpi"><div class="k">已实现</div><div class="v num" id="k-realised">—</div></div>
+        <div class="kpi"><div class="k">实验仓</div><div class="v num" id="k-sleeve">—</div></div>
+      </div>
+      <div class="spark"><svg id="spark" viewBox="0 0 120 34" preserveAspectRatio="none" aria-hidden="true"></svg>
+        <span class="lbl" id="spark-lbl">权益走势</span></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <p class="sec-t">Agents · 队员</p>
+    <div class="panel" id="members"></div>
+    <div class="panel pipe" id="pipe" style="margin-top:10px">
+      <div class="pipe-line" id="pipe-line"><span class="p-dot"></span><span class="p-dot"></span><span class="p-dot"></span></div>
+      <div class="pipe-nodes"><span><b>扫描</b></span><span><b>复核</b></span><span><b>定仓位</b></span><span><b>审批</b></span><span><b>记账</b></span></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <p class="sec-t">Positions · 持仓</p>
+    <div id="positions"></div>
+    <p class="sec-t" style="margin-top:14px">Pending · 待触发单</p>
+    <div class="panel" id="pending"></div>
+  </div>
+
+  <div class="sec">
+    <p class="sec-t">Verdicts · 裁决</p>
+    <div class="panel"><div class="vgrid" id="verdicts"></div></div>
+  </div>
+
+  <div class="sec">
+    <p class="sec-t">Log · 今日流水&nbsp;&nbsp;$ tail -f today.log</p>
+    <div class="logbox" id="log"></div>
+  </div>
+
+  <p class="foot">全部为模拟盘，实盘不动。看这个页面不消耗 token，浏览器每 30 秒只读取数据文件。<br>数字只在真实数据到达时变化，没有数据就静止，不装忙。</p>
+</div>
+
+<script>
+"use strict";
+/* ===== embedded fallback data (board.json, 2026-11-27T21:30:34Z) ===== */
+const EMBEDDED = {"floating_gbp":19.19,"log":[{"text":"EXP-003 MoonBoy 已批待触发（入场 $0.0005511，仓位 £4.40）","time":"2026-11-27 21:30"},{"text":"侦察兵扫了 6 个新币，2 候选；MAYA 看图员否决","time":"2026-11-27 21:23"},{"text":"侦察兵扫了 5 个新币，0 候选","time":"2026-11-27 20:53"},{"text":"侦察兵扫了 24 个新币，0 候选","time":"2026-11-27 20:23"},{"text":"周五收盘：SN $236.98，NVDA $150.49，浮盈 +£19.19","time":"2026-11-27 18:30"}],"members":[{"name":"Muse","role":"组长·调度","status":"正在调度全队"},{"name":"侦察兵","role":"扫描","status":"本轮 6 新币 2 候选"},{"name":"看图员","role":"看图","status":"否决 MAYA，通过 MoonBoy"},{"name":"军师","role":"起草","status":"已起草 EXP-003"},{"name":"风控","role":"审批","status":"已批 EXP-003"},{"name":"执行员","role":"记账","status":"已记 EXP-003 待触发"}],"pending_orders":[{"direction":"short","entry_high":3580,"entry_low":3550,"note":"周五冲破区间，周一风控复核","size":0.26,"status":"not_triggered","stop":3650,"symbol":"GOLD","target":3400,"unit":"oz"},{"direction":"long","entry_high":0.0005511,"entry_low":0.0005511,"note":"EXP-003 待触发，有效期至 23:00","size":9684,"status":"pending_trigger","stop":0.00044088,"symbol":"MoonBoy","target":0.00077154,"unit":"tokens"}],"positions":[{"close":236.98,"close_date":"2026-11-27","direction":"long","entry":224.0,"floating_gbp":19.82,"name":"SharkNinja","size":2,"stop":212,"symbol":"SN","target":243.6,"unit":"shares"},{"close":150.49,"close_date":"2026-11-27","direction":"long","entry":150.9,"floating_gbp":-0.63,"name":"Nvidia","size":2,"stop":139.5,"symbol":"NVDA","target":168,"unit":"shares"}],"principal_gbp":1000,"realised_gbp":0,"sleeve":{"last_round":"2026-11-27T21:23:44Z","last_round_candidates":2,"last_round_new":6,"principal_gbp":100,"trial":"0/5"},"source":"trading-team ledger","updated_at":"2026-11-27T21:30:34Z","verdicts":{"passed":[],"pending":["EXP-003 MoonBoy 做多 $0.0005511（已批待触发，有效期至 23:00）","黄金反弹空单 $3,550–3,580（触发单，等周一复核）"],"rejected":["MAYA 多单（m5 暴跌 -44%，看图员否决）","ANT 多单（等收盘站上 $83 再复核）","RYCEY 多单（等伦敦站上 1300p 再复核）","黄金市价空单（追涨，否决）","铜空单（盈亏比不够）"],"voided":["EXP-001 NBA（跌破止损，作废）","EXP-002 Fireball（涨超目标，作废）"]},"version":1};
+
+const RM = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const gbp = (n, signed) => { const v = Math.abs(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+  return (n < 0 ? "−£" : (signed && n > 0 ? "+£" : "£")) + v; };
+const fmtPx = n => { if (n == null) return "—"; const a = Math.abs(n);
+  if (a > 0 && a < 0.01) return n.toFixed(8).replace(/0+$/,"").replace(/\.$/,"");
+  if (a >= 1000) return n.toLocaleString("en-US",{maximumFractionDigits:0});
+  return n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}); };
+const fmtNum = n => n == null ? "—" : Number(n).toLocaleString("en-US");
+const london = iso => { try {
+  const p = new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/London",year:"numeric",month:"2-digit",day:"2-digit",
+    hour:"2-digit",minute:"2-digit",second:"2-digit",hourCycle:"h23"}).formatToParts(new Date(iso));
+  const g = t => p.find(x => x.type === t).value;
+  return g("year") + "-" + g("month") + "-" + g("day") + " " + g("hour") + ":" + g("minute") + ":" + g("second");
+} catch(e){ return iso; } };
+
+/* member meta: badge + one-line duty (role text, not data) */
+const META = {
+  "Muse":    {badge:"LEAD",  duty:"调度全队，汇总记账"},
+  "侦察兵":  {badge:"SCAN",  duty:"扫描新币，寻找候选"},
+  "看图员":  {badge:"CHECK", duty:"看图评估形态"},
+  "军师":    {badge:"DRAFT", duty:"起草触发单"},
+  "风控":    {badge:"GATE",  duty:"审批，守住风控线"},
+  "执行员":  {badge:"LOG",   duty:"记账，盯触发"}
+};
+const BADGES = ["LEAD","SCAN","CHECK","DRAFT","GATE","LOG"];
+function memberState(s){ s = s || "";
+  if (/正在|扫盘|盯盘|调度/.test(s)) return "active";
+  if (/待|已批|已起草|已记|否决|通过|本轮/.test(s)) return "wait";
+  return "idle"; }
+function logTag(t){ if (/否决/.test(t)) return ["REJECT","r"];
+  if (/已批/.test(t)) return ["APPROVE","g"];
+  if (/扫了/.test(t)) return ["SCAN","b"];
+  if (/收盘/.test(t)) return ["CLOSE","g"];
+  return ["LOG","m"]; }
+
+let D = EMBEDDED;
+let prevNums = {};      /* id -> last numeric value, for count-up */
+let prevLogKeys = [];   /* log row keys seen, for slide-in */
+let prevVerdictKeys = [];
+let firstRender = true;
+
+function tweenNum(el, to, fmt, signed){
+  const from = prevNums[el.id];
+  prevNums[el.id] = to;
+  if (RM || firstRender || from == null || from === to){ el.textContent = fmt(to, signed); return; }
+  const t0 = performance.now(), dur = 700;
+  function step(t){
+    const p = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - p, 3);
+    el.textContent = fmt(from + (to - from) * e, signed);
+    if (p < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+  el.classList.remove("flash-up","flash-down"); void el.offsetWidth;
+  el.classList.add(to > from ? "flash-up" : "flash-down");
+}
+
+function render(animate){
+  const d = D; if (!d) return;
+  const equity = (d.principal_gbp || 0) + (d.floating_gbp || 0);
+
+  /* summary */
+  tweenNum($("k-principal"), d.principal_gbp || 0, v => gbp(v, false));
+  tweenNum($("k-equity"), equity, v => gbp(v, false));
+  tweenNum($("k-floating"), d.floating_gbp || 0, v => gbp(v, true));
+  tweenNum($("k-realised"), d.realised_gbp || 0, v => gbp(v, true));
+  const sv = d.sleeve || {};
+  $("k-sleeve").innerHTML = "£" + fmtNum(sv.principal_gbp) + " <small>试跑 " + esc(sv.trial || "—") + "</small>";
+  $("k-floating").classList.toggle("glow-g", (d.floating_gbp || 0) > 0);
+  $("k-floating").classList.toggle("glow-r", (d.floating_gbp || 0) < 0);
+  $("updated").textContent = "数据更新于 " + london(d.updated_at) + " 伦敦";
+
+  /* sparkline: equity_history if present, else [principal, equity] */
+  const hist = (Array.isArray(d.equity_history) && d.equity_history.length > 1)
+    ? d.equity_history : [d.principal_gbp || 0, equity];
+  const lo = Math.min.apply(null, hist), hi = Math.max.apply(null, hist), span = (hi - lo) || 1;
+  const pts = hist.map((v,i) => (i/(hist.length-1)*118+1).toFixed(1) + "," + (30 - (v-lo)/span*26).toFixed(1)).join(" ");
+  const up = hist[hist.length-1] >= hist[0];
+  $("spark").innerHTML =
+    '<polygon points="1,33 ' + pts + ' 119,33" fill="' + (up ? "rgba(47,230,168,.14)" : "rgba(255,93,108,.14)") + '"/>' +
+    '<polyline points="' + pts + '" fill="none" stroke="' + (up ? "#2fe6a8" : "#ff5d6c") + '" stroke-width="1.6" stroke-linejoin="round"/>';
+  $("spark-lbl").textContent = "权益 " + gbp(equity, false);
+
+  /* members */
+  const members = d.members || [];
+  $("members").innerHTML = members.map((m,i) => {
+    const meta = META[m.name] || {badge: BADGES[i] || "—", duty: m.role || ""};
+    const st = memberState(m.status);
+    const bc = m.name === "Muse" ? "b-lead" : (st === "active" ? "b-active" : st === "wait" ? "b-wait" : "");
+    return '<div class="mrow"><span class="sdot st-' + st + '"></span>' +
+      '<span class="mname">' + esc(m.name) + '</span>' +
+      '<span class="mduty">' + esc(meta.duty) + '</span>' +
+      '<span class="mstat">' + esc(m.status || "") + '</span>' +
+      '<span class="badge ' + bc + '">' + meta.badge + '</span></div>';
+  }).join("");
+
+  /* pipeline: busy only while the scout is actively scanning */
+  const scout = members.find(m => m.name === "侦察兵");
+  const busy = scout && memberState(scout.status) === "active";
+  $("pipe").classList.toggle("pipe-busy", !!busy);
+  $("pipe").classList.toggle("pipe-idle", !busy);
+
+  /* positions */
+  $("positions").innerHTML = (d.positions || []).map(p => {
+    const dir = p.direction === "short" ? "short" : "long";
+    const fl = p.floating_gbp || 0;
+    return '<div class="panel trade"><div class="tc-head">' +
+      '<span class="tc-sym">' + esc(p.symbol) + '</span>' +
+      '<span class="tc-dir ' + dir + '">' + (dir === "long" ? "LONG 做多" : "SHORT 做空") + '</span>' +
+      '<span class="tc-open">OPEN</span>' +
+      '<span class="tc-pnl num ' + (fl >= 0 ? "g" : "r") + '" data-pnl="' + esc(p.symbol) + '">' + gbp(fl, true) + '</span></div>' +
+      '<div class="tc-grid">' +
+      '<div><div class="k">入场</div><div class="v num">$' + fmtPx(p.entry) + '</div></div>' +
+      '<div><div class="k">收盘 ' + esc(p.close_date || "") + '</div><div class="v num">$' + fmtPx(p.close) + '</div></div>' +
+      '<div><div class="k">止损</div><div class="v num">$' + fmtPx(p.stop) + '</div></div>' +
+      '<div><div class="k">目标</div><div class="v num">$' + fmtPx(p.target) + '</div></div>' +
+      '</div><div class="tc-note">' + esc(p.name || "") + ' · ' + fmtNum(p.size) + ' ' + esc(p.unit || "") + '</div></div>';
+  }).join("") || '<div class="panel m" style="font-size:13px">当前无持仓</div>';
+
+  /* pending orders */
+  $("pending").innerHTML = (d.pending_orders || []).map(o => {
+    const dir = o.direction === "short" ? "做空" : "做多";
+    const entry = (o.entry_low === o.entry_high) ? "$" + fmtPx(o.entry_low)
+      : "$" + fmtPx(o.entry_low) + "–" + fmtPx(o.entry_high);
+    return '<div class="pend"><span class="psym">' + esc(o.symbol) + '</span>' +
+      '<span class="pill wait">待触发</span>' +
+      '<span>' + dir + ' · 入场 ' + entry + '</span>' +
+      '<span class="pdet">止损 $' + fmtPx(o.stop) + ' · 目标 $' + fmtPx(o.target) + ' · ' + fmtNum(o.size) + ' ' + esc(o.unit || "") + '</span>' +
+      (o.note ? '<span class="pnote">' + esc(o.note) + '</span>' : "") + '</div>';
+  }).join("") || '<div class="m" style="font-size:13px">暂无待触发单</div>';
+
+  /* verdicts */
+  const v = d.verdicts || {};
+  const cols = [["pass","通过","passed"],["pend","待定","pending"],["rej","否决","rejected"],["void","作废","voided"]];
+  const newKeys = [];
+  $("verdicts").innerHTML = cols.map(c => {
+    const items = v[c[2]] || [];
+    return '<div class="vcol ' + c[0] + '"><h3>' + c[1] + ' · ' + items.length + '</h3>' +
+      (items.length ? items.map(t => {
+        const key = c[2] + "|" + t; newKeys.push(key);
+        const isNew = animate && !firstRender && prevVerdictKeys.indexOf(key) === -1;
+        return '<div class="vitem' + (isNew ? " enter" : "") + '">' + esc(t) + '</div>';
+      }).join("") : '<div class="vempty">暂无</div>') + '</div>';
+  }).join("");
+  prevVerdictKeys = newKeys;
+
+  /* log: latest 6, tail -f style */
+  const log = (d.log || []).slice(0, 6);
+  const logKeys = log.map(r => r.time + "|" + r.text);
+  $("log").innerHTML = log.map((r,i) => {
+    const tag = logTag(r.text);
+    const t = (r.time || "").slice(5); /* MM-DD HH:MM */
+    const isNew = animate && !firstRender && prevLogKeys.indexOf(logKeys[i]) === -1;
+    return '<div class="logrow' + (isNew ? " enter" : "") + '"><span class="lt">' + esc(t) + '</span>' +
+      '<span class="logtag ' + tag[1] + '">' + tag[0] + '</span>' +
+      '<span class="lx">' + esc(r.text) + '</span></div>';
+  }).join("") + '<div class="logrow"><span class="lt">$</span><span class="cursor"></span></div>';
+  prevLogKeys = logKeys;
+  firstRender = false;
+}
+
+/* ===== clocks: London clock + running timer (survives reloads) ===== */
+let openedAt = null;
+try { openedAt = Number(sessionStorage.getItem("termOpenedAt")) || null; } catch(e){}
+if (!openedAt){ openedAt = Date.now(); try { sessionStorage.setItem("termOpenedAt", String(openedAt)); } catch(e){} }
+function tickClock(){
+  const now = new Date();
+  try { $("clock").textContent = now.toLocaleTimeString("en-GB",
+    {timeZone:"Europe/London",hour12:false}); } catch(e){ $("clock").textContent = now.toLocaleTimeString(); }
+  const s = Math.floor((Date.now() - openedAt) / 1000);
+  const hh = String(Math.floor(s/3600)).padStart(2,"0"),
+        mm = String(Math.floor(s/60)%60).padStart(2,"0"),
+        ss = String(s%60).padStart(2,"0");
+  $("run").textContent = hh + ":" + mm + ":" + ss;
+}
+setInterval(tickClock, 1000); tickClock();
+
+/* ===== data polling: same-origin relative fetch, 30s, silent on failure ===== */
+async function poll(){
+  try {
+    const r = await fetch("./trading-board.json?t=" + Date.now(), {cache:"no-store"});
+    if (!r.ok) return;                       /* keep last good data, silently */
+    const j = await r.json();
+    if (!j || !j.updated_at || !j.positions) return;
+    if (j.updated_at > D.updated_at){ D = j; render(true); }
+  } catch(e){ /* offline / file:// / githack hiccup: keep showing embedded data */ }
+}
+render(false);
+setInterval(poll, 30000);
+</script>
+</body>
+</html>

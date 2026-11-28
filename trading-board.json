@@ -137,16 +137,16 @@
   "principal_gbp": 1000,
   "realised_gbp": 0,
   "sleeve": {
-    "last_round": "2026-11-28T10:11:14Z",
+    "last_round": "2026-11-28T11:11:18Z",
     "last_round_candidates": 0,
-    "last_round_new": 4,
+    "last_round_new": 5,
     "principal_gbp": 100,
     "trial": "1/5",
     "realised_gbp": -1.82,
     "equity_gbp": 98.18
   },
   "source": "trading-team ledger",
-  "updated_at": "2026-11-28T10:11:14Z",
+  "updated_at": "2026-11-28T11:11:18Z",
   "verdicts": {
     "passed": [
       "EXP-004 Memeball 做多，已平仓：60 分钟时间止损离场 $0.0006233，实亏 −£1.82（成交 $0.0007356，7,370 个，£4.47）"
